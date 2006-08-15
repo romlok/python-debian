@@ -16,7 +16,45 @@ class Changelog(object):
   def __init__(self, file=None):
     """Set up the Changelog for use. file is the contects of the changelog.
     If it is None, then the module will attempt to open 'debian/changelog'
-    and use it's contents."""
+    and use it's contents.
+    
+    >>> c = 'python-debian (0.1.0) unstable; urgency=low'
+    >>> cl = Changelog(c)
+    >>> cl.versions()
+    ['0.1.0']
+    >>> cl.full_version()
+    '0.1.0'
+    >>> cl.upstream_version()
+    '0.1.0'
+    >>> cl.debian_version()
+    >>> cl.package()
+    'python-debian'
+    >>> c = 'python-debian (0.1.0-1) unstable; urgency=low'
+    >>> cl = Changelog(c)
+    >>> cl.full_version()
+    '0.1.0-1'
+    >>> cl.upstream_version()
+    '0.1.0'
+    >>> cl.debian_version()
+    '1'
+    >>> c += '\\np-d (0.0.1-1) unstable; urgency=low'
+    >>> cl = Changelog(c)
+    >>> cl.versions()
+    ['0.1.0-1', '0.0.1-1']
+    >>> cl.full_version()
+    '0.1.0-1'
+    >>> cl.upstream_version()
+    '0.1.0'
+    >>> cl.debian_version()
+    '1'
+    >>> cl.package()
+    'python-debian'
+    >>> c = '(0.1.0-1) unstable; urgency=low'
+    >>> cl = Changelog(c)
+    Traceback (most recent call last):
+        ...
+    ChangelogError
+    """
 
     self._full_version = None
     self._package = None
@@ -71,4 +109,11 @@ class Changelog(object):
   def versions(self):
     """Returns a list of versions that the package went through."""
     return self._versions
+
+def _test():
+  import doctest
+  doctest.testmod()
+
+if __name__ == "__main__":
+  _test()
 
