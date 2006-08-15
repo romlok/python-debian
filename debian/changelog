@@ -1,0 +1,5 @@
+python-debian (0.1.0) unstable; urgency=low
+
+  * Initial release. (Closes: #381599)
+
+ -- James Westby <jw+debian@jameswestby.net>  Tue, 15 Aug 2006 18:57:57 +0100

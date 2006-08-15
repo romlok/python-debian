@@ -1,0 +1,16 @@
+Source: python-debian
+Section: devel
+Priority: optional
+Maintainer: Adeodato Simó <dato@net.com.org.es>
+Build-Depends: debhelper (>= 5.0.37.2), python-support (>= 0.3)
+Standards-Version: 3.7.2
+
+Package: python-debian
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}
+Provides: ${python:Provides}
+Description: python modules to work with Debian-related data formats
+ This package provides python modules that abstract many formats of debian 
+ related files. Currently handled are:
+  * any file that follows the deb822 syntax (debian/control) etc.
+  * debian/changelog
