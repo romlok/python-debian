@@ -1,0 +1,28 @@
+The Debian Package deb822
+----------------------------
+
+Typical usage (contrived, but this should give you an idea of how the interface
+works).
+
+    import deb822
+
+    d = deb822.dsc(open('foo_1.1.dsc'))
+    source = d['Source']
+    version = d['Version']
+
+    files = d['Files']
+
+    for f in files:
+        print 'name:', f['name']
+        print 'size:', f['size']
+        print 'md5sum:', f['md5sum']
+
+    # If we like, we can hack fields
+    d['Version'] = "1.1jsw1"
+
+    # And then dump the new contents
+    new_dsc = open('foo_1.1jsw1.dsc', 'w')
+    d.dump(new_dsc)
+    new_dsc.close()
+
+John Wright <john@movingsucks.org>, Tue, 18 Jul 2006 04:26:51 +0000

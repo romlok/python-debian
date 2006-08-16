@@ -1,7 +1,45 @@
-import re, string
+#
+# A python interface for various rfc822-like formatted files used by Debian
+# (.changes, .dsc, Packages, Sources, etc)
+#
+# Written by dann frazier <dannf@dannf.org>
+# Copyright (C) 2005-2006  dann frazier <dannf@dannf.org>
+# Copyright (C) 2006       John Wright <john@movingsucks.org>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; version 2
+# dated June, 1991.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 
-class deb822(dict):
-    def __init__(self, fp):
+import re
+import StringIO
+
+class Deb822(dict):
+    def __init__(self, object):
+        """Create a new Deb822 instance, using object for initial fields
+
+        object may be a file-like object (i.e. having a readlines() method)
+        containing the contents of an RFC822-formatted file, or it may be
+        another Deb822 instance.
+        """
+        
+        if isinstance(object, Deb822):
+            fp = StringIO.StringIO()
+            object.dump(fp)
+            fp.seek(0)
+        else:
+            fp = object
+        
         single = re.compile("^(?P<key>\S+):\s+(?P<data>\S.*)$")
         multi = re.compile("^(?P<key>\S+):\s*$")
         multidata = re.compile("^\s(?P<data>.*)$")
@@ -49,9 +87,21 @@ class deb822(dict):
         if curkey:
             self[curkey] += content
 
-    def dump(self, fd):
-        for key in self._keys:
+    def dump(self, fd=None):
+        """Dump the the contents in the original format
+
+        If fd is None, return a string.
+        """
+        
+        if fd is None:
+            fd = StringIO.StringIO()
+            return_string = True
+        else:
+            return_string = False
+        for key in self.keys():
             fd.write(key + ": " + self[key] + "\n")
+        if return_string:
+            return fd.getvalue()
 
     def isSingleLine(self, s):
         if s.count("\n"):
@@ -150,10 +200,17 @@ class deb822(dict):
 
     strip_gpg_readlines = staticmethod(strip_gpg_readlines)
 
-class _multivalued(deb822):
+    def keys(self):
+        # Override keys so that we can give the correct order
+        other_keys = dict.keys(self)
+        for key in self._keys:
+            other_keys.remove(key)
+        return self._keys + other_keys
+
+class _multivalued(Deb822):
     """A class with (R/W) support for multivalued fields."""
     def __init__(self, fp):
-        deb822.__init__(self, fp)
+        Deb822.__init__(self, fp)
 
         for field, fields in self._multivalued_fields.items():
             contents = self.get(field, '')
@@ -168,8 +225,18 @@ class _multivalued(deb822):
             for line in filter(None, contents.splitlines()):
                 updater_method(dict(zip(fields, line.split())))
 
-    def dump(self, fd):
-        for key in self._keys:
+    def dump(self, fd=None):
+        """Dump the contents in the original format
+
+        If fd is None, return a string.
+        """
+        
+        if fd is None:
+            fd = StringIO.StringIO()
+            return_string = True
+        else:
+            return_string = False
+        for key in self.keys():
             if key not in self._multivalued_fields:
                 # normal behavior
                 fd.write(key + ": " + self[key] + "\n")
@@ -185,20 +252,51 @@ class _multivalued(deb822):
                 for item in array:
                     fd.write(" " + " ".join([item[x] for x in order]))
                     fd.write("\n")
+        if return_string:
+            return fd.getvalue()
 
-class dsc(_multivalued):
+class Dsc(_multivalued):
     _multivalued_fields = {
         "Files": [ "md5sum", "size", "name" ],
     }
+# Sources files have the same multivalued format as dsc files
+Sources = Dsc
 
-class changes(_multivalued):
+class Changes(_multivalued):
     _multivalued_fields = {
         "Files": [ "md5sum", "size", "section", "priority", "name" ],
     }
 
-class pdiff_index(_multivalued):
+class PdiffIndex(_multivalued):
     _multivalued_fields = {
         "SHA1-Current": [ "SHA1", "size" ],
         "SHA1-History": [ "SHA1", "size", "date" ],
         "SHA1-Patches": [ "SHA1", "size", "date" ],
     }
+
+
+def xmultiple(f, cls=Deb822):
+    """Return a generator for objects from, e.g., a Packages or Sources file
+
+    Use cls as the class to construct objects from
+    """
+    
+    ws = re.compile('^\s*$')
+    
+    s = StringIO.StringIO()
+    line = f.readline()
+    while line:
+        if ws.match(line):
+            s.seek(0)
+            yield cls(s)
+            s = StringIO.StringIO()
+        else:
+            s.write(line)
+        line = f.readline()
+
+def multiple(f, cls=Deb822):
+    """Return a list of objects from, e.g., a Packages or Sources file
+
+    Use cls as the class to construct objects from
+    """
+    return list(xmultiple(f, cls=cls))

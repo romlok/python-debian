@@ -1,0 +1,55 @@
+This package was debianized by James Westby <jw+debian@jameswestby.net> on
+Wed, 16 Aug 2006 19:17:30 +0100.
+
+The original source can always be found at:
+        ftp://ftp.debian.org/dists/unstable/main/source/
+
+Copyright: 
+
+  deb822.py is Copyright (C) 2005-2006  dann frazier <dannf@dannf.org>
+                             2006       John Wright <john@movingsucks.org>
+
+  changelog.py is Copyright (C) 2006 James Westby <jw+debian@jameswestby.net>
+
+  debian_support.py is Copyright (C) 2005 Florian Weimer <fw@deneb.enyo.de>
+
+Licenses:
+
+   deb822.py is under the following license
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; version 2
+   dated June, 1991.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation, 
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  
+   debian_support.py and changelog.py are under the following license
+
+   This package is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This package is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this package; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+On Debian systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL'.
+
+The Debian packaging was placed in the public domain by 
+James Westby <jw+debian@ajemswestby.net> on Wed, 16 Aug 2006 19:17:30 +0100
+
