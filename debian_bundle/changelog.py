@@ -362,11 +362,8 @@ class ChangelogTests(unittest.TestCase):
     cl = Changelog(c)
     cl.new_block('gnutls14', Version('1:1.4.1-3'), 'experimental', 'low',
                     None, 'James Westby <jw+debian@jameswestby.net>')
-    try:
-      str(cl)
-      assert_(False, "No error thrown when date and changes are None")
-    except ChangelogCreateError:
-      pass
+
+    self.assertRaises(ChangelogCreateError, cl.__str__)
 
     cl.set_date('Sat, 16 Jul 2008 11:11:08 +0200')
     cl.add_change('')
