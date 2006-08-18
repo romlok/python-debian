@@ -1,0 +1,13 @@
+gnutls13 (1:1.4.1-1) unstable; urgency=low
+
+  [ James Westby ]
+  * New upstream release.
+  * Remove the following patches as they are now included upstream:
+    - 10_certtoolmanpage.diff
+    - 15_fixcompilewarning.diff
+    - 30_man_hyphen_*.patch
+  * Link the API reference in /usr/share/gtk-doc/html as gnutls rather than
+    gnutls-api so that devhelp can find it.
+
+ -- Andreas Metzler <ametzler@debian.org>  Sat, 15 Jul 2006 11:11:08 +0200
+

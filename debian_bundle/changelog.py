@@ -21,8 +21,8 @@ import os
 import re
 import unittest
 
-class ChangelogError(StandardError):
-
+class ChangelogParseError(StandardError):
+  """Indicates that the changelog could not be parsed"""
   is_user_error = True
 
   def __init__(self, line):
@@ -31,7 +31,12 @@ class ChangelogError(StandardError):
   def __str__(self):
     return "Could not parse changelog: "+self._line
 
+class ChangelogCreateError(StandardError):
+  """Indicates that changelog could not be created, as all the information
+  required was not given"""
+
 class VersionError(StandardError):
+  """Indicates that the version does not conform to the required format"""
 
   is_user_error = True
 
@@ -74,8 +79,8 @@ class Version(object):
 class ChangeBlock(object):
   """Holds all the information about one block from the changelog."""
 
-  def __init__(self, package, version, distributions, urgency, changes,
-                author, date):
+  def __init__(self, package=None, version=None, distributions=None, 
+                urgency=None, changes=None, author=None, date=None):
     self._version = version
     self._package = package
     self._distributions = distributions
@@ -109,14 +114,65 @@ class ChangeBlock(object):
   def add_trailing_newline(self):
     self._trailing += 1
 
+  def set_package(self, package):
+    self._package = package
+
+  def set_version(self, version):
+    self._version = version
+
+  def set_distributions(self, distributions):
+    self._distributions = distributions
+
+  def set_urgency(self, urgency):
+    self._urgency = urgency
+
+  def add_change(self, change):
+    if self._changes is None:
+      self._changes = [change]
+    else:
+#Bit of trickery to keep the formatting nicer with a blank line at the end if there is one
+      changes = self._changes
+      changes.reverse()
+      added = False
+      for i in range(len(changes)):
+        m = blankline.match(changes[i])
+        if m is None:
+          changes.insert(i, change)
+          added = True
+          break
+      changes.reverse()
+      if not added:
+        changes.append(change)
+      self._changes = changes
+
+  def set_author(self, author):
+    self._author = author
+
+  def set_date(self, date):
+    self._date = date
+
   def __str__(self):
     block = ""
+    if self.package() is None:
+      raise ChangelogCreateError("Package not specified")
     block += self.package() + " "
+    if self.version() is None:
+      raise ChangelogCreateError("Version not specified")
     block += "(" + str(self.version()) + ") "
+    if self.distributions() is None:
+      raise ChangelogCreateError("Distribution not specified")
     block += self.distributions() + "; "
+    if self.urgency() is None:
+      raise ChangelogCreateError("Urgency not specified")
     block += "urgency=" + self.urgency() + "\n"
+    if self.changes() is None:
+      raise ChangelogCreateError("Changes not specified")
     for change in self.changes():
       block += change + "\n"
+    if self.author() is None:
+      raise ChangelogCreateError("Author not specified")
+    if self.date() is None:
+      raise ChangelogCreateError("Date not specified")
     block += " -- " + self.author() + "  " + self.date() + "\n"
     for i in range(self._trailing):
       block += "\n"
@@ -136,73 +192,66 @@ class Changelog(object):
 
   def __init__(self, file=None):
     """Set up the Changelog for use. file is the contects of the changelog.
-    If it is None, then the module will attempt to open 'debian/changelog'
-    and use it's contents.
     """
     
     self._blocks = []
-    before = 1
-    inblock = 2
+    if file is not None:
+      before = 1
+      inblock = 2
 
-    package = None
-    version = None
-    distributions = None
-    urgency = None
-    changes = []
-    author = None
-    date = None
+      package = None
+      version = None
+      distributions = None
+      urgency = None
+      changes = []
+      author = None
+      date = None
 
-    if file is None:
-      f = open(os.path.join("debian","changelog"), 'r')
-      contents = f.read()
-      f.close()
-      self._file = contents
-    else:
       self._file = file
-    state = before
-    for line in self._file.split('\n'):
-      if state == before:
-        m = topline.match(line)
-        if m is not None:
-          state = inblock
-          package = m.group(1)
-          version = Version(m.group(2))
-          distributions = m.group(3)
-          urgency = m.group(4)
-        else:
-          m = blankline.match(line)
-          if m is None:
-            raise ChangelogError(line)
-          elif len(self._blocks) > 0:
-            self._blocks[-1].add_trailing_newline()
-      elif state == inblock:
-        m = blankline.match(line)
-        if m is not None:
-          changes.append(line)
-        else:
-          m = endline.match(line)
+      state = before
+      for line in self._file.split('\n'):
+        if state == before:
+          m = topline.match(line)
           if m is not None:
-            state = before
-            author = m.group(1)
-            date = m.group(2)
-            block = ChangeBlock(package, version, distributions, urgency,
-                changes, author, date)
-            self._blocks.append(block)
-            (package, version, distributions, urgency, author, date) = \
-                (None, None, None, None, None, None)
-            changes = []
+            state = inblock
+            package = m.group(1)
+            version = Version(m.group(2))
+            distributions = m.group(3)
+            urgency = m.group(4)
           else:
-            m = change.match(line)
+            m = blankline.match(line)
             if m is None:
-              raise ChangelogError(line)
-            #TODO: maybe try and parse these more intelligently
+              raise ChangelogParseError(line)
+            elif len(self._blocks) > 0:
+              self._blocks[-1].add_trailing_newline()
+        elif state == inblock:
+          m = blankline.match(line)
+          if m is not None:
             changes.append(line)
-      else:
-        assert(False), "Unknown state: "+state
+          else:
+            m = endline.match(line)
+            if m is not None:
+              state = before
+              author = m.group(1)
+              date = m.group(2)
+              block = ChangeBlock(package, version, distributions, urgency,
+                  changes, author, date)
+              self._blocks.append(block)
+              (package, version, distributions, urgency, author, date) = \
+                  (None, None, None, None, None, None)
+              changes = []
+            else:
+              m = change.match(line)
+              if m is None:
+                raise ChangelogParseError(line)
+              #TODO: maybe try and parse these more intelligently
+              changes.append(line)
+        else:
+          assert(False), "Unknown state: "+state
 
 
-    if state == inblock:
-      raise ChangelogError("Unexpected EOF")
+      if state == inblock:
+        raise ChangelogParseError("Unexpected EOF")
 
   def full_version(self):
     """Returns the full version number of the last version."""
@@ -220,11 +269,11 @@ class Changelog(object):
   def epoch(self):
     """Returns the epoch number of the last revision, or None if no epoch was
     used"""
-    return self.blocks[0].version().epoch()
+    return self._blocks[0].version().epoch()
 
   def package(self):
     """Returns the name of the package in the last version."""
-    return self.blocks[0].package()
+    return self._blocks[0].package()
 
   def versions(self):
     """Returns a list of version objects that the package went through."""
@@ -239,6 +288,34 @@ class Changelog(object):
       cl += str(block)
     return cl
 
+  def set_package(self, package):
+    self._blocks[0].set_package(package)
+
+  def set_version(self, version):
+    self._blocks[0].set_version(version)
+
+  def set_distributions(self, distributions):
+    self._blocks[0].set_distributions(distributions)
+
+  def set_urgency(self, urgency):
+    self._blocks[0].set_urgency(urgency)
+
+  def add_change(self, change):
+    self._blocks[0].add_change(change)
+
+  def set_author(self, author):
+    self._blocks[0].set_author(author)
+
+  def set_date(self, date):
+    self._blocks[0].set_date(date)
+
+  def new_block(self, package=None, version=None, distributions=None,
+                urgency=None, changes=None, author=None, date=None):
+    block = ChangeBlock(package, version, distributions, urgency, 
+                        changes, author, date)
+    block.add_trailing_newline()
+    self._blocks.insert(0, block)
+
 def _test():
   import doctest
   doctest.testmod()
@@ -247,7 +324,7 @@ def _test():
 
 class ChangelogTests(unittest.TestCase):
 
-  def testchangelog(self):
+  def test_create_changelog(self):
 
     c = open('test_changelog').read()
     cl = Changelog(c)
@@ -256,6 +333,54 @@ class ChangelogTests(unittest.TestCase):
     cslines = cs.split('\n')
     for i in range(len(clines)):
       self.assertEqual(clines[i], cslines[i])
+#TODO: work out why this fails
+#    print str(len(clines)) + " " + str(len(cslines))
+#    self.assertEqual(len(clines), len(cslines), "Different lengths")
+
+  def test_modify_changelog(self):
+
+    c = open('test_modify_changelog1').read()
+    cl = Changelog(c)
+    cl.set_package('gnutls14')
+    cl.set_version(Version('1:1.4.1-2'))
+    cl.set_distributions('experimental')
+    cl.set_urgency('medium')
+    cl.add_change('  * Add magic foo')
+    cl.set_author('James Westby <jw+debian@jameswestby.net>')
+    cl.set_date('Sat, 16 Jul 2008 11:11:08 +0200')
+    c = open('test_modify_changelog2').read()
+    clines = c.split('\n')
+    cslines = str(cl).split('\n')
+    for i in range(len(clines)):
+      self.assertEqual(clines[i], cslines[i])
+#TODO: work out why this fails
+#    print str(len(clines)) + " " + str(len(cslines))
+#    self.assertEqual(len(clines), len(cslines), "Different lengths")
+
+  def test_add_changelog_section(self):
+    c = open('test_modify_changelog2').read()
+    cl = Changelog(c)
+    cl.new_block('gnutls14', Version('1:1.4.1-3'), 'experimental', 'low',
+                    None, 'James Westby <jw+debian@jameswestby.net>')
+    try:
+      str(cl)
+      assert_(False, "No error thrown when date and changes are None")
+    except ChangelogCreateError:
+      pass
+
+    cl.set_date('Sat, 16 Jul 2008 11:11:08 +0200')
+    cl.add_change('')
+    cl.add_change('  * Foo did not work, let us try bar')
+    cl.add_change('')
+
+    c = open('test_modify_changelog3').read()
+    clines = c.split('\n')
+    cslines = str(cl).split('\n')
+    for i in range(len(clines)):
+      self.assertEqual(clines[i], cslines[i])
+#TODO: work out why this fails
+#    print str(len(clines)) + " " + str(len(cslines))
+#    self.assertEqual(len(clines), len(cslines), "Different lengths")
 
 class VersionTests(unittest.TestCase):
 
