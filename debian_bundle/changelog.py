@@ -114,6 +114,9 @@ class ChangeBlock(object):
   def add_trailing_newline(self):
     self._trailing += 1
 
+  def del_trailing_newline(self):
+    self._trailing -= 1
+
   def set_package(self, package):
     self._package = package
 
@@ -253,6 +256,9 @@ class Changelog(object):
       if state == inblock:
         raise ChangelogParseError("Unexpected EOF")
 
+      #TODO: shouldn't be required should it?
+      self._blocks[-1].del_trailing_newline()
+
   def full_version(self):
     """Returns the full version number of the last version."""
     return self._blocks[0].version().full_version()
@@ -333,9 +339,7 @@ class ChangelogTests(unittest.TestCase):
     cslines = cs.split('\n')
     for i in range(len(clines)):
       self.assertEqual(clines[i], cslines[i])
-#TODO: work out why this fails
-#    print str(len(clines)) + " " + str(len(cslines))
-#    self.assertEqual(len(clines), len(cslines), "Different lengths")
+    self.assertEqual(len(clines), len(cslines), "Different lengths")
 
   def test_modify_changelog(self):
 
@@ -353,9 +357,7 @@ class ChangelogTests(unittest.TestCase):
     cslines = str(cl).split('\n')
     for i in range(len(clines)):
       self.assertEqual(clines[i], cslines[i])
-#TODO: work out why this fails
-#    print str(len(clines)) + " " + str(len(cslines))
-#    self.assertEqual(len(clines), len(cslines), "Different lengths")
+    self.assertEqual(len(clines), len(cslines), "Different lengths")
 
   def test_add_changelog_section(self):
     c = open('test_modify_changelog2').read()
@@ -375,9 +377,7 @@ class ChangelogTests(unittest.TestCase):
     cslines = str(cl).split('\n')
     for i in range(len(clines)):
       self.assertEqual(clines[i], cslines[i])
-#TODO: work out why this fails
-#    print str(len(clines)) + " " + str(len(cslines))
-#    self.assertEqual(len(clines), len(cslines), "Different lengths")
+    self.assertEqual(len(clines), len(cslines), "Different lengths")
 
 class VersionTests(unittest.TestCase):
 
