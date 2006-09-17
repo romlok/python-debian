@@ -186,7 +186,7 @@ topline = re.compile('^([a-z0-9][-a-z0-9.+]+) \(([-0-9a-z.:~+]+)\) '
 blankline = re.compile('^[ \t]*$')
 change = re.compile('^[ ][ ]+.*$')
 endline = re.compile('^ -- (.*)  (\w\w\w, [ \d]\d \w\w\w \d\d\d\d '+
-      '\d\d:\d\d:\d\d \+\d\d\d\d( \(.*\))?)$')
+      '\d\d:\d\d:\d\d [-+]\d\d\d\d( \(.*\))?)$')
 
 class Changelog(object):
   """Represents a debian/changelog file. You can ask it several things about
@@ -351,7 +351,7 @@ class ChangelogTests(unittest.TestCase):
     cl.set_urgency('medium')
     cl.add_change('  * Add magic foo')
     cl.set_author('James Westby <jw+debian@jameswestby.net>')
-    cl.set_date('Sat, 16 Jul 2008 11:11:08 +0200')
+    cl.set_date('Sat, 16 Jul 2008 11:11:08 -0200')
     c = open('test_modify_changelog2').read()
     clines = c.split('\n')
     cslines = str(cl).split('\n')

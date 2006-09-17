@@ -9,5 +9,5 @@ gnutls13 (1:1.4.1-1) unstable; urgency=low
   * Link the API reference in /usr/share/gtk-doc/html as gnutls rather than
     gnutls-api so that devhelp can find it.
 
- -- Andreas Metzler <ametzler@debian.org>  Sat, 15 Jul 2006 11:11:08 +0200
+ -- Andreas Metzler <ametzler@debian.org>  Sat, 15 Jul 2006 11:11:08 -0200
 

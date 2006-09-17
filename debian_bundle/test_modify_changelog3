@@ -16,5 +16,5 @@ gnutls14 (1:1.4.1-2) experimental; urgency=medium
     gnutls-api so that devhelp can find it.
   * Add magic foo
 
- -- James Westby <jw+debian@jameswestby.net>  Sat, 16 Jul 2008 11:11:08 +0200
+ -- James Westby <jw+debian@jameswestby.net>  Sat, 16 Jul 2008 11:11:08 -0200
 
