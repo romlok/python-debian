@@ -1,10 +1,11 @@
+# vim: fileencoding=utf-8
 #
 # A python interface for various rfc822-like formatted files used by Debian
 # (.changes, .dsc, Packages, Sources, etc)
 #
-# Written by dann frazier <dannf@dannf.org>
 # Copyright (C) 2005-2006  dann frazier <dannf@dannf.org>
 # Copyright (C) 2006       John Wright <john@movingsucks.org>
+# Copyright (C) 2006       Adeodato Simó <dato@net.com.org.es>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,53 +20,193 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
+
+
+try:
+    import apt_pkg
+    _have_apt_pkg = True
+except ImportError:
+    _have_apt_pkg = False
 
 import re
 import StringIO
 
-class Deb822(dict):
-    def __init__(self, object):
-        """Create a new Deb822 instance, using object for initial fields
+class Deb822Dict(dict):
+    """A dictionary suitable for storing RFC822-like data.
 
-        object may be a file-like object (i.e. having a readlines() method)
-        containing the contents of an RFC822-formatted file, or it may be
-        another Deb822 instance.
+    Deb822Dict behaves like a normal dict, except:
+        - key lookup is case-insensitive
+        - key order is preserved
+        - if initialized with a _parsed parameter, it will pull values from
+          that dictionary-like object as needed (rather than making a copy).
+          The _parsed dict is expected to be able to handle case-insensitive
+          keys.
+
+    If _parsed is not None, an optional _fields parameter specifies which keys
+    in the _parsed dictionary are exposed.
+    """
+
+    # See the end of the file for the definition of _strI
+
+    def __init__(self, _dict=None, _parsed=None, _fields=None):
+        self.__keys = []
+        self.__parsed = None
+
+        if _dict is not None:
+            # _dict may be a dict or a list of two-sized tuples
+            if hasattr(_dict, 'items'):
+                items = _dict.items()
+            else:
+                items = list(_dict)
+
+            try:
+                for k, v in items:
+                    self[k] = v
+            except ValueError:
+                this = len(self.__keys)
+                len_ = len(items[this])
+                raise ValueError('dictionary update sequence element #%d has '
+                    'length %d; 2 is required' % (this, len_))
+        
+        if _parsed is not None:
+            self.__parsed = _parsed
+            if _fields is None:
+                self.__keys.extend([ _strI(k) for k in self.__parsed.keys() ])
+            else:
+                self.__keys.extend([ _strI(f) for f in fields if self.__parsed.has_key(f) ])
+
+        
+    def __setitem__(self, key, value):
+        key = _strI(key)
+        if not key in self:
+            self.__keys.append(key)
+        dict.__setitem__(self, key, value)
+        
+    def __getitem__(self, key):
+        key = _strI(key)
+        try:
+            return dict.__getitem__(self, key)
+        except KeyError:
+            if self.__parsed is not None:
+                return self.__parsed[key]
+            else:
+                raise
+    
+    def __delitem__(self, key):
+        key = _strI(key)
+        dict.__delitem__(self, key)
+        self.__keys.remove(key)
+
+    def __contains__(self, key):
+        key = _strI(key)
+        return key in self.__keys
+    
+    def __repr__(self):
+        return '{%s}' % ', '.join(['%r: %r' % (k, v) for k, v in self.items()])
+
+    def keys(self):
+        return list(self.__keys)
+
+    def items(self):
+        return [(k, self[k]) for k in self.keys()]
+
+    def values(self):
+        return [self[k] for k in self.keys()]
+
+    def iterkeys(self):
+        return iter(self.__keys)
+    __iter__ = iterkeys
+
+    def iteritems(self):
+        for k in self.iterkeys():
+            yield (k, self[k])
+    
+    def copy(self):
+        copy = Deb822Dict(self)
+        return copy
+
+    # TODO implement __str__() and make dump() use that?
+
+
+class Deb822(Deb822Dict):
+
+    def __init__(self, sequence=None, fields=None, _parsed=None):
+        """Create a new Deb822 instance.
+
+        :param sequence: a string, or any any object that returns a line of
+            input each time, normally a file().
+
+        :param fields: if given, it is interpreted as a list of fields that
+            should be parsed (the rest will be discarded).
+
+        :param _parsed: internal parameter.
         """
-        
-        if isinstance(object, Deb822):
-            fp = StringIO.StringIO()
-            object.dump(fp)
-            fp.seek(0)
-        else:
-            fp = object
-        
-        single = re.compile("^(?P<key>\S+):\s+(?P<data>\S.*)$")
-        multi = re.compile("^(?P<key>\S+):\s*$")
-        multidata = re.compile("^\s(?P<data>.*)$")
-        ws = re.compile("^\s*$")
 
-        # Storing keys here is redundant, but it allows us to keep track of the
-        # original order.
-        self._keys = []
-        
+        Deb822Dict.__init__(self, _parsed=_parsed, _fields=fields)
+
+        if sequence is not None:
+            try:
+                self._internal_parser(sequence, fields)
+            except EOFError:
+                pass
+
+    def iter_paragraphs(cls, sequence, fields=None, shared_storage=True):
+        """Generator that yields a Deb822 object for each paragraph in sequence.
+
+        :param sequence: same as in __init__.
+
+        :param fields: likewise.
+
+        :param shared_storage: if sequence is a file(), apt_pkg will be used 
+            if available to parse the file, since it's much much faster. On the
+            other hand, yielded objects will share storage, so they can't be
+            kept across iterations. (Also, PGP signatures won't be stripped
+            with apt_pkg.) Set this parameter to False to disable using apt_pkg. 
+        """
+
+        # TODO Think about still using apt_pkg evein if shared_storage is False,
+        # by somehow instructing the constructor to make copy of the data. (If
+        # this is still faster.)
+
+        if _have_apt_pkg and shared_storage and isinstance(sequence, file):
+            parser = apt_pkg.ParseTagFile(sequence)
+            while parser.Step() == 1:
+                yield cls(fields=fields, _parsed=parser.Section)
+        else:
+            iterable = iter(sequence)
+            x = cls(iterable, fields)
+            while len(x) != 0:
+                yield x
+                x = cls(iterable, fields)
+
+    iter_paragraphs = classmethod(iter_paragraphs)
+
+    ###
+
+    def _internal_parser(self, sequence, fields=None):
+        single = re.compile("^(?P<key>\S+)\s*:\s*(?P<data>\S.*?)\s*$")
+        multi = re.compile("^(?P<key>\S+)\s*:\s*$")
+        multidata = re.compile("^\s(?P<data>.+?)\s*$")
+
+        wanted_field = lambda f: fields is None or f in fields
+
+        if isinstance(sequence, basestring):
+            sequence = sequence.splitlines()
+
         curkey = None
         content = ""
-        for line in self.strip_gpg_readlines(fp):
-            if ws.match(line):
-                if curkey:
-                    self[curkey] += content
-                    curkey = None
-                    content = ""
-                continue
-
+        for line in self.gpg_stripped_paragraph(sequence):
             m = single.match(line)
             if m:
                 if curkey:
                     self[curkey] += content
+
+                if not wanted_field(m.group('key')):
+                    curkey = None
+                    continue
+
                 curkey = m.group('key')
                 self[curkey] = m.group('data')
-                self._keys.append(curkey)
                 content = ""
                 continue
 
@@ -73,35 +214,46 @@ class Deb822(dict):
             if m:
                 if curkey:
                     self[curkey] += content
+
+                if not wanted_field(m.group('key')):
+                    curkey = None
+                    continue
+
                 curkey = m.group('key')
                 self[curkey] = ""
-                self._keys.append(curkey)
                 content = ""
                 continue
 
             m = multidata.match(line)
             if m:
-                content += '\n' + line[:-1]
+                content += '\n' + line # XXX not m.group('data')?
                 continue
 
         if curkey:
             self[curkey] += content
+
+    def __str__(self):
+        return self.dump()
+
+    # __repr__ is handled by Deb822Dict
 
     def dump(self, fd=None):
         """Dump the the contents in the original format
 
         If fd is None, return a string.
         """
-        
+
         if fd is None:
             fd = StringIO.StringIO()
             return_string = True
         else:
             return_string = False
-        for key in self.keys():
-            fd.write(key + ": " + self[key] + "\n")
+        for key, value in self.iteritems():
+            fd.write('%s: %s\n' % (key, value))
         if return_string:
             return fd.getvalue()
+
+    ###
 
     def isSingleLine(self, s):
         if s.count("\n"):
@@ -117,7 +269,7 @@ class Deb822(dict):
             return s1
         if not s1:
             return s2
-        
+
         if self.isSingleLine(s1) and self.isSingleLine(s2):
             ## some fields are delimited by a single space, others
             ## a comma followed by a space.  this heuristic assumes
@@ -131,7 +283,7 @@ class Deb822(dict):
             L.sort()
 
             prev = merged = L[0]
-            
+
             for item in L[1:]:
                 ## skip duplicate entries
                 if item == prev:
@@ -139,7 +291,7 @@ class Deb822(dict):
                 merged = merged + delim + item
                 prev = item
             return merged
-            
+
         if self.isMultiLine(s1) and self.isMultiLine(s2):
             for item in s2.splitlines(True):
                 if item not in s1.splitlines(True):
@@ -147,7 +299,7 @@ class Deb822(dict):
             return s1
 
         raise ValueError
-    
+
     def mergeFields(self, key, d1, d2 = None):
         ## this method can work in two ways - abstract that away
         if d2 == None:
@@ -178,42 +330,67 @@ class Deb822(dict):
             return None
 
         return merged
+    ###
 
-    def strip_gpg_readlines(fp):
+    def gpg_stripped_paragraph(sequence):
         lines = []
         state = 'SAFE'
         gpgre = re.compile(r'^-----(?P<action>BEGIN|END) PGP (?P<what>[^-]+)-----$')
-        ws = re.compile('^\s*$')
-        for line in fp.readlines():
+        blank_line = re.compile('^$')
+        first_line = True
+
+        for line in sequence:
+            line = line.strip('\r\n')
+
+            # skip initial blank lines, if any
+            if first_line:
+                if blank_line.match(line):
+                    continue
+                else:
+                    first_line = False
+
             m = gpgre.match(line)
+
             if not m:
                 if state == 'SAFE':
-                    lines.append(line)
-                elif state == 'SIGNED MESSAGE' and ws.match(line):
+                    if not blank_line.match(line):
+                        lines.append(line)
+                    else:
+                        break
+                elif state == 'SIGNED MESSAGE' and blank_line.match(line):
                     state = 'SAFE'
             elif m.group('action') == 'BEGIN':
                 state = m.group('what')
             elif m.group('action') == 'END':
                 state = 'SAFE'
 
-        return lines
+        if len(lines):
+            return lines
+        else:
+            raise EOFError('only blank lines found in input')
 
-    strip_gpg_readlines = staticmethod(strip_gpg_readlines)
+    gpg_stripped_paragraph = staticmethod(gpg_stripped_paragraph)
 
-    def keys(self):
-        # Override keys so that we can give the correct order
-        other_keys = dict.keys(self)
-        for key in self._keys:
-            other_keys.remove(key)
-        return self._keys + other_keys
+###
 
 class _multivalued(Deb822):
-    """A class with (R/W) support for multivalued fields."""
-    def __init__(self, fp):
-        Deb822.__init__(self, fp)
+    """A class with (R/W) support for multivalued fields.
+    
+    To use, create a subclass with a _multivalued_fields attribute.  It should
+    be a dictionary with *lower-case* keys, with lists of human-readable
+    identifiers of the fields as the values.  Please see Dsc, Changes, and
+    PdiffIndex as examples.
+    """
+    
+
+    def __init__(self, *args, **kwargs):
+        Deb822.__init__(self, *args, **kwargs)
 
         for field, fields in self._multivalued_fields.items():
-            contents = self.get(field, '')
+            try:
+                contents = self[field]
+            except KeyError:
+                continue
 
             if self.isMultiLine(contents):
                 self[field] = []
@@ -255,48 +432,69 @@ class _multivalued(Deb822):
         if return_string:
             return fd.getvalue()
 
+
+###
+
 class Dsc(_multivalued):
     _multivalued_fields = {
-        "Files": [ "md5sum", "size", "name" ],
+        "files": [ "md5sum", "size", "name" ],
     }
-# Sources files have the same multivalued format as dsc files
-Sources = Dsc
+
 
 class Changes(_multivalued):
     _multivalued_fields = {
-        "Files": [ "md5sum", "size", "section", "priority", "name" ],
+        "files": [ "md5sum", "size", "section", "priority", "name" ],
     }
 
 class PdiffIndex(_multivalued):
     _multivalued_fields = {
-        "SHA1-Current": [ "SHA1", "size" ],
-        "SHA1-History": [ "SHA1", "size", "date" ],
-        "SHA1-Patches": [ "SHA1", "size", "date" ],
+        "sha1-current": [ "SHA1", "size" ],
+        "sha1-history": [ "SHA1", "size", "date" ],
+        "sha1-patches": [ "SHA1", "size", "date" ],
     }
 
+Sources = Dsc
+Packages = Deb822
 
-def xmultiple(f, cls=Deb822):
-    """Return a generator for objects from, e.g., a Packages or Sources file
+###
 
-    Use cls as the class to construct objects from
-    """
+class _CaseInsensitiveString(str):
+    """Case insensitive string.
     
-    ws = re.compile('^\s*$')
-    
-    s = StringIO.StringIO()
-    line = f.readline()
-    while line:
-        if ws.match(line):
-            s.seek(0)
-            yield cls(s)
-            s = StringIO.StringIO()
-        else:
-            s.write(line)
-        line = f.readline()
-
-def multiple(f, cls=Deb822):
-    """Return a list of objects from, e.g., a Packages or Sources file
-
-    Use cls as the class to construct objects from
+    Created objects are cached as to not create the same object twice.
     """
-    return list(xmultiple(f, cls=cls))
+
+    _cache = {}
+
+    def __new__(cls, str_):
+        if isinstance(str_, _CaseInsensitiveString):
+            return str_
+
+        try:
+            lower = str_.lower()
+        except AttributeError:
+            raise TypeError('key must be a string')
+
+        cache = _CaseInsensitiveString._cache
+
+        try:
+            return cache[lower]
+        except KeyError:
+            ret = cache[lower] = str.__new__(cls, str_)
+            return ret
+
+    def __init__(self, str_):
+        str.__init__(self, str_)
+        self.str_lower = str_.lower()
+        self.str_lower_hash = hash(self.str_lower)
+
+    def __hash__(self):
+        return self.str_lower_hash
+
+    def __eq__(self, other):
+        return str.__eq__(self.str_lower, other.lower())
+
+    def lower(self):
+        return self.str_lower
+
+_strI = _CaseInsensitiveString

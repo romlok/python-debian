@@ -1,28 +1,98 @@
-The Debian Package deb822
-----------------------------
+deb822.py README
+================
 
-Typical usage (contrived, but this should give you an idea of how the interface
-works).
+The Python deb822 aims to provide a dict-like interface to various rfc822-like
+Debian data formats, like Packages/Sources, .changes/.dsc, pdiff Index files,
+etc. The benefit is that deb822 knows about special fields that contain
+whitespace separated sub-fields, and provides named access to them. For
+example, the "Files" filed in Source packages, which has three subfields, or
+"Files" in .changes files, which has five. These are known as "multifields".
 
-    import deb822
+deb822 has no external dependencies, but can use python-apt if available to
+parse the data, which gives a very significant performance boost when iterating
+over big Packages files.
 
-    d = deb822.dsc(open('foo_1.1.dsc'))
-    source = d['Source']
-    version = d['Version']
+Key lookup in Deb822 objects and their multifields is case-insensitive, but the
+original case is always preserved, e.g. when printing the object. [XXX TODO]
 
-    files = d['Files']
 
-    for f in files:
-        print 'name:', f['name']
-        print 'size:', f['size']
-        print 'md5sum:', f['md5sum']
+Classes
+=======
 
-    # If we like, we can hack fields
-    d['Version'] = "1.1jsw1"
+Here is a list of the types deb822 knows about:
+
+  * Deb822 (aliases: Packages) - base class with no multifields.
+
+  * Dsc (aliases: Sources) - class to represent .dsc files / Sources paragraphs.
+
+    - Multivalued fields:
+
+      · Files: md5sum, size, name
+
+  * Changes - class to represent a .changes file
+
+    - Multivalued fields:
+
+      · Files: md5sum, size, section, priority, name
+
+  * PdiffIndex - class to represent a pdiff Index file
+
+    - Multivalued fields:
+
+      · SHA1-Current: SHA1, size
+      · SHA1-History: SHA1, size, date
+      · SHA1-Patches: SHA1, size, date
+
+
+Input
+=====
+
+Deb822 objects are normally initialized from a file() object, from which
+at most one paragraph is read, or a string.
+
+Alternatively, any sequence that returns one line of input at a time may
+be used, e.g. an array of strings.
+
+PGP signatures, if present, will be stripped.
+
+
+Iteration
+=========
+
+All classes provide an "iter_paragraphs" class method to easily go over
+each stanza in a file with multiple entries, like a Packages.gz file.
+For example:
+
+    f = file('/mirror/debian/dists/sid/main/binary-i386/Sources') 
+
+    for src in Sources.iter_paragraphs(f):
+	print src['Package'], src['Version']
+
+This method uses python-apt if available to parse the file, since it
+significantly boosts performance. The downside, though, is that yielded
+objects share storage, so they should never be kept accross iterations.
+To prevent this behavior, pass a "shared_storage=False" keyword-argument
+to the iter_paragraphs() function.
+
+
+Sample usage (TODO: Improve)
+============
+
+   import deb822 
+
+   d = deb822.dsc(file('foo_1.1.dsc'))
+   source = d['Source']
+   version = d['Version']
+
+   for f in d['Files']:
+       print 'Name:', f['name']
+       print 'Size:', f['size']
+       print 'MD5sum:', f['md5sum']
+
+    # If we like, we can change fields
+    d['Standards-Version'] = '3.7.2'
 
     # And then dump the new contents
-    new_dsc = open('foo_1.1jsw1.dsc', 'w')
+    new_dsc = open('foo_1.1.dsc2', 'w')
     d.dump(new_dsc)
     new_dsc.close()
-
-John Wright <john@movingsucks.org>, Tue, 18 Jul 2006 04:26:51 +0000
