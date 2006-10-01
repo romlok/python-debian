@@ -1,0 +1,81 @@
+README for debian_bundle.changelog
+----------------------------------
+
+The aim of this module is to provide programmatic access to Debian changelogs
+to query and manipulate them.
+
+N.B. The API is not stable yet, and so you can expect it to change.
+
+Create a changelog object using the constuctor. Pass it the contents of the 
+file if there are some entries, or None to create an empty changelog.
+
+The module provides these interesting functions.
+
+ * full_version()
+     Returns the full version number of the last version.
+ * debian_version()
+     Returns the debian part of the version number of the last version.
+ * upstream_version()
+     Returns the upstream part of the version number of the last version.
+ * epoch()
+     Returns the epoch number of the last revision, or None if no epoch was 
+     used
+ * package()
+     Returns the name of the package in the last version.
+ * versions()
+     Returns a list of version objects that the package went through. These
+     version objects provide all of the version functions above to get that 
+     information.
+ * set_package(package)
+     Sets the name of the package in the most recent version.
+ * set_version(version)
+     Sets the version number of the most recent version. The provided argument
+     is a Version object.
+ * set_distributions(distributions)
+     Sets the distributions that the package will be uploaded to in the most
+     recent version. (Provide a string).
+ * set_urgency(urgency)
+     Sets the urgency with which the most recent version will be uploaded. 
+     (Provide a string).
+ * add_change(change)
+     Adds a change entry to the most recent version. The change entry should
+     conform to the required format of the changelog (i.e. start with two 
+     spaces). No line wrapping or anything will be performed, so it is 
+     advisable to do this yourself if it is a long entry. The change will be
+     appended to he current changes, no support is provided for per-maintainer
+     changes.
+  * set_author(author)
+      Sets the author of the most recent change. THis should be a properly 
+      formatted name/email pair.
+  * set_date(date)
+      Sets the date associated with the current entry. Should be a properly 
+      formatted string with the date and timezone.
+  * new_block(self, package, version, distributions, urgency, changes, 
+              author, date)
+      Start a new version of the package. The arguments (all optional) specify
+      the values that can be provided to the set_* methods. If they are omitted
+      the associated set_ call must be made before the changelog is created.
+
+To get the properly formatted changelog back out of the object merely call 
+str() on it. The returned string should be a properly formatted changelog.
+
+There are a number of errors that may be thrown by the module.
+
+ * ChangelogParseError
+     Indicates that the changelog could not be parsed, i.e. there is a line
+     that does not conform to the requirements, or a line was found out of its
+     normal position. May be thrown when using the constructor with an existing
+     changelog.
+ * ChangelogCreateError
+     Some information required to create the changelog was not available. This
+     can be thrown when str() is used on the object, and will occur if a 
+     required value is None.
+ * VersionError
+     The string used to create a Version object cannot be parsed as it doesn't
+     conform to the specification of a version number. Can be thrown when
+     creating a Changelog object from an existing changelog, or instantiating
+     a Version object directly to use with the set_version method.
+
+This file is (C) 2006 James Westby, and licensed under the GPL, see 
+changelog.py for details.
+
