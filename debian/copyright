@@ -9,7 +9,8 @@ Copyright:
   deb822.py is Copyright (C) 2005-2006  dann frazier <dannf@dannf.org>
                              2006       John Wright <john@movingsucks.org>
 
-  changelog.py is Copyright (C) 2006 James Westby <jw+debian@jameswestby.net>
+  changelog.py and README.Changelog are
+               Copyright (C) 2006 James Westby <jw+debian@jameswestby.net>
 
   debian_support.py is Copyright (C) 2005 Florian Weimer <fw@deneb.enyo.de>
 
@@ -31,7 +32,8 @@ Licenses:
    along with this program; if not, write to the Free Software Foundation, 
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
   
-   debian_support.py and changelog.py are under the following license
+   debian_support.py, changelog.py and README.changelog are under the 
+   following license
 
    This package is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,6 +52,6 @@ Licenses:
 On Debian systems, the complete text of the GNU General
 Public License can be found in `/usr/share/common-licenses/GPL'.
 
-The Debian packaging was placed in the public domain by 
-James Westby <jw+debian@ajemswestby.net> on Wed, 16 Aug 2006 19:17:30 +0100
+The Debian packaging is (C) 2006 James Westby <jw+debian@ajemswestby.net>,
+and is placed under the GPL, see above.
 
