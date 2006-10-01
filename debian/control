@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Adeodato Simó <dato@net.com.org.es>
 Uploaders: Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>
-Build-Depends: debhelper (>= 5.0.37.2)
+Build-Depends: debhelper (>= 5.0.37.2), python
 Build-Depends-Indep: python-support (>= 0.3)
 Standards-Version: 3.7.2
 
