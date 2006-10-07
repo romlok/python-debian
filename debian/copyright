@@ -14,7 +14,8 @@ Copyright:
 
   debian_support.py is Copyright (C) 2005 Florian Weimer <fw@deneb.enyo.de>
 
-  Debtags.py and examples/* are 
+  Debtags.py, examples/reverse, examples/smartsearch, examples/tagsByRelevance 
+  and examples/wxssearch are 
                Copyright (C) 2003--3006 Enrico Zini <enrico@debian.org> 
   
 Licenses:
@@ -37,7 +38,7 @@ Licenses:
   
    debian_support.py, changelog.py, README.changelog, Debtags.py, 
    examples/reverse, examples/smartsearch, examples/tagsByRelevance and
-   examples/wxsearch are under the following license
+   examples/wxssearch are under the following license
 
    This package is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
