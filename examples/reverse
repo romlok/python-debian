@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
-# Copyright (C) 2006 James Westby <jw+debian@jameswestby.net>
+# debtags - Implement package tags support for Debian
+#
+# Copyright (C) 2003--2006  Enrico Zini <enrico@debian.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,13 +16,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from distutils.core import setup
+import sys
+import Debtags
 
-setup(name='python-debian',
-      version='0.1.0',
-      description='Debian package related modules',
-      url='http://packages.qa.debian.org/p/python-debian.html',
-      packages=['debian_bundle'],
-     )
+input = sys.stdin
+if len(sys.argv) > 1:
+	input = open(sys.argv[1],"r")
+
+#db = readTagDatabase(input)
+#db = reverse(db)
+db = Debtags.readTagDatabaseReversed(input)
+#dummy, db = Debtags.readTagDatabaseBothWays(input)
+
+for pkg, tags in db.items():
+	# Using % here seems awkward to me, but if I use calls to
+	# sys.stdout.write it becomes a bit slower
+	print "%s:" % (pkg), ", ".join(tags)

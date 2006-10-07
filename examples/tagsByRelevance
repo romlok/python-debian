@@ -1,0 +1,52 @@
+#!/usr/bin/python
+
+# debtags - Implement package tags support for Debian
+#
+# Copyright (C) 2003--2006  Enrico Zini <enrico@debian.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+import sys
+import re
+import Debtags
+
+if len(sys.argv) < 2:
+	print sys.stderr, "Usage: %s tagdb [packagelist]" % (sys.argv[0])
+	sys.exit(1)
+
+full = Debtags.DB()
+# Read full database 
+tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
+full.read(open(sys.argv[1], "r"), lambda x: not tagFilter.match(x))
+
+# Read the package list and create the subcollection
+input = len(sys.argv) > 2 and open(sys.argv[2],"r") or sys.stdin
+pkgs = set()
+for pkg in input:
+	# Tolerate apt-cache search output as well
+	pkg, none = pkg.rstrip("\n").split(' - ', 1)
+	pkgs.add(pkg)
+
+sub = full.choosePackages(pkgs)
+
+relIndex = Debtags.relevanceIndexFunction(full, sub)
+
+# Get all the tags sorted by increasing relevance
+tags = sorted(sub.iterTags(), lambda a, b: cmp(relIndex(a), relIndex(b)))
+
+## And finally print them
+for tag in tags:
+	print tag
+	#print tag, sub.card(tag), full.card(tag), float(sub.card(tag)) / float(full.card(tag))

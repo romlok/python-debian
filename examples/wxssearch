@@ -1,0 +1,443 @@
+#!/usr/bin/python
+
+# debtags - Implement package tags support for Debian
+#
+# Copyright (C) 2003--2006  Enrico Zini <enrico@debian.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+import wx
+import wx.html
+import wx.lib.dialogs
+import sys
+import re
+import subprocess
+import Debtags
+import apt
+from optparse import OptionParser
+
+VERSION="0.1"
+
+class Model(wx.EvtHandler):
+    class ModelEvent(wx.PyCommandEvent):
+        def __init__(self, eventType):
+            wx.PyCommandEvent.__init__(self, eventType)
+
+    # Create custom events
+    wxEVT_CHANGED = wx.NewEventType()
+    EVT_CHANGED = wx.PyEventBinder(wxEVT_CHANGED, 0)
+
+    def __init__(self, fullcoll):
+        wx.EvtHandler.__init__(self)
+        self.aptCache = apt.Cache()
+
+        self.wanted = set()
+        self.unwanted = set()
+        self.ignored = set()
+        self.interesting = []
+        self.discriminant = []
+        self.uninteresting = []
+
+        self.fullcoll = fullcoll
+        self.subcoll = fullcoll
+
+        self.refilter()
+
+    def tagMatch(self, pkg):
+        tags = self.fullcoll.tagsOfPackage(pkg)
+        if len(self.wanted) > 0 and not self.wanted.issubset(tags):
+            return False
+        if len(self.unwanted) > 0 and len(tags.intersection(self.unwanted)) > 0:
+            return False
+        return True
+
+    def refilter(self):
+        # Regenerate subcoll
+        if len(self.wanted) == 0 and len(self.unwanted) == 0:
+            self.subcoll = self.fullcoll
+        else:
+            self.subcoll = self.fullcoll.filterPackages(self.tagMatch)
+
+        # Compute the most interesting tags by discriminance
+        self.discriminant = sorted(self.subcoll.iterTags(), \
+                  lambda b, a: cmp(self.subcoll.discriminance(a), self.subcoll.discriminance(b)))
+        #print "-----------------------------"
+        #for d in self.discriminant:
+        #    print d, self.subcoll.discriminance(d)
+
+        # Notify the change
+        e = Model.ModelEvent(Model.wxEVT_CHANGED)
+        self.ProcessEvent(e)
+
+    def addWanted(self, tag):
+        self.wanted.add(tag)
+        if tag in self.unwanted: self.unwanted.remove(tag)
+        if tag in self.ignored: self.ignored.remove(tag)
+        self.refilter()
+        
+    def addUnwanted(self, tag):
+        self.unwanted.add(tag)
+        if tag in self.wanted: self.wanted.remove(tag)
+        if tag in self.ignored: self.ignored.remove(tag)
+        self.refilter()
+
+    def addIgnored(self, tag):
+        self.ignored.add(tag)
+        if tag in self.wanted: self.wanted.remove(tag)
+        if tag in self.unwanted: self.unwanted.remove(tag)
+        self.refilter()
+
+    def removeTagFromFilter(self, tag):
+        if tag in self.wanted: self.wanted.remove(tag)
+        if tag in self.unwanted: self.unwanted.remove(tag)
+        if tag in self.ignored: self.ignored.remove(tag)
+        self.refilter()
+
+    def setQuery(self, query):
+        query = query.split()
+
+        def match(pkg):
+            for q in query:
+                try:
+                    if pkg.name.find(q) == -1 and \
+                       pkg.rawDescription.find(q) == -1:
+                        return False
+                except UnicodeDecodeError:
+                    desc = pkg.rawDescription.decode("ascii", "replace")
+                    if pkg.name.find(q) == -1 and \
+                       desc.find(q) == -1:
+                        return False
+            return True
+
+        subcoll = self.fullcoll.choosePackages(map(lambda x: x.name, filter(match, self.aptCache)))
+
+        relIndex = Debtags.relevanceIndexFunction(self.fullcoll, subcoll)
+
+        # Get all the tags sorted by increasing relevance
+        self.interesting = sorted(subcoll.iterTags(), lambda b, a: cmp(relIndex(a), relIndex(b)))
+
+        # Get the list of the uninteresting tags, sorted by cardinality (the
+        # ones that you are less likely to want, and first the ones that will
+        # weed out most results)
+        self.uninteresting = set(self.fullcoll.iterTags())
+        self.uninteresting -= set(subcoll.iterTags())
+
+        if len(self.wanted) == 0:
+            self.wanted = set(fullcoll.idealTagset(self.interesting))
+            self.refilter()
+
+        # Notify the change
+        e = Model.ModelEvent(Model.wxEVT_CHANGED)
+        self.ProcessEvent(e)
+
+class TagList(wx.html.HtmlWindow):
+    class TagListEvent(wx.PyCommandEvent):
+        def __init__(self, eventType):
+            wx.PyCommandEvent.__init__(self, eventType)
+            self.action = None
+            self.tag = None
+
+    # Create custom events
+    wxEVT_ACTION = wx.NewEventType()
+    EVT_ACTION = wx.PyEventBinder(wxEVT_ACTION, 0)
+
+    def __init__(self, parent, model):
+        wx.html.HtmlWindow.__init__(self, parent)
+        self.model = model
+        self.model.Bind(Model.EVT_CHANGED, self.modelChanged)
+        self.SetBorders(0)
+        self.SetFonts("", "", [4, 6, 8, 10, 11, 12, 13])
+
+    def OnLinkClicked(self, linkInfo):
+        # Notify the change
+        action, tag = linkInfo.GetHref().split(':',1)
+        e = TagList.TagListEvent(TagList.wxEVT_ACTION)
+        e.action, e.tag = action, tag
+        self.ProcessEvent(e)
+
+    def modelChanged(self, event):
+        #print "TLMC"
+        self.SetPage("<html><body>")
+        first = True
+
+        if len(self.model.wanted):
+            if first: first = False;
+            else: self.AppendToPage("<br>") 
+            self.AppendToPage("Wanted:<br>")
+            for tag in self.model.wanted:
+                self.AppendToPage("&nbsp;&nbsp;&nbsp;<a href='del:%s'>%s</a><br>" % (tag, tag))
+
+        if len(self.model.unwanted):
+            if first: first = False;
+            else: self.AppendToPage("<br>") 
+            self.AppendToPage("Not wanted:<br>")
+            for tag in self.model.unwanted:
+                self.AppendToPage("&nbsp;&nbsp;&nbsp;<a href='del:%s'>%s</a><br>" % (tag, tag))
+
+        def filterCandidate(tag):
+            if self.model.subcoll.card(tag) == 0: return False
+            if tag in self.model.wanted: return False
+            if tag in self.model.unwanted: return False
+            if tag in self.model.ignored: return False
+            return True
+
+        interesting = filter(filterCandidate, self.model.interesting)[:7]
+        if len(interesting):
+            if first: first = False;
+            else: self.AppendToPage("<br>") 
+            self.AppendToPage("Candidate tags:<br>")
+            for tag in interesting:
+                self.AppendToPage("&nbsp;&nbsp;&nbsp;<a href='add:%s'>%s</a> <a href='addnot:%s'>[no]</a> (%d pkgs)<br>" % (tag, tag, tag, self.model.subcoll.card(tag)))
+
+        discr = filter(filterCandidate, self.model.discriminant)[:7]
+        if len(discr):
+            if first: first = False;
+            else: self.AppendToPage("<br>") 
+            for tag in discr:
+                self.AppendToPage("&nbsp;&nbsp;&nbsp;<a href='add:%s'>%s</a> <a href='addnot:%s'>[no]</a> (%d pkgs)<br>" % (tag, tag, tag, self.model.subcoll.card(tag)))
+
+        unint = filter(filterCandidate,
+                sorted(self.model.uninteresting, lambda a,b: cmp(self.model.subcoll.card(b), self.model.subcoll.card(a))))[:7]
+        if len(unint):
+            if first: first = False;
+            else: self.AppendToPage("<br>") 
+            self.AppendToPage("Candidate unwanted tags:<br>")
+            for tag in unint:
+                self.AppendToPage("&nbsp;&nbsp;&nbsp;<a href='addnot:%s'>%s</a> <a href='add:%s'>[yes]</a> (%d pkgs)<br>" % (tag, tag, tag, self.model.subcoll.card(tag)))
+
+        self.AppendToPage("</body></html>")
+        event.Skip()
+
+class Results(wx.ListCtrl):
+    def __init__(self, parent, model):
+        wx.ListCtrl.__init__(self, parent, style=wx.LC_REPORT|wx.LC_VIRTUAL)
+        self.model = model
+        self.model.Bind(Model.EVT_CHANGED, self.modelChanged)
+
+        self.packages = []
+
+        self.InsertColumn(0, "Name")
+        self.InsertColumn(1, "Description")
+
+        self.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+        self.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+
+        self.Bind(wx.EVT_SIZE, self.OnResize)
+
+    def resizeColumns(self):
+        """
+        Ugly hack to have some decent size for the columns, since the ListCtrl
+        appearently won't autosize itself.
+        """
+        w, h = self.GetClientSizeTuple()
+        self.SetColumnWidth(0, w * 0.3)
+        # -20 to hope to account for the vertical scrollbar, when it's present
+        self.SetColumnWidth(1, w * 0.7 - 20)
+
+    def modelChanged(self, event):
+        self.packages = sorted(self.model.subcoll.iterPackages())
+        self.packages.sort()
+        self.SetItemCount(len(self.packages))
+        self.resizeColumns()
+        event.Skip()
+
+    def OnResize(self, event):
+        self.resizeColumns()
+        event.Skip()
+
+    def OnGetItemText(self, row, col):
+        if col == 0:
+            return self.packages[row]
+        else:
+            aptpkg = self.model.aptCache[self.packages[row]]
+            return aptpkg.rawDescription.split("\n")[0]
+
+
+class SearchWindow(wx.Frame):
+    ACTION_QUIT = wx.NewId()
+    ACTION_CONTEXT_HELP = wx.NewId()
+    ACTION_ABOUT = wx.NewId()
+
+    def __init__(self, parent, model, title):
+        wx.Frame.__init__(self, parent, -1, title,
+                style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+
+        self.statusBar = self.CreateStatusBar()
+
+        # Create menu bar
+        self.menuBar = wx.MenuBar()
+        mFile = wx.Menu()
+        mFile.Append(SearchWindow.ACTION_QUIT, "&Quit", "Quit wxdballe")
+        self.menuBar.Append(mFile, "&File")
+        mFile = wx.Menu()
+        mFile.Append(SearchWindow.ACTION_CONTEXT_HELP, "&What is...", "Show context information about interface elements")
+        mFile.Append(SearchWindow.ACTION_ABOUT, "&About...", "Show information about this application")
+        self.menuBar.Append(mFile, "&Help")
+        self.SetMenuBar(self.menuBar)
+        self.Bind(wx.EVT_MENU, self.onAction)
+
+        self.model = model
+        self.model.Bind(Model.EVT_CHANGED, self.modelChanged)
+
+        self.SetSizeHints(500, 500)
+
+        queryPanel = wx.Panel(self, style=wx.SUNKEN_BORDER)
+
+        queryField = wx.Panel(queryPanel)
+        self.query = wx.TextCtrl(queryField)
+        self.query.SetHelpText("Enter here some keyword about what you are looking for.  They will lead you to a selection of categories that you can use to browse the packages")
+        self.query.Bind(wx.EVT_CHAR, self.queryChanged)
+        # self.query.Bind(wx.EVT_TEXT, self.queryChanged)
+        self.queryButton = wx.Button(queryField, -1, "Go", style=wx.BU_EXACTFIT)
+        self.queryButton.Bind(wx.EVT_BUTTON, self.goButtonPressed)
+        self.queryButton.SetHelpText("Look for keyword corresponding to the text entered in the Search field.")
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(wx.StaticText(queryField, -1, "Search: "), 0, wx.ALIGN_CENTER_VERTICAL)
+        box.Add(self.query, 1, wx.EXPAND)
+        box.Add(self.queryButton, 0, wx.ALIGN_CENTER_VERTICAL)
+        queryField.SetSizerAndFit(box)
+
+        self.tagList = TagList(queryPanel, model)
+        self.tagList.Bind(TagList.EVT_ACTION, self.wantedEvent)
+        self.tagList.SetHelpText("Tags used for searching.  Candidate tags are up for selection: click on a tag to say that you want it, and click on 'no' next to it to say that you do not want it.  To remove a tag from the 'wanted' or 'unwanted' list, just click on it")
+
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(queryField, 0, wx.EXPAND)
+        box.Add(self.tagList, 3, wx.EXPAND)
+        queryPanel.SetSizerAndFit(box)
+
+        self.results = Results(self, model)
+        self.results.SetHelpText("List of packages matching the current selecion of tags")
+
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(queryPanel, 2, wx.EXPAND)
+        box.Add(self.results, 3, wx.EXPAND)
+        self.SetSizerAndFit(box)
+
+        self.timedUpdater = None
+
+        self.Bind(wx.EVT_CHAR, self.onChar)
+        self.query.SetFocus()
+
+    def onAction(self, event):
+        id = event.GetId()
+        if id == SearchWindow.ACTION_QUIT:
+            self.Destroy()
+        elif id == SearchWindow.ACTION_ABOUT:
+            msg = """
+                  Prototype for a new concept of package search
+                  =============================================
+
+                  Introduction
+                  ------------
+
+                  Debtags Smart Search is an attempt to use the Debtags
+                  category data to create a powerful and intuitive search
+                  metaphore.  It combines the ease of use of a keyword search
+                  text box with the unambiguiry and accuracy of categories.
+
+                  The keywords entered are not used to filter packages, but to
+                  create a selection of relevant tags for the user to choose
+                  from.
+                  
+                  The actual package filtering is done with the tags only.  The
+                  way the user interact with tags is through simple "I want
+                  this"/"I don't want this" decisions.
+
+                  Tips
+                  ----
+                   * you can be vague while giving keywords, since you can
+                     always refine later using the tags
+                   * you can change the search keywords in the middle of a
+                     search, to get a different selection of candidate tags.
+                  """
+            dia = wx.lib.dialogs.ScrolledMessageDialog(self, msg, "About Debtags Smart Search")
+            dia.ShowModal() 
+        elif id == SearchWindow.ACTION_CONTEXT_HELP:
+            contextHelp = wx.ContextHelp()
+            contextHelp.BeginContextHelp()
+
+    def onChar(self, event):
+        c = event.GetKeyCode()
+        # Quit on ^Q
+        if c == 17:
+            self.Destroy()
+
+    def wantedEvent(self, event):
+        action, tag = event.action, event.tag
+
+        if action == 'add':
+            self.model.addWanted(tag)
+        elif action == 'addnot':
+            print "wantedEvent -> addnot"
+            self.model.addUnwanted(tag)
+        elif action == 'del':
+            self.model.removeTagFromFilter(tag)
+        else:
+            print "Unknown action", action
+
+    def goButtonPressed(self, event):
+        self.model.setQuery(self.query.GetValue())
+
+    def queryChanged(self, event):
+        "Delayed update of the filter from the value of the input fields"
+        c = event.GetKeyCode()
+        if c == 13:
+            self.model.setQuery(self.query.GetValue())
+        event.Skip()
+
+    def modelChanged(self, event):
+        self.statusBar.SetStatusText("%d packages" % (self.model.subcoll.packageCount()))
+        event.Skip()
+
+
+##
+### Main
+###
+
+class Parser(OptionParser):
+    def __init__(self, *args, **kwargs):
+        OptionParser.__init__(self, *args, **kwargs)
+
+    def error(self, msg):
+        sys.stderr.write("%s: error: %s\n\n" % (self._get_prog_name(), msg))
+        self.print_help(sys.stderr)
+        sys.exit(2)
+
+if __name__ == "__main__":
+    parser = Parser(usage="usage: %prog [options]",
+            version="%prog "+ VERSION,
+            description="smart search of Debian packages")
+    parser.add_option("--tagdb", default="/var/lib/debtags/package-tags", help="Tag database to use (default: %default)")
+
+    (options, args) = parser.parse_args()
+
+    app = wx.PySimpleApp()
+
+    provider = wx.SimpleHelpProvider()
+    wx.HelpProvider_Set(provider)
+
+    # Read full database 
+    fullcoll = Debtags.DB()
+    tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
+    fullcoll.read(open(options.tagdb, "r"), lambda x: not tagFilter.match(x))
+
+    model = Model(fullcoll)
+    sw = SearchWindow(None, model, "Debtags Smart Search")
+    sw.Show()
+    app.MainLoop()
+
+# vim:set ts=4 sw=4 expandtab:
