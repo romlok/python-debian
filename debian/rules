@@ -41,8 +41,9 @@ binary-indep: build install
 	dh_installchangelogs
 	dh_installdocs
 	dh_installexamples
-	#Enrico would like to keep wxssearch out of the package
-	rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/wxssearch
+	# TODO: Enrico would like to keep wxssearch out of the package
+	# but so far, he has no better place for it
+	#rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/wxssearch
 #	dh_install
 	dh_compress
 	dh_fixperms
