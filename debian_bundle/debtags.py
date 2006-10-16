@@ -18,6 +18,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+# TODO: install python-epydoc and try to autogenerate documntation from that
+
 import math
 
 def readTagDatabase(input):
@@ -136,6 +138,14 @@ class DB:
 	def read(self, input, tagFilter = None):
 		"Read the database from a file"
 		self.db, self.rdb = readTagDatabaseBothWays(input, tagFilter)
+
+	def insert(self, pkg, tags):
+		self.db[pkg] = tags.copy()
+		for tag in tags:
+			if self.rdb.has_key(tag):
+				self.rdb[tag].add(pkg)
+			else:
+				self.rdb[tag] = set((pkg))
 
 	def dump(self):
 		output(self.db)
