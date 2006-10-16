@@ -1,5 +1,5 @@
 #
-# Debtags.py -- Access and manipulate Debtags information
+# debtags.py -- Access and manipulate Debtags information
 #
 # Copyright (C) 2006  Enrico Zini <enrico@enricozini.org>
 # 
@@ -256,7 +256,9 @@ class DB:
 
 	def discriminance(self, tag):
 		"""
-		Return the discriminance index if the tag, that is, the minimum
+		Return the discriminance index if the tag.
+		
+		Th discriminance index of the tag is defined as the minimum
 		number of packages that would be eliminated by selecting only
 		those tagged with this tag or only those not tagged with this
 		tag.
@@ -291,6 +293,8 @@ class DB:
 
 	def idealTagset(self, tags):
 		"""
+		Return an ideal selection of the top tags in a list of tags.
+
 		Return the tagset made of the highest number of tags taken in
 		consecutive sequence from the beginning of the given vector,
 		that would intersecate with the tagset of a comfortable amount
@@ -316,7 +320,6 @@ class DB:
 			if score < min_score:
 				min_score = score
 				tagset = set(tags[:i+1])
-			i = i + 1
 
 		# Return always at least the first tag
 		if len(tagset) == 0:
