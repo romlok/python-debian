@@ -1,0 +1,141 @@
+3ddesktop: game::toys, interface::3d, use::viewing, x11::applet
+aa3d: game::toys, interface::commandline, use::viewing
+achilles: field::biology, game::toys, interface::x11, uitoolkit::sdl, x11::application
+xbase-clients: accessibility::input, accessibility::screen-magnify, game::toys, interface::commandline, interface::text-mode, interface::x11, mail::notification, security::authentication, uitoolkit::athena, use::checking, use::monitor, use::timekeeping, use::viewing, works-with::font, x11::applet, x11::application
+amor: game::toys, interface::x11, suite::kde, uitoolkit::qt, use::gameplaying, x11::application
+kdetoys: game::toys, special::meta, suite::kde, uitoolkit::qt
+an: game::toys, interface::commandline, use::gameplaying, works-with::text
+animals: game::toys, interface::commandline, use::gameplaying
+asr-manpages: admin::user-management, devel::doc, game::toys
+funny-manpages: devel::doc, game::toys
+verse: game::toys, interface::commandline
+blast: game::toys, interface::x11, use::gameplaying, x11::applet
+brickos-doc: devel::doc, game::toys, hardware::embedded, made-of::data:html, use::driver, use::gameplaying
+bsdgames: game::adventure, game::board, game::puzzle, game::simulation, game::toys, interface::commandline, interface::text-mode, uitoolkit::ncurses, use::gameplaying
+cappuccino: game::toys, interface::x11, suite::gnome, uitoolkit::gtk, use::gameplaying, x11::application
+clc-intercal: devel::compiler, devel::interpreter, game::toys, interface::commandline, works-with::software:source
+cmatrix: game::toys, interface::text-mode, uitoolkit::ncurses, use::gameplaying
+cmatrix-xfont: game::toys, made-of::data:font, use::gameplaying, x11::font
+fortune-mod: game::toys, interface::commandline, use::gameplaying, works-with::text
+cowsay: game::toys, interface::commandline, works-with::text
+cw: game::toys, hardware::hamradio, interface::commandline, use::converting, use::gameplaying, works-with::audio, works-with::text
+cwcp: game::toys, hardware::hamradio, interface::text-mode, uitoolkit::ncurses, use::converting, use::gameplaying, works-with::audio, works-with::text
+dadadodo: game::toys, interface::commandline, use::gameplaying, works-with::text
+debroster: game::toys, suite::debian
+kstars: field::astronomy, game::toys, interface::x11, suite::kde, uitoolkit::qt, use::gameplaying, x11::application
+spacechart: field::astronomy, game::toys, interface::3d, suite::gnome, uitoolkit::gtk, use::gameplaying, use::viewing, x11::application
+starplot: field::astronomy, game::toys, interface::3d, uitoolkit::gtk, use::gameplaying, x11::application
+sunclock: game::toys, interface::x11, use::timekeeping, x11::application
+xplanet: field::astronomy, game::toys, interface::x11, use::viewing, x11::screensaver
+xplanet-images: field::astronomy, game::toys, interface::x11, use::viewing, x11::screensaver
+lightspeed: field::astronomy, game::toys, interface::3d, uitoolkit::gtk, use::gameplaying, works-with::3dmodel, x11::application
+xaos: field::mathematics, game::toys, interface::svga, interface::text-mode, interface::x11, uitoolkit::ncurses, use::gameplaying, use::viewing, x11::application
+ktuberling: game::toys, interface::x11, suite::kde, uitoolkit::qt, use::gameplaying, x11::application
+electricsheep: game::toys, interface::x11, uitoolkit::sdl, use::downloading, use::gameplaying, use::viewing, works-with::video, x11::screensaver
+eyesapplet: game::toys, suite::kde, uitoolkit::qt, use::gameplaying, x11::applet
+fcitx: accessibility::input, culture::chinese, game::toys, interface::x11, use::gameplaying, x11::application
+filters: game::toys, interface::commandline, use::converting, use::gameplaying, works-with::text
+fkiss: game::toys, interface::x11, use::gameplaying, use::viewing, works-with::image:raster, x11::application
+fortunes-min: game::toys, interface::commandline, use::gameplaying, works-with::text
+fortune-zh: culture::chinese, culture::taiwanese, game::toys, interface::commandline, use::gameplaying
+fortunes: game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-bg: culture::bulgarian, game::toys, interface::commandline, use::gameplaying
+fortunes-bofh-excuses: game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-br: culture::brazilian, game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-cs: culture::czech, culture::slovak, game::toys, interface::commandline, use::gameplaying
+fortunes-de: culture::german, game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-debian-hints: game::toys, interface::commandline, suite::debian, use::gameplaying, works-with::text
+fortunes-eo: culture::esperanto, game::toys, use::gameplaying
+fortunes-eo-ascii: culture::esperanto, game::toys, use::gameplaying, use::viewing, works-with::text
+fortunes-eo-iso3: culture::esperanto, game::toys, use::gameplaying, use::viewing, works-with::text
+fortunes-es: culture::spanish, game::toys, interface::commandline, use::gameplaying
+fortunes-es-off: culture::spanish, game::toys, use::gameplaying
+fortunes-fr: culture::french, game::toys, use::gameplaying, works-with::text
+fortunes-ga: culture::irish, game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-it: culture::italian, game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-it-off: culture::italian, game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-mario: culture::brazilian, culture::portuguese, game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-off: game::toys, interface::commandline, use::gameplaying, works-with::text
+fortunes-pl: culture::polish, game::toys, interface::commandline, use::gameplaying
+freej: game::toys, interface::x11, uitoolkit::gtk, uitoolkit::ncurses, uitoolkit::sdl, use::gameplaying, works-with::audio, works-with::video, x11::application
+gdesklets: game::toys, interface::daemon, suite::gnome, uitoolkit::gtk, use::gameplaying, x11::application
+geekcode: game::toys, interface::commandline, use::gameplaying
+glunarclock: game::toys, suite::gnome, uitoolkit::gtk, use::gameplaying, use::timekeeping, x11::applet
+gniall: game::toys, interface::x11, suite::gnome, uitoolkit::gtk, use::gameplaying, x11::application
+gnome-about: game::toys, interface::x11, suite::gnome, uitoolkit::gtk, use::viewing, works-with::people, x11::application
+gnome-applets: admin::filesystem, admin::power-management, game::toys, hardware::modem, hardware::storage:cd, interface::x11, mail::notification, suite::gnome, uitoolkit::gtk, use::downloading, use::monitor, use::playing, works-with::file, works-with::mail, works-with::pim, x11::applet
+gnomekiss: game::toys, suite::gnome, uitoolkit::gtk, use::gameplaying, use::viewing, works-with::image:raster, x11::application
+gpe-julia: field::mathematics, game::toys, hardware::embedded, interface::x11, uitoolkit::gtk, use::viewing, works-with::image, x11::application
+groach: game::toys, interface::x11, suite::gnome, uitoolkit::gtk, x11::application
+hubcot: game::toys, hardware::usb, interface::commandline, use::driver
+hubcot-source: game::toys, hardware::usb
+polygen: devel::interpreter, game::toys, interface::commandline, works-with::text
+nettoe: game::toys, interface::text-mode, use::gameplaying
+zivot: game::toys, interface::text-mode, use::gameplaying
+kworldclock: game::toys, interface::x11, suite::kde, uitoolkit::qt, use::timekeeping, x11::applet, x11::application
+snowflake: game::toys, interface::x11, uitoolkit::gtk, use::gameplaying, x11::application
+lavaps: game::toys, interface::x11, suite::gnome, uitoolkit::gtk, uitoolkit::tk, use::gameplaying, use::monitor, works-with::software:running, x11::application
+xcruise: game::toys, interface::3d, interface::x11, uitoolkit::athena, use::browsing, works-with::file, x11::application
+junior-toys: game::toys, interface::x11, junior::meta, special::meta, use::gameplaying, x11::application
+oneko: game::toys, interface::x11, use::gameplaying, x11::application
+xfireworks: game::toys, interface::x11, x11::screensaver
+xfishtank: game::toys, interface::x11, x11::screensaver
+xhangglider: game::toys, interface::x11, x11::screensaver
+xpenguins: game::toys, interface::x11, use::gameplaying, x11::screensaver
+xteddy: game::toys, interface::x11, use::viewing, x11::application
+kali: game::toys, interface::x11, use::gameplaying, x11::application
+kaquarium: game::toys, suite::kde, uitoolkit::qt, x11::applet, x11::application
+kmoon: game::toys, interface::x11, suite::kde, uitoolkit::qt, use::timekeeping, x11::applet, x11::application
+kodo: game::toys, interface::x11, suite::kde, uitoolkit::qt, use::gameplaying, x11::application
+kteatime: game::toys, interface::x11, suite::kde, uitoolkit::qt, use::gameplaying, use::timekeeping, x11::applet, x11::application
+ktux: game::toys, interface::x11, suite::kde, uitoolkit::qt, use::gameplaying, x11::application, x11::screensaver
+kweather: game::toys, interface::x11, suite::kde, uitoolkit::qt, use::gameplaying, x11::applet, x11::application
+kdetoys-doc-html: game::toys, made-of::data:html, suite::kde, uitoolkit::qt
+kfish: game::toys, interface::x11, suite::kde, uitoolkit::qt, x11::applet, x11::application
+kstars-data: field::astronomy, game::toys, interface::x11, suite::kde, uitoolkit::qt, use::gameplaying, x11::application
+pi: field::mathematics, game::toys
+libfortune-perl: devel::library, game::toys, interface::commandline, use::gameplaying, works-with::text
+lincredits: game::toys, use::printing
+linuxlogo: admin::boot, game::toys, interface::commandline
+matrem: game::toys, interface::x11, x11::application
+megahal: game::toys, interface::commandline, use::gameplaying
+pileup: game::toys, hardware::hamradio, interface::commandline, use::gameplaying, use::learning
+polygen-data: devel::interpreter, game::toys, interface::commandline, works-with::text
+purity: game::toys, interface::commandline, use::gameplaying
+purity-off: game::toys, interface::commandline, use::gameplaying
+pyching: game::toys, interface::x11, x11::application
+randtype: game::toys, interface::commandline, works-with::text
+razzle: game::toys, interface::svga, use::gameplaying, works-with::video
+rss-glx: game::toys, interface::x11, x11::library, x11::screensaver
+shermans-aquarium: admin::monitoring, game::toys, interface::x11, uitoolkit::gtk, uitoolkit::sdl, use::monitor, x11::applet, x11::screensaver
+sl: game::toys, interface::text-mode, uitoolkit::ncurses, use::gameplaying
+gliese: field::astronomy, game::toys, use::gameplaying
+ssystem: field::astronomy, game::toys, interface::3d, use::gameplaying, x11::application
+sunclock-maps: game::toys, interface::x11, use::timekeeping, x11::application
+sysvbanner: game::toys, use::viewing, works-with::text
+tama: game::toys, interface::daemon, use::gameplaying
+tdfsb: game::toys, interface::3d, uitoolkit::sdl, use::browsing, works-with::file, x11::application
+tuxeyes: game::toys, interface::x11, uitoolkit::qt, use::gameplaying, x11::application
+unlambda: devel::interpreter, game::toys, interface::commandline, works-with::software:source
+vigor: devel::editor, game::toys, uitoolkit::ncurses, use::editing, use::gameplaying
+welcome2l: game::toys, interface::text-mode
+whitespace: devel::interpreter, game::toys, interface::commandline
+wmbio: game::toys, interface::x11, suite::gnustep, use::monitor, use::timekeeping, x11::applet
+wmblob: game::toys, interface::x11, suite::gnustep, uitoolkit::gtk, use::viewing, x11::applet
+wmmand: field::mathematics, game::toys, interface::x11, use::viewing, works-with::image:raster, x11::applet
+wmmatrix: game::toys, interface::x11, suite::gnustep, use::viewing, x11::applet
+wordplay: game::toys, interface::commandline, use::gameplaying, works-with::text
+xearth: game::toys, use::gameplaying
+xball: game::toys, interface::x11, uitoolkit::motif, use::gameplaying, x11::application
+xeji: game::toys, interface::x11, use::gameplaying, x11::application
+xflip: game::toys, interface::commandline, use::gameplaying, x11::application
+xjokes: game::toys, interface::x11, use::gameplaying, x11::application
+xlaby: game::toys, hardware::input:mouse, interface::x11, use::gameplaying, x11::application
+xlife: game::toys, interface::text-mode, uitoolkit::ncurses, use::gameplaying
+xmountains: game::toys, interface::x11, use::gameplaying, x11::application
+xpenguins-applet: game::toys, suite::gnome, uitoolkit::gtk, use::gameplaying, x11::applet
+xphoon: game::toys, interface::x11, use::timekeeping, x11::screensaver
+xtartan: game::toys, interface::x11, use::viewing, works-with::image:raster, x11::application
+astrolog: game::toys, use::gameplaying
+xfractint: game::toys, use::gameplaying
+xsnow: game::toys, use::gameplaying
