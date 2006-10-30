@@ -10,6 +10,7 @@ build-stamp:
 
 	# Add here commands to compile the package.
 	python setup.py build
+	debian_bundle/doc-debtags > README.debtags
 
 	touch $@
 
@@ -21,6 +22,7 @@ clean:
 	# Add here commands to clean up after the build process.
 	python setup.py clean
 	rm -rf build/
+	rm -f README.debtags
 
 	dh_clean
 
