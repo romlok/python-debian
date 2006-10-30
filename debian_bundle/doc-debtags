@@ -2,18 +2,19 @@
 
 import debtags
 import sys
+import inspect
 
 def print_indented (spaces, string):
-	for line in string.strip().split("\n"):
+	for line in string.split("\n"):
 		for i in range(1,spaces):
 			sys.stdout.write(" ")
-		sys.stdout.write(line.strip())
+		sys.stdout.write(line)
 		sys.stdout.write("\n")
 
 def document (callable):
 	if callable.__doc__ != None:
 		print_indented(2, callable.__name__)
-		print_indented(4, callable.__doc__)
+		print_indented(4, inspect.getdoc(callable))
 		print
 
 
@@ -39,10 +40,10 @@ below for some examples.
 Classes
 =======
 
-There is only one class: debtags.DB.
+There is only one class: debtags.DB:
 """
 
-print debtags.DB.__doc__
+document (debtags.DB)
 
 print """
 The methods of debtags.DB are:
