@@ -131,12 +131,22 @@ def relevanceIndexFunction(full, sub):
 
 
 class DB:
+	"""
+	In-memory database mapping packages to tags and tags to packages.
+	"""
+
 	def __init__(self):
 		self.db = {}
 		self.rdb = {}
 	
 	def read(self, input, tagFilter = None):
-		"Read the database from a file"
+		"""
+		Read the database from a file.
+
+		Example::
+			# Read the system Debtags database
+			db.read(open("/var/lib/debtags/package-tags", "r"))
+		"""
 		self.db, self.rdb = readTagDatabaseBothWays(input, tagFilter)
 
 	def insert(self, pkg, tags):
