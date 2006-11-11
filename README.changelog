@@ -8,6 +8,7 @@ N.B. The API is not stable yet, and so you can expect it to change.
 
 Create a changelog object using the constuctor. Pass it the contents of the 
 file if there are some entries, or None to create an empty changelog.
+See /usr/share/doc/python-debian/examples/changelog/ for examples of usage.
 
 The Changelog class provides the following interesting methods.
 

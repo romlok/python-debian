@@ -9,7 +9,8 @@ Copyright:
   deb822.py is Copyright (C) 2005-2006  dann frazier <dannf@dannf.org>
                              2006       John Wright <john@movingsucks.org>
 
-  changelog.py, setup.py and README.Changelog are
+  changelog.py, setup.py, README.Changelog and the contents of
+  examples/changelog/ are
                Copyright (C) 2006 James Westby <jw+debian@jameswestby.net>
 
   debian_support.py is Copyright (C) 2005 Florian Weimer <fw@deneb.enyo.de>
@@ -36,7 +37,8 @@ Licenses:
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
   
    debian_support.py, changelog.py, README.changelog, Debtags.py, and the
-   contents of examples/debtags/ are under the following license
+   contents of examples/debtags/ and examples/changelog/ are under the
+   following license
 
    This package is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
