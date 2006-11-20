@@ -52,7 +52,7 @@ binary-indep: build install
 	rm $(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/deb822.py
 	rm $(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/test_deb822.py
 #	dh_install
-	dh_compress
+	dh_compress -Xexamples
 	dh_fixperms
 	dh_pysupport -d
 	dh_installdeb

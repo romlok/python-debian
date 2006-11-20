@@ -24,7 +24,7 @@ import wx.lib.dialogs
 import sys
 import re
 import subprocess
-import debtags
+from debian_bundle import debtags
 import apt
 from optparse import OptionParser
 
@@ -123,7 +123,7 @@ class Model(wx.EvtHandler):
 
         subcoll = self.fullcoll.choosePackages(map(lambda x: x.name, filter(match, self.aptCache)))
 
-        relIndex = Debtags.relevanceIndexFunction(self.fullcoll, subcoll)
+        relIndex = debtags.relevanceIndexFunction(self.fullcoll, subcoll)
 
         # Get all the tags sorted by increasing relevance
         self.interesting = sorted(subcoll.iterTags(), lambda b, a: cmp(relIndex(a), relIndex(b)))
@@ -431,7 +431,7 @@ if __name__ == "__main__":
     wx.HelpProvider_Set(provider)
 
     # Read full database 
-    fullcoll = Debtags.DB()
+    fullcoll = debtags.DB()
     tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
     fullcoll.read(open(options.tagdb, "r"), lambda x: not tagFilter.match(x))
 
