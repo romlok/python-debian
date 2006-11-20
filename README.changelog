@@ -8,8 +8,9 @@ N.B. The API is not stable yet, and so you can expect it to change.
 
 Create a changelog object using the constuctor. Pass it the contents of the 
 file if there are some entries, or None to create an empty changelog.
+See /usr/share/doc/python-debian/examples/changelog/ for examples of usage.
 
-The module provides these interesting functions.
+The Changelog class provides the following interesting methods.
 
  * full_version()
      Returns the full version number of the last version.
@@ -24,8 +25,8 @@ The module provides these interesting functions.
      Returns the name of the package in the last version.
  * versions()
      Returns a list of version objects that the package went through. These
-     version objects provide all of the version functions above to get that 
-     information.
+     version objects provide all attributes named the same as the above
+     functions to get that same information. 
  * set_package(package)
      Sets the name of the package in the most recent version.
  * set_version(version)
@@ -50,8 +51,7 @@ The module provides these interesting functions.
   * set_date(date)
       Sets the date associated with the current entry. Should be a properly 
       formatted string with the date and timezone.
-  * new_block(self, package, version, distributions, urgency, changes, 
-              author, date)
+  * new_block(package, version, distributions, urgency, changes, author, date)
       Start a new version of the package. The arguments (all optional) specify
       the values that can be provided to the set_* methods. If they are omitted
       the associated set_ call must be made before the changelog is created.

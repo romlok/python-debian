@@ -46,6 +46,7 @@ binary-indep: build install
 	# TODO: Enrico would like to keep wxssearch out of the package
 	# but so far, he has no better place for it
 	#rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/wxssearch
+	rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/debtags/wxssearch
 #	dh_install
 	dh_compress
 	dh_fixperms
