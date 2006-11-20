@@ -1,4 +1,4 @@
-python-debian (0.1.0) unstable; urgency=low
+python-debian (0.1.0) experimental; urgency=low
 
   * Initial release. (Closes: #381599)
 

@@ -1,8 +1,8 @@
 Source: python-debian
 Section: devel
 Priority: optional
-Maintainer: Adeodato Simó <dato@net.com.org.es>
-Uploaders: Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>
+Maintainer: Debian python-debian Maintainers <pkg-python-debian-maint@lists.alioth.debian.org>
+Uploaders: Adeodato Simó <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>
 Build-Depends: debhelper (>= 5.0.37.2), python
 Build-Depends-Indep: python-support (>= 0.3)
 Standards-Version: 3.7.2
@@ -11,8 +11,7 @@ Package: python-debian
 Architecture: all
 Depends: ${python:Depends}
 Description: python modules to work with Debian-related data formats
- This package provides python modules that abstract many formats of debian 
+ This package provides python modules that abstract many formats of Debian 
  related files. Currently handled are:
-  * any file that follows the deb822 syntax (debian/control) etc.
-  * debian/changelog.
   * Debtags information.
+  * debian/changelog.
