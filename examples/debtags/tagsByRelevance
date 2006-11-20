@@ -20,13 +20,13 @@
 
 import sys
 import re
-import Debtags
+from debian_bundle import debtags
 
 if len(sys.argv) < 2:
 	print sys.stderr, "Usage: %s tagdb [packagelist]" % (sys.argv[0])
 	sys.exit(1)
 
-full = Debtags.DB()
+full = debtags.DB()
 # Read full database 
 tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
 full.read(open(sys.argv[1], "r"), lambda x: not tagFilter.match(x))
@@ -41,7 +41,7 @@ for pkg in input:
 
 sub = full.choosePackages(pkgs)
 
-relIndex = Debtags.relevanceIndexFunction(full, sub)
+relIndex = debtags.relevanceIndexFunction(full, sub)
 
 # Get all the tags sorted by increasing relevance
 tags = sorted(sub.iterTags(), lambda a, b: cmp(relIndex(a), relIndex(b)))

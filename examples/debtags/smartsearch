@@ -21,7 +21,7 @@
 import sys
 import re
 import subprocess
-import Debtags
+from debian_bundle import debtags
 import apt
 
 class SmartSearcher:
@@ -54,7 +54,7 @@ class SmartSearcher:
 
         subcoll = self.fullcoll.choosePackages(pkgs)
 
-        relIndex = Debtags.relevanceIndexFunction(self.fullcoll, subcoll)
+        relIndex = debtags.relevanceIndexFunction(self.fullcoll, subcoll)
 
         # Get all the tags sorted by increasing relevance
         self.interesting = sorted(self.subcoll.iterTags(), lambda b, a: cmp(relIndex(a), relIndex(b)))
@@ -187,7 +187,7 @@ if len(sys.argv) < 3:
 
 # Main starts
 
-fullcoll = Debtags.DB()
+fullcoll = debtags.DB()
 # Read full database 
 tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
 fullcoll.read(open(sys.argv[1], "r"), lambda x: not tagFilter.match(x))
