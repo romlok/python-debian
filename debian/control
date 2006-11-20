@@ -13,6 +13,5 @@ Depends: ${python:Depends}
 Description: python modules to work with Debian-related data formats
  This package provides python modules that abstract many formats of Debian 
  related files. Currently handled are:
-  * any file that follows the deb822 syntax (debian/control) etc.
-  * debian/changelog.
   * Debtags information.
+  * debian/changelog.

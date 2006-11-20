@@ -47,6 +47,10 @@ binary-indep: build install
 	# but so far, he has no better place for it
 	#rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/wxssearch
 	rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/debtags/wxssearch
+	#TODO: there is a python-deb822 package so don't provide deb822.py for now,
+	# at lest until we discuss it.
+	rm $(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/deb822.py
+	rm $(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/test_deb822.py
 #	dh_install
 	dh_compress
 	dh_fixperms
