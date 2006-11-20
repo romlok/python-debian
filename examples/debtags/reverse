@@ -19,7 +19,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys
-import Debtags
+from debian_bundle import debtags
 
 input = sys.stdin
 if len(sys.argv) > 1:
@@ -27,8 +27,8 @@ if len(sys.argv) > 1:
 
 #db = readTagDatabase(input)
 #db = reverse(db)
-db = Debtags.readTagDatabaseReversed(input)
-#dummy, db = Debtags.readTagDatabaseBothWays(input)
+db = debtags.readTagDatabaseReversed(input)
+#dummy, db = debtags.readTagDatabaseBothWays(input)
 
 for pkg, tags in db.items():
 	# Using % here seems awkward to me, but if I use calls to
