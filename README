@@ -1,0 +1,14 @@
+This is a collection of modules that are for dealing with Debian related
+data. Each module is documented with it's own README file, or some examples.
+
+Currently supported are
+
+  * Debtags data with debtags.py
+  * Debian changelogs with changelog.py
+
+If you have a module that is for manipulation or interrogation of Debian 
+specific data then consider adding it to this package. You can discuss it with 
+the maintainers by contacting
+
+  pkg-python-debian-discuss@lists.alioth.debian.org
+
