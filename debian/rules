@@ -46,7 +46,7 @@ binary-indep: build install
 	# TODO: Enrico would like to keep wxssearch out of the package
 	# but so far, he has no better place for it
 	#rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/wxssearch
-	rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/debtags/wxssearch
+	#rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/debtags/wxssearch
 	#TODO: there is a python-deb822 package so don't provide deb822.py for now,
 	# at lest until we discuss it.
 	rm $(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/deb822.py
