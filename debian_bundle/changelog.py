@@ -73,6 +73,9 @@ class Version(object):
   def __str__(self):
     return self.full_version
 
+  def __eq__(self, other):
+    return self.full_version == other.full_version
+
 class ChangeBlock(object):
   """Holds all the information about one block from the changelog."""
 
@@ -316,13 +319,13 @@ class ChangelogTests(unittest.TestCase):
 
     c = open('test_modify_changelog1').read()
     cl = Changelog(c)
-    cl.set_package('gnutls14')
-    cl.set_version(Version('1:1.4.1-2'))
-    cl.set_distributions('experimental')
-    cl.set_urgency('medium')
+    cl.package = 'gnutls14'
+    cl.version = '1:1.4.1-2'
+    cl.distributions = 'experimental'
+    cl.urgency = 'medium'
     cl.add_change('  * Add magic foo')
-    cl.set_author('James Westby <jw+debian@jameswestby.net>')
-    cl.set_date('Sat, 16 Jul 2008 11:11:08 -0200')
+    cl.author = 'James Westby <jw+debian@jameswestby.net>'
+    cl.date = 'Sat, 16 Jul 2008 11:11:08 -0200'
     c = open('test_modify_changelog2').read()
     clines = c.split('\n')
     cslines = str(cl).split('\n')
@@ -349,6 +352,16 @@ class ChangelogTests(unittest.TestCase):
     for i in range(len(clines)):
       self.assertEqual(clines[i], cslines[i])
     self.assertEqual(len(clines), len(cslines), "Different lengths")
+
+  def test_set_version_with_string(self):
+    c1 = Changelog(open('test_modify_changelog1').read())
+    c2 = Changelog(open('test_modify_changelog1').read())
+
+    c1.version = '1:2.3.5-2'
+    c2.version = Version('1:2.3.5-2')
+    self.assertEqual(c1.version, c2.version)
+    self.assertEqual((c1.full_version, c1.upstream_version, c1.debian_version),
+                     (c2.full_version, c2.upstream_version, c2.debian_version))
 
 class VersionTests(unittest.TestCase):
 
@@ -378,6 +391,11 @@ class VersionTests(unittest.TestCase):
     self._test_version('4.2.0a+stable-2sarge1', None, '4.2.0a+stable', '2sarge1')
     self._test_version('1.8RC4b', None, '1.8RC4b', None)
     self._test_version('0.9~rc1-1', None, '0.9~rc1', '1')
+
+  def test_equality(self):
+    v1 = Version('1:2.3.4-2')
+    v2 = Version('1:2.3.4-2')
+    self.assertEqual(v1, v2)
 
 
 if __name__ == "__main__":
