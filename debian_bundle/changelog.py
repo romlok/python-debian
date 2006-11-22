@@ -51,16 +51,24 @@ class Version(object):
 
   def __init__(self, version):
     
-    self.full_version = version
-    p = re.compile(r'^(?:(\d+):)?([A-Za-z0-9.+:~-]+?)'
-                   + r'(?:-([A-Za-z0-9.~+]+))?$')
-    m = p.match(version)
+    p = re.compile(r'^(?:(?P<epoch>\d+):)?(?P<upstream>[A-Za-z0-9.+:~-]+?)'
+                   + r'(?:-(?P<debian>[A-Za-z0-9.~+]+))?$')
+    m = p.match(str(version))
     if m is None:
       raise VersionError(version)
-    (epoch, upstream, debian) = m.groups()
-    self.epoch = epoch
-    self.upstream_version = upstream
-    self.debian_version = debian
+    self.__attrs = m.groupdict()
+    self.__attrs['full'] = str(version)
+
+  # Expose some attributes, read-only (so it's not possible to accidentally
+  # overrite, say, debian_version without really changing the version)
+
+  # FIXME: Would it be better to make Version objects mutable, but have smart
+  # methods that know how to construct a version from these three attributes?
+  
+  full_version = property(lambda self: self.__attrs['full'])
+  epoch = property(lambda self: self.__attrs['epoch'])
+  upstream_version = property(lambda self: self.__attrs['upstream'])
+  debian_version = property(lambda self: self.__attrs['debian'])
 
   def __str__(self):
     return self.full_version
@@ -213,34 +221,44 @@ class Changelog(object):
       #TODO: shouldn't be required should it?
       self._blocks[-1].del_trailing_newline()
 
-  def full_version(self):
-    """Returns the full version number of the last version."""
-    return self._blocks[0].version.full_version
+  def get_version(self):
+    """Return a Version object for the last version"""
+    return self._blocks[0].version
 
-  def debian_version(self):
-    """Returns the debian part of the version number of the last version. 
-    Will be None if it is a native package"""
-    return self._blocks[0].version.debian_version
+  def set_version(self, version):
+    """Set the version of the last changelog block
 
-  def upstream_version(self):
-    """Returns the upstream part of the version number of the last version"""
-    return self._blocks[0].version.upstream_version
+    version can be a full version string, or a Version object
+    """
+    self._blocks[0].version = Version(version)
 
-  def epoch(self):
-    """Returns the epoch number of the last revision, or None if no epoch was
-    used"""
-    return self._blocks[0].version.epoch
+  version = property(get_version, set_version,
+                     doc="Version object for last changelog block""")
 
-  def package(self):
+  ### For convenience, let's expose some of the version properties
+  full_version = property(lambda self: self.version.full_version)
+  debian_version = property(lambda self: self.version.debian_version)
+  upstream_version = property(lambda self: self.version.upstream_version)
+
+  def get_package(self):
     """Returns the name of the package in the last version."""
     return self._blocks[0].package
+  
+  def set_package(self, package):
+    self._blocks[0].package = package
 
-  def versions(self):
+  package = property(get_package, set_package,
+                     doc="Name of the package in the last version")
+
+  def get_versions(self):
     """Returns a list of version objects that the package went through."""
     versions = []
     for block in self._blocks:
       versions.append[block.version]
     return versions
+
+  versions = property(get_versions,
+                      doc="List of version objects the package went through")
 
   def __str__(self):
     cl = ""
@@ -248,26 +266,25 @@ class Changelog(object):
       cl += str(block)
     return cl
 
-  def set_package(self, package):
-    self._blocks[0].package = package
-
-  def set_version(self, version):
-    self._blocks[0].version = version
-
   def set_distributions(self, distributions):
     self._blocks[0].distributions = distributions
+  distributions = property(lambda self: self._blocks[0].distributions,
+                           set_distributions)
 
   def set_urgency(self, urgency):
     self._blocks[0].urgency = urgency
+  urgency = property(lambda self: self._blocks[0].urgency, set_urgency)
 
   def add_change(self, change):
     self._blocks[0].add_change(change)
 
   def set_author(self, author):
     self._blocks[0].author = author
+  author = property(lambda self: self._blocks[0].author, set_author)
 
   def set_date(self, date):
     self._blocks[0].date = date
+  date = property(lambda self: self._blocks[0].date, set_date)
 
   def new_block(self, package=None, version=None, distributions=None,
                 urgency=None, changes=None, author=None, date=None):
