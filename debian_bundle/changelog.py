@@ -21,6 +21,8 @@ import os
 import re
 import unittest
 
+import debian_support
+
 class ChangelogParseError(StandardError):
   """Indicates that the changelog could not be parsed"""
   is_user_error = True
@@ -46,35 +48,67 @@ class VersionError(StandardError):
   def __str__(self):
     return "Could not parse version: "+self._version
 
-class Version(object):
+class Version(debian_support.Version, object):
   """Represents a version of a Debian package."""
+  # Subclassing debian_support.Version for its rich comparison
 
   def __init__(self, version):
+    version = str(version)
+    debian_support.Version.__init__(self, version)
+
+    self.full_version = version
+
+  def __setattr__(self, attr, value):
+    """Update all the attributes, given a particular piece of the version
+
+    Allowable values for attr, hopefully self-explanatory:
+      full_version
+      epoch
+      upstream_version
+      debian_version
+
+    Any attribute starting with __ is given to object's __setattr__ method.
+    """
+
+    attrs = ('full_version', 'epoch', 'upstream_version', 'debian_version')
+
+    if attr.startswith('_Version__'):
+      object.__setattr__(self, attr, value)
+      return
+    elif attr not in attrs:
+      raise AttributeError("Cannot assign to attribute " + attr)
+
+    if attr == 'full_version':
+      version = value
+      p = re.compile(r'^(?:(?P<epoch>\d+):)?'
+                     + r'(?P<upstream_version>[A-Za-z0-9.+:~-]+?)'
+                     + r'(?:-(?P<debian_version>[A-Za-z0-9.~+]+))?$')
+      m = p.match(version)
+      if m is None:
+        raise VersionError(version)
+      for key, value in m.groupdict().items():
+        object.__setattr__(self, key, value)
+      self.__asString = version
     
-    p = re.compile(r'^(?:(?P<epoch>\d+):)?(?P<upstream>[A-Za-z0-9.+:~-]+?)'
-                   + r'(?:-(?P<debian>[A-Za-z0-9.~+]+))?$')
-    m = p.match(str(version))
-    if m is None:
-      raise VersionError(version)
-    self.__attrs = m.groupdict()
-    self.__attrs['full'] = str(version)
+    else:
+      # Construct a full version from what was given and pass it back here
+      d = {}
+      for a in attrs[1:]:
+        if a == attr:
+          d[a] = value
+        else:
+          d[a] = getattr(self, a)
 
-  # Expose some attributes, read-only (so it's not possible to accidentally
-  # overrite, say, debian_version without really changing the version)
+      version = ""
+      if d['epoch'] and d['epoch'] != '0':
+        version += d['epoch'] + ":"
+      version += d['upstream_version']
+      if d['debian_version']:
+        version += '-' + d['debian_version']
 
-  # FIXME: Would it be better to make Version objects mutable, but have smart
-  # methods that know how to construct a version from these three attributes?
-  
-  full_version = property(lambda self: self.__attrs['full'])
-  epoch = property(lambda self: self.__attrs['epoch'])
-  upstream_version = property(lambda self: self.__attrs['upstream'])
-  debian_version = property(lambda self: self.__attrs['debian'])
+      self.full_version = version
 
-  def __str__(self):
-    return self.full_version
-
-  def __eq__(self, other):
-    return self.full_version == other.full_version
+  full_version = property(lambda self: self.__asString)
 
 class ChangeBlock(object):
   """Holds all the information about one block from the changelog."""
@@ -239,9 +273,14 @@ class Changelog(object):
                      doc="Version object for last changelog block""")
 
   ### For convenience, let's expose some of the version properties
-  full_version = property(lambda self: self.version.full_version)
-  debian_version = property(lambda self: self.version.debian_version)
-  upstream_version = property(lambda self: self.version.upstream_version)
+  full_version = property(lambda self: self.version.full_version,
+                  lambda self, v: setattr(self.version, 'full_version', v))
+  epoch = property(lambda self: self.version.epoch,
+                  lambda self, v: setattr(self.version, 'epoch', v))
+  debian_version = property(lambda self: self.version.debian_version,
+                  lambda self, v: setattr(self.version, 'debian_version', v))
+  upstream_version = property(lambda self: self.version.upstream_version,
+                  lambda self, v: setattr(self.version, 'upstream_version', v))
 
   def get_package(self):
     """Returns the name of the package in the last version."""
@@ -255,10 +294,7 @@ class Changelog(object):
 
   def get_versions(self):
     """Returns a list of version objects that the package went through."""
-    versions = []
-    for block in self._blocks:
-      versions.append[block.version]
-    return versions
+    return [block.version for block in self._blocks]
 
   versions = property(get_versions,
                       doc="List of version objects the package went through")
@@ -360,8 +396,33 @@ class ChangelogTests(unittest.TestCase):
     c1.version = '1:2.3.5-2'
     c2.version = Version('1:2.3.5-2')
     self.assertEqual(c1.version, c2.version)
-    self.assertEqual((c1.full_version, c1.upstream_version, c1.debian_version),
-                     (c2.full_version, c2.upstream_version, c2.debian_version))
+    self.assertEqual((c1.full_version, c1.epoch, c1.upstream_version,
+                      c1.debian_version),
+                     (c2.full_version, c2.epoch, c2.upstream_version,
+                      c2.debian_version))
+
+  def test_magic_version_properties(self):
+    c = Changelog(open('test_changelog').read())
+
+    c.debian_version = '2'
+    self.assertEqual(c.debian_version, '2')
+    self.assertEqual(c.full_version, '1:1.4.1-2')
+
+    c.upstream_version = '1.4.2'
+    self.assertEqual(c.upstream_version, '1.4.2')
+    self.assertEqual(c.full_version, '1:1.4.2-2')
+
+    c.epoch = '2'
+    self.assertEqual(c.epoch, '2')
+    self.assertEqual(c.full_version, '2:1.4.2-2')
+
+    self.assertEqual(str(c.version), c.full_version)
+
+    c.full_version = '1:1.4.1-1'
+    self.assertEqual(c.full_version, '1:1.4.1-1')
+    self.assertEqual(c.epoch, '1')
+    self.assertEqual(c.upstream_version, '1.4.1')
+    self.assertEqual(c.debian_version, '1')
 
 class VersionTests(unittest.TestCase):
 
@@ -392,12 +453,30 @@ class VersionTests(unittest.TestCase):
     self._test_version('1.8RC4b', None, '1.8RC4b', None)
     self._test_version('0.9~rc1-1', None, '0.9~rc1', '1')
 
-  def test_equality(self):
-    v1 = Version('1:2.3.4-2')
-    v2 = Version('1:2.3.4-2')
-    self.assertEqual(v1, v2)
+  def test_version_updating(self):
+    v = Version('1:1.4.1-1')
 
+    v.debian_version = '2'
+    self.assertEqual(v.debian_version, '2')
+    self.assertEqual(v.full_version, '1:1.4.1-2')
+
+    v.upstream_version = '1.4.2'
+    self.assertEqual(v.upstream_version, '1.4.2')
+    self.assertEqual(v.full_version, '1:1.4.2-2')
+
+    v.epoch = '2'
+    self.assertEqual(v.epoch, '2')
+    self.assertEqual(v.full_version, '2:1.4.2-2')
+
+    self.assertEqual(str(v), v.full_version)
+
+    v.full_version = '1:1.4.1-1'
+    self.assertEqual(v.full_version, '1:1.4.1-1')
+    self.assertEqual(v.epoch, '1')
+    self.assertEqual(v.upstream_version, '1.4.1')
+    self.assertEqual(v.debian_version, '1')
 
 if __name__ == "__main__":
   _test()
 
+# vim:softtabstop=2 shiftwidth=2 expandtab
