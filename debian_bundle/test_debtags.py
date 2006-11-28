@@ -61,7 +61,7 @@ class TestDebtags(unittest.TestCase):
         db = self.mkdb()
         self.assertEqual(db.tagsOfPackage("polygen"), set(("devel::interpreter", "game::toys", "interface::commandline", "works-with::text")))
         assert "polygen" in db.packagesOfTag("interface::commandline")
-        self.assertEqual(db.packageCount(), 141)
+        self.assertEqual(db.packageCount(), 144)
         self.assertEqual(db.tagCount(), 94)
 
 if __name__ == '__main__':

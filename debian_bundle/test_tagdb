@@ -139,3 +139,6 @@ xtartan: game::toys, interface::x11, use::viewing, works-with::image:raster, x11
 astrolog: game::toys, use::gameplaying
 xfractint: game::toys, use::gameplaying
 xsnow: game::toys, use::gameplaying
+empty1: 
+empty2:
+empty3

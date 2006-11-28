@@ -18,35 +18,36 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# TODO: install python-epydoc and try to autogenerate documntation from that
+import math, re
 
-import math
+def parseTags(input):
+	lre = re.compile(r"^(.+?)(?::?\s*|:\s+(.+?)\s*)$")
+	for line in input:
+		# Is there a way to remove the last character of a line that does not
+		# make a copy of the entire line?
+		m = lre.match(line)
+		pkgs = set(m.group(1).split(', '))
+		if m.group(2):
+			tags = set(m.group(2).split(', '))
+		else:
+			tags = set()
+		yield pkgs, tags
 
 def readTagDatabase(input):
 	"Read the tag database, returning a pkg->tags dictionary"
 	db = {}
-	for line in input:
-		# Is there a way to remove the last character of a line that does not
-		# make a copy of the entire line?
-		line = line.rstrip("\n")
-		pkgs, tags = line.split(": ")
+	for pkgs, tags in parseTags(input):
 		# Create the tag set using the native set
-		tags = set(tags.split(", "))
-		for p in pkgs.split(", "):
+		for p in pkgs:
 			db[p] = tags.copy()
 	return db;
 
 def readTagDatabaseReversed(input):
 	"Read the tag database, returning a tag->pkgs dictionary"
 	db = {}
-	for line in input:
-		# Is there a way to remove the last character of a line that does not
-		# make a copy of the entire line?
-		line = line.rstrip("\n")
-		pkgs, tags = line.split(": ")
+	for pkgs, tags in parseTags(input):
 		# Create the tag set using the native set
-		pkgs = set(pkgs.split(", "))
-		for tag in tags.split(", "):
+		for tag in tags:
 			if db.has_key(tag):
 				db[tag] |= pkgs
 			else:
@@ -57,17 +58,12 @@ def readTagDatabaseBothWays(input, tagFilter = None):
 	"Read the tag database, returning a pkg->tags and a tag->pkgs dictionary"
 	db = {}
 	dbr = {}
-	for line in input:
-		# Is there a way to remove the last character of a line that does not
-		# make a copy of the entire line?
-		line = line.rstrip("\n")
-		pkgs, tags = line.split(": ")
+	for pkgs, tags in parseTags(input):
 		# Create the tag set using the native set
-		pkgs = set(pkgs.split(", "))
 		if tagFilter == None:
-			tags = set(tags.split(", "))
+			tags = set(tags)
 		else:
-			tags = set(filter(tagFilter, tags.split(', ')))
+			tags = set(filter(tagFilter, tags))
 		for pkg in pkgs:
 			db[pkg] = tags.copy()
 		for tag in tags:
