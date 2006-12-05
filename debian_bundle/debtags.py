@@ -166,10 +166,32 @@ class DB:
 		res.rdb = self.db
 		return res
 
+	def facetCollection(self):
+		"""
+		Return a copy of this collection, but replaces the tag names
+		with only their facets.
+		"""
+		fcoll = DB()
+		tofacet = re.compile(r"^([^:]+).+")
+		for pkg, tags in self.iterPackagesTags():
+			ftags = set([tofacet.sub(r"\1", t) for t in tags])
+			fcoll.insert(pkg, ftags)
+		return fcoll
+
+	def copy(self):
+		"""
+		Return a copy of this collection, with the tagsets copied as
+		well.
+		"""
+		res = DB()
+		res.db = self.db.copy()
+		res.rdb = self.rdb.copy()
+		return res
+
 	def reverseCopy(self):
 		"""
 		Return the reverse collection, with a copy of the tagsets of
-		this one
+		this one.
 		"""
 		res = DB()
 		res.db = self.rdb.copy()
@@ -205,7 +227,8 @@ class DB:
 	def filterPackages(self, packageFilter):
 		"""
 		Return a collection with only those packages that match a
-		filter, sharing tagsets with this one
+		filter, sharing tagsets with this one.  The filter will match
+		on the package.
 		"""
 		res = DB()
 		db = {}
@@ -218,7 +241,8 @@ class DB:
 	def filterPackagesCopy(self, filter):
 		"""
 		Return a collection with only those packages that match a
-		filter, with a copy of the tagsets of this one
+		filter, with a copy of the tagsets of this one.  The filter
+		will match on the package.
 		"""
 		res = DB()
 		db = {}
@@ -226,6 +250,62 @@ class DB:
 			db[pkg] = self.db[pkg].copy()
 		res.db = db
 		res.rdb = reverse(db)
+		return res
+
+	def filterPackagesTags(self, packageTagFilter):
+		"""
+		Return a collection with only those packages that match a
+		filter, sharing tagsets with this one.  The filter will match
+		on (package, tags).
+		"""
+		res = DB()
+		db = {}
+		for pkg, tags in filter(packageTagFilter, self.db.iteritems()):
+			db[pkg] = self.db[pkg]
+		res.db = db
+		res.rdb = reverse(db)
+		return res
+
+	def filterPackagesTagsCopy(self, packageTagFilter):
+		"""
+		Return a collection with only those packages that match a
+		filter, with a copy of the tagsets of this one.  The filter
+		will match on (package, tags).
+		"""
+		res = DB()
+		db = {}
+		for pkg, tags in filter(packageTagFilter, self.db.iteritems()):
+			db[pkg] = self.db[pkg].copy()
+		res.db = db
+		res.rdb = reverse(db)
+		return res
+
+	def filterTags(self, tagFilter):
+		"""
+		Return a collection with only those tags that match a
+		filter, sharing package sets with this one.  The filter will match
+		on the tag.
+		"""
+		res = DB()
+		rdb = {}
+		for tag in filter(tagFilter, self.rdb.iterkeys()):
+			rdb[tag] = self.rdb[tag]
+		res.rdb = rdb
+		res.db = reverse(rdb)
+		return res
+
+	def filterTagsCopy(self, tagFilter):
+		"""
+		Return a collection with only those tags that match a
+		filter, with a copy of the package sets of this one.  The
+		filter will match on the tag.
+		"""
+		res = DB()
+		rdb = {}
+		for tag in filter(tagFilter, self.rdb.iterkeys()):
+			rdb[tag] = self.rdb[tag].copy()
+		res.rdb = rdb
+		res.db = reverse(rdb)
 		return res
 
 	def hasPackage(self, pkg):
@@ -342,3 +422,19 @@ class DB:
 			return set(tags[:1])
 		else:
 			return tagset
+
+	def correlations(self):
+		"""
+		Generate the list of correlation as a tuple (hastag, hasalsotag, score).
+
+		Every touple will indicate that the tag 'hastag' tends to also
+		have 'hasalsotag' with a score of 'score'.
+		"""
+		for pivot in self.iterTags():
+			with = self.filterPackagesTags(lambda pt: pivot in pt[1])
+			without = self.filterPackagesTags(lambda pt: pivot not in pt[1])
+			for tag in with.iterTags():
+				if tag == pivot: continue
+				has = float(with.card(tag)) / float(with.packageCount())
+				hasnt = float(without.card(tag)) / float(without.packageCount())
+				yield pivot, tag, has - hasnt
