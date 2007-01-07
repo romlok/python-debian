@@ -13,6 +13,7 @@ python-debian (0.1.1) UNRELEASED; urgency=low
         properties anyway.  Please see README.changelog.
       + You can now assign a string to the version attribute, and it will be
         coerced into a Version object
+      + Added a method to write the changelog to an open file.
     - Allow single digit day with no extra space in the endline of a
       changelog. Hopefully this wont allow things to be parsed that will
       be rejected by the more important tools. It does allow more files
