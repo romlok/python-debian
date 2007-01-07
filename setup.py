@@ -19,7 +19,7 @@
 from distutils.core import setup
 
 setup(name='python-debian',
-      version='0.1.0',
+      version='0.1.1',
       description='Debian package related modules',
       url='http://packages.qa.debian.org/p/python-debian.html',
       packages=['debian_bundle'],
