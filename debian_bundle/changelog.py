@@ -332,6 +332,9 @@ class Changelog(object):
     block.add_trailing_newline()
     self._blocks.insert(0, block)
 
+  def write_to_open_file(self, file):
+    file.write(self.__str__())
+
 def _test():
   import doctest
   doctest.testmod()

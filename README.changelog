@@ -55,6 +55,9 @@ The Changelog class provides the following interesting attributes and methods:
      the values that can be provided to the set_* methods. If they are omitted
      the associated attributes must be assigned to before the changelog is
      created.
+ * write_to_open_file(file)
+     Write the changelog out to the filehandle passed. The file argument must
+     be an open file object.
 
 To get the properly formatted changelog back out of the object merely call 
 str() on it. The returned string should be a properly formatted changelog.
@@ -77,6 +80,6 @@ There are a number of errors that may be thrown by the module.
      a Version object directly to assign to the version attribute of a
      Changelog object.
 
-This file is (C) 2006 James Westby, and licensed under the GPL, see 
+This file is (C) 2006-7 James Westby, and licensed under the GPL, see 
 changelog.py for details.
 
