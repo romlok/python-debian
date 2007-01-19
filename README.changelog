@@ -10,34 +10,39 @@ Create a changelog object using the constuctor. Pass it the contents of the
 file if there are some entries, or None to create an empty changelog.
 See /usr/share/doc/python-debian/examples/changelog/ for examples of usage.
 
-The Changelog class provides the following interesting methods.
+The Changelog class provides the following interesting attributes and methods:
 
- * full_version()
-     Returns the full version number of the last version.
- * debian_version()
-     Returns the debian part of the version number of the last version.
- * upstream_version()
-     Returns the upstream part of the version number of the last version.
- * epoch()
-     Returns the epoch number of the last revision, or None if no epoch was 
-     used
- * package()
-     Returns the name of the package in the last version.
- * versions()
-     Returns a list of version objects that the package went through. These
-     version objects provide all attributes named the same as the above
-     functions to get that same information. 
- * set_package(package)
-     Sets the name of the package in the most recent version.
- * set_version(version)
-     Sets the version number of the most recent version. The provided argument
-     is a Version object.
- * set_distributions(distributions)
-     Sets the distributions that the package will be uploaded to in the most
-     recent version. (Provide a string).
- * set_urgency(urgency)
-     Sets the urgency with which the most recent version will be uploaded. 
-     (Provide a string).
+ * version
+     A Version object representing the version of the last block.  You may
+     assign to it a Version object or a full version string.
+ * full_version
+     The full version number of the last version.
+ * debian_version
+     The debian part of the version number of the last version.
+ * upstream_version
+     The upstream part of the version number of the last version.
+ * epoch
+     The epoch number of the last revision, or None if no epoch was 
+     used.
+ * versions
+     A list of Version objects that the package went through. These version
+     objects provide all attributes named the same as the above to get that
+     same information.  You cannot assign to this attribute.
+ * package
+     The name of the package in the last version.
+ * distributions
+     A string indicating the distributions that the package will be uploaded to
+     in the most recent version.
+ * urgency
+     A string indicating the urgency with which the most recent version will be
+     uploaded.
+ * author
+     The author of the most recent change. This should be a properly formatted
+     name/email pair.
+ * date
+     The date associated with the current entry. Should be a properly formatted
+     string with the date and timezone.
+
  * add_change(change)
      Adds a change entry to the most recent version. The change entry should
      conform to the required format of the changelog (i.e. start with two 
@@ -45,16 +50,14 @@ The Changelog class provides the following interesting methods.
      advisable to do this yourself if it is a long entry. The change will be
      appended to he current changes, no support is provided for per-maintainer
      changes.
-  * set_author(author)
-      Sets the author of the most recent change. THis should be a properly 
-      formatted name/email pair.
-  * set_date(date)
-      Sets the date associated with the current entry. Should be a properly 
-      formatted string with the date and timezone.
-  * new_block(package, version, distributions, urgency, changes, author, date)
-      Start a new version of the package. The arguments (all optional) specify
-      the values that can be provided to the set_* methods. If they are omitted
-      the associated set_ call must be made before the changelog is created.
+ * new_block(package, version, distributions, urgency, changes, author, date)
+     Start a new version of the package. The arguments (all optional) specify
+     the values that can be provided to the set_* methods. If they are omitted
+     the associated attributes must be assigned to before the changelog is
+     created.
+ * write_to_open_file(file)
+     Write the changelog out to the filehandle passed. The file argument must
+     be an open file object.
 
 To get the properly formatted changelog back out of the object merely call 
 str() on it. The returned string should be a properly formatted changelog.
@@ -74,8 +77,9 @@ There are a number of errors that may be thrown by the module.
      The string used to create a Version object cannot be parsed as it doesn't
      conform to the specification of a version number. Can be thrown when
      creating a Changelog object from an existing changelog, or instantiating
-     a Version object directly to use with the set_version method.
+     a Version object directly to assign to the version attribute of a
+     Changelog object.
 
-This file is (C) 2006 James Westby, and licensed under the GPL, see 
+This file is (C) 2006-7 James Westby, and licensed under the GPL, see 
 changelog.py for details.
 

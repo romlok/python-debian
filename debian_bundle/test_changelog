@@ -152,7 +152,7 @@ gnutls12 (1.2.5-1) unstable; urgency=low
     - Changed the library version strings to GNUTLS_1_2.
     - Renamed the development package back to "libgnutls-dev".
 
- -- Matthias Urlichs <smurf@debian.org>  Tue,  5 Jul 2005 10:35:56 +0200
+ -- Matthias Urlichs <smurf@debian.org>  Tue, 5 Jul 2005 10:35:56 +0200
 
 gnutls11 (1.0.19-1) experimental; urgency=low
 

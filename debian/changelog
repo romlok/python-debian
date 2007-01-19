@@ -1,3 +1,28 @@
+python-debian (0.1.1) UNRELEASED; urgency=low
+
+  * changelog.py:
+    - Version class:
+      + Subclass debian_support.Version, for rich comparison
+      + Changing any attribute now automatically updates any other affected
+        attribute (i.e. changing full_version will update all of the other
+        attributes; changing debian_version will update full_version)
+    - Changelog class:
+      + Many "getter" and "setter" methods were replaced with properties (so
+        they appear as regular object attributes).  Most set_* methods remain
+        for compatibility, and they're the actual set methods for the
+        properties anyway.  Please see README.changelog.
+      + You can now assign a string to the version attribute, and it will be
+        coerced into a Version object
+      + Added a method to write the changelog to an open file.
+    - Allow single digit day with no extra space in the endline of a
+      changelog. Hopefully this wont allow things to be parsed that will
+      be rejected by the more important tools. It does allow more files
+      to be parsed and used, and I'm not entirely sure what is right.
+  * README.changelog:
+    - Update the documentation to reflect the changes mentioned above
+
+ -- John Wright <john@movingsucks.org>  Sat, 25 Nov 2006 04:40:14 -0700
+
 python-debian (0.1.0) experimental; urgency=low
 
   * Initial release. (Closes: #381599)

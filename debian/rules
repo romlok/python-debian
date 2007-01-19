@@ -33,7 +33,7 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/tmp
-	python setup.py install --root=$(CURDIR)/debian/python-debian --no-compile
+	python setup.py install --root="$(CURDIR)/debian/python-debian" --no-compile
 
 
 # Build architecture-independent files here.
@@ -45,12 +45,12 @@ binary-indep: build install
 	dh_installexamples
 	# TODO: Enrico would like to keep wxssearch out of the package
 	# but so far, he has no better place for it
-	#rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/wxssearch
-	#rm $(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/debtags/wxssearch
+	#rm "$(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/wxssearch"
+	rm "$(CURDIR)/debian/python-debian/usr/share/doc/python-debian/examples/debtags/wxssearch"
 	#TODO: there is a python-deb822 package so don't provide deb822.py for now,
 	# at lest until we discuss it.
-	rm $(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/deb822.py
-	rm $(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/test_deb822.py
+	rm "$(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/deb822.py"
+	rm "$(CURDIR)/debian/python-debian/usr/lib/python2.4/site-packages/debian_bundle/test_deb822.py"
 #	dh_install
 	dh_compress -Xexamples
 	dh_fixperms

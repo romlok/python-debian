@@ -1,5 +1,5 @@
 # changelog.py -- Python module for Debian changelogs
-# Copyright (C) 2006 James Westby <jw+debian@jameswestby.net>
+# Copyright (C) 2006-7 James Westby <jw+debian@jameswestby.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 import os
 import re
 import unittest
+
+import debian_support
 
 class ChangelogParseError(StandardError):
   """Indicates that the changelog could not be parsed"""
@@ -46,24 +48,67 @@ class VersionError(StandardError):
   def __str__(self):
     return "Could not parse version: "+self._version
 
-class Version(object):
+class Version(debian_support.Version, object):
   """Represents a version of a Debian package."""
+  # Subclassing debian_support.Version for its rich comparison
 
   def __init__(self, version):
-    
-    self.full_version = version
-    p = re.compile(r'^(?:(\d+):)?([A-Za-z0-9.+:~-]+?)'
-                   + r'(?:-([A-Za-z0-9.~+]+))?$')
-    m = p.match(version)
-    if m is None:
-      raise VersionError(version)
-    (epoch, upstream, debian) = m.groups()
-    self.epoch = epoch
-    self.upstream_version = upstream
-    self.debian_version = debian
+    version = str(version)
+    debian_support.Version.__init__(self, version)
 
-  def __str__(self):
-    return self.full_version
+    self.full_version = version
+
+  def __setattr__(self, attr, value):
+    """Update all the attributes, given a particular piece of the version
+
+    Allowable values for attr, hopefully self-explanatory:
+      full_version
+      epoch
+      upstream_version
+      debian_version
+
+    Any attribute starting with __ is given to object's __setattr__ method.
+    """
+
+    attrs = ('full_version', 'epoch', 'upstream_version', 'debian_version')
+
+    if attr.startswith('_Version__'):
+      object.__setattr__(self, attr, value)
+      return
+    elif attr not in attrs:
+      raise AttributeError("Cannot assign to attribute " + attr)
+
+    if attr == 'full_version':
+      version = value
+      p = re.compile(r'^(?:(?P<epoch>\d+):)?'
+                     + r'(?P<upstream_version>[A-Za-z0-9.+:~-]+?)'
+                     + r'(?:-(?P<debian_version>[A-Za-z0-9.~+]+))?$')
+      m = p.match(version)
+      if m is None:
+        raise VersionError(version)
+      for key, value in m.groupdict().items():
+        object.__setattr__(self, key, value)
+      self.__asString = version
+    
+    else:
+      # Construct a full version from what was given and pass it back here
+      d = {}
+      for a in attrs[1:]:
+        if a == attr:
+          d[a] = value
+        else:
+          d[a] = getattr(self, a)
+
+      version = ""
+      if d['epoch'] and d['epoch'] != '0':
+        version += d['epoch'] + ":"
+      version += d['upstream_version']
+      if d['debian_version']:
+        version += '-' + d['debian_version']
+
+      self.full_version = version
+
+  full_version = property(lambda self: self.__asString)
 
 class ChangeBlock(object):
   """Holds all the information about one block from the changelog."""
@@ -139,7 +184,7 @@ topline = re.compile('^([a-z0-9][-a-z0-9.+]+) \(([-0-9a-z.:~+]+)\) '
       +'([-a-zA-Z ]+); urgency=([a-z]+)')
 blankline = re.compile('^[ \t]*$')
 change = re.compile('^[ ][ ]+.*$')
-endline = re.compile('^ -- (.*)  (\w\w\w, [ \d]\d \w\w\w \d\d\d\d '+
+endline = re.compile('^ -- (.*)  (\w\w\w, (\d| \d|\d\d) \w\w\w \d\d\d\d '+
       '\d\d:\d\d:\d\d [-+]\d\d\d\d( \(.*\))?)$')
 
 class Changelog(object):
@@ -213,34 +258,46 @@ class Changelog(object):
       #TODO: shouldn't be required should it?
       self._blocks[-1].del_trailing_newline()
 
-  def full_version(self):
-    """Returns the full version number of the last version."""
-    return self._blocks[0].version.full_version
+  def get_version(self):
+    """Return a Version object for the last version"""
+    return self._blocks[0].version
 
-  def debian_version(self):
-    """Returns the debian part of the version number of the last version. 
-    Will be None if it is a native package"""
-    return self._blocks[0].version.debian_version
+  def set_version(self, version):
+    """Set the version of the last changelog block
 
-  def upstream_version(self):
-    """Returns the upstream part of the version number of the last version"""
-    return self._blocks[0].version.upstream_version
+    version can be a full version string, or a Version object
+    """
+    self._blocks[0].version = Version(version)
 
-  def epoch(self):
-    """Returns the epoch number of the last revision, or None if no epoch was
-    used"""
-    return self._blocks[0].version.epoch
+  version = property(get_version, set_version,
+                     doc="Version object for last changelog block""")
 
-  def package(self):
+  ### For convenience, let's expose some of the version properties
+  full_version = property(lambda self: self.version.full_version,
+                  lambda self, v: setattr(self.version, 'full_version', v))
+  epoch = property(lambda self: self.version.epoch,
+                  lambda self, v: setattr(self.version, 'epoch', v))
+  debian_version = property(lambda self: self.version.debian_version,
+                  lambda self, v: setattr(self.version, 'debian_version', v))
+  upstream_version = property(lambda self: self.version.upstream_version,
+                  lambda self, v: setattr(self.version, 'upstream_version', v))
+
+  def get_package(self):
     """Returns the name of the package in the last version."""
     return self._blocks[0].package
+  
+  def set_package(self, package):
+    self._blocks[0].package = package
 
-  def versions(self):
+  package = property(get_package, set_package,
+                     doc="Name of the package in the last version")
+
+  def get_versions(self):
     """Returns a list of version objects that the package went through."""
-    versions = []
-    for block in self._blocks:
-      versions.append[block.version]
-    return versions
+    return [block.version for block in self._blocks]
+
+  versions = property(get_versions,
+                      doc="List of version objects the package went through")
 
   def __str__(self):
     cl = ""
@@ -248,26 +305,25 @@ class Changelog(object):
       cl += str(block)
     return cl
 
-  def set_package(self, package):
-    self._blocks[0].package = package
-
-  def set_version(self, version):
-    self._blocks[0].version = version
-
   def set_distributions(self, distributions):
     self._blocks[0].distributions = distributions
+  distributions = property(lambda self: self._blocks[0].distributions,
+                           set_distributions)
 
   def set_urgency(self, urgency):
     self._blocks[0].urgency = urgency
+  urgency = property(lambda self: self._blocks[0].urgency, set_urgency)
 
   def add_change(self, change):
     self._blocks[0].add_change(change)
 
   def set_author(self, author):
     self._blocks[0].author = author
+  author = property(lambda self: self._blocks[0].author, set_author)
 
   def set_date(self, date):
     self._blocks[0].date = date
+  date = property(lambda self: self._blocks[0].date, set_date)
 
   def new_block(self, package=None, version=None, distributions=None,
                 urgency=None, changes=None, author=None, date=None):
@@ -275,6 +331,9 @@ class Changelog(object):
                         changes, author, date)
     block.add_trailing_newline()
     self._blocks.insert(0, block)
+
+  def write_to_open_file(self, file):
+    file.write(self.__str__())
 
 def _test():
   import doctest
@@ -299,13 +358,13 @@ class ChangelogTests(unittest.TestCase):
 
     c = open('test_modify_changelog1').read()
     cl = Changelog(c)
-    cl.set_package('gnutls14')
-    cl.set_version(Version('1:1.4.1-2'))
-    cl.set_distributions('experimental')
-    cl.set_urgency('medium')
+    cl.package = 'gnutls14'
+    cl.version = '1:1.4.1-2'
+    cl.distributions = 'experimental'
+    cl.urgency = 'medium'
     cl.add_change('  * Add magic foo')
-    cl.set_author('James Westby <jw+debian@jameswestby.net>')
-    cl.set_date('Sat, 16 Jul 2008 11:11:08 -0200')
+    cl.author = 'James Westby <jw+debian@jameswestby.net>'
+    cl.date = 'Sat, 16 Jul 2008 11:11:08 -0200'
     c = open('test_modify_changelog2').read()
     clines = c.split('\n')
     cslines = str(cl).split('\n')
@@ -332,6 +391,41 @@ class ChangelogTests(unittest.TestCase):
     for i in range(len(clines)):
       self.assertEqual(clines[i], cslines[i])
     self.assertEqual(len(clines), len(cslines), "Different lengths")
+
+  def test_set_version_with_string(self):
+    c1 = Changelog(open('test_modify_changelog1').read())
+    c2 = Changelog(open('test_modify_changelog1').read())
+
+    c1.version = '1:2.3.5-2'
+    c2.version = Version('1:2.3.5-2')
+    self.assertEqual(c1.version, c2.version)
+    self.assertEqual((c1.full_version, c1.epoch, c1.upstream_version,
+                      c1.debian_version),
+                     (c2.full_version, c2.epoch, c2.upstream_version,
+                      c2.debian_version))
+
+  def test_magic_version_properties(self):
+    c = Changelog(open('test_changelog').read())
+
+    c.debian_version = '2'
+    self.assertEqual(c.debian_version, '2')
+    self.assertEqual(c.full_version, '1:1.4.1-2')
+
+    c.upstream_version = '1.4.2'
+    self.assertEqual(c.upstream_version, '1.4.2')
+    self.assertEqual(c.full_version, '1:1.4.2-2')
+
+    c.epoch = '2'
+    self.assertEqual(c.epoch, '2')
+    self.assertEqual(c.full_version, '2:1.4.2-2')
+
+    self.assertEqual(str(c.version), c.full_version)
+
+    c.full_version = '1:1.4.1-1'
+    self.assertEqual(c.full_version, '1:1.4.1-1')
+    self.assertEqual(c.epoch, '1')
+    self.assertEqual(c.upstream_version, '1.4.1')
+    self.assertEqual(c.debian_version, '1')
 
 class VersionTests(unittest.TestCase):
 
@@ -362,7 +456,30 @@ class VersionTests(unittest.TestCase):
     self._test_version('1.8RC4b', None, '1.8RC4b', None)
     self._test_version('0.9~rc1-1', None, '0.9~rc1', '1')
 
+  def test_version_updating(self):
+    v = Version('1:1.4.1-1')
+
+    v.debian_version = '2'
+    self.assertEqual(v.debian_version, '2')
+    self.assertEqual(v.full_version, '1:1.4.1-2')
+
+    v.upstream_version = '1.4.2'
+    self.assertEqual(v.upstream_version, '1.4.2')
+    self.assertEqual(v.full_version, '1:1.4.2-2')
+
+    v.epoch = '2'
+    self.assertEqual(v.epoch, '2')
+    self.assertEqual(v.full_version, '2:1.4.2-2')
+
+    self.assertEqual(str(v), v.full_version)
+
+    v.full_version = '1:1.4.1-1'
+    self.assertEqual(v.full_version, '1:1.4.1-1')
+    self.assertEqual(v.epoch, '1')
+    self.assertEqual(v.upstream_version, '1.4.1')
+    self.assertEqual(v.debian_version, '1')
 
 if __name__ == "__main__":
   _test()
 
+# vim:softtabstop=2 shiftwidth=2 expandtab
