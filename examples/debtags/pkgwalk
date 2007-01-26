@@ -53,7 +53,8 @@ if __name__ == '__main__':
 	# Loop until the user chooses to quit
 	done = False
 	while not done:
-		# Compute a package weight according to how old it is
+		# Compute a package weight according to how old it is in the
+		# trail
 		pkgweight = {}
 		for idx, pkg in enumerate(trail):
 			pkgweight[pkg] = 1.-(idx/maxlen)
