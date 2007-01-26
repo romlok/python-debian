@@ -1,0 +1,107 @@
+#!/usr/bin/python
+#
+# Copyright (C) 2007  Enrico Zini <enrico@debian.org>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+
+import sys
+
+# Requires python-extractor, python-magic and python-debtags
+from debian_bundle import debtags
+import re
+from optparse import OptionParser
+import apt
+
+
+VERSION="0.1"
+
+class Parser(OptionParser):
+	def __init__(self, *args, **kwargs):
+		OptionParser.__init__(self, *args, **kwargs)
+
+	def error(self, msg):
+		sys.stderr.write("%s: error: %s\n\n" % (self._get_prog_name(), msg))
+		self.print_help(sys.stderr)
+		sys.exit(2)
+
+if __name__ == '__main__':
+	parser = Parser(usage="usage: %prog [options] pkgname",
+			version="%prog "+ VERSION,
+			description="walk through Debian packages")
+	parser.add_option("--tagdb", default="/var/lib/debtags/package-tags", help="Tag database to use (default: %default)")
+
+	(options, args) = parser.parse_args()
+
+	if len(args) == 0:
+		parser.error("Please provide the name of an initial package")
+
+	# Read full database 
+	db = debtags.DB()
+	tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
+	db.read(open(options.tagdb, "r"), lambda x: not tagFilter.match(x))
+
+	aptCache = apt.Cache()
+
+	maxlen = 3
+	trail = [ args[0] ]
+
+	done = False
+	while not done:
+		# For every tag, find the number of packages in trail that have the tag
+		tagscores = {}
+		for pkg in trail:
+			for tag in db.tagsOfPackage(pkg):
+				if tag in tagscores:
+					tagscores[tag] += 1
+				else:
+					tagscores[tag] = 1
+		# Divide every tag score by the number of packages in the trail
+		for tag in tagscores.iterkeys():
+			tagscores[tag] = float(tagscores[tag]) / float(len(trail))
+
+		# Find the merged tagset of the packages in trail
+		trailtags = tagscores.keys()
+
+		# Get the list of packages whose tagsets intersect the trail tagset
+		nextpkgs = set()
+		ttset = set(trailtags)
+		for pkg, tags in db.iterPackagesTags():
+			if ttset & tags:
+				nextpkgs.add(pkg)
+
+		# Score every package by the sum of the trail cardinalities of its tags
+		def pkgscore(pkg):
+			score = 0.0
+			for tag in db.tagsOfPackage(pkg):
+				if tag in tagscores:
+					score += tagscores[tag]
+			return score
+		
+		# Show the first 20 packages in reverse score order
+		#display = sorted(nextpkgs - set(trail), key=pkgscore, reverse=True)[:20]
+		display = sorted(nextpkgs, key=pkgscore, reverse=True)[:20]
+		for num, pkg in enumerate(display):
+			aptpkg = aptCache[pkg]
+			desc = aptpkg.rawDescription.split("\n")[0]
+			print "%2d) %s - %s" % (num + 1, pkg, desc)
+
+		# Ask for a new package from the list
+		while True:
+			ans = raw_input("> ").strip()
+			if ans[0] == 'q':
+				done = True
+				break
+			elif ans.isdigit():
+				num = int(ans) - 1
+				if num < len(display):
+					# TODO: on a different kind of interface, display pkg
+					trail = [display[num]] + trail[:maxlen]
+					break
+				else:
+					print "The number is too high"
+
+
+# vim:set ts=4 sw=4:
