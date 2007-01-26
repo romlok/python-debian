@@ -56,7 +56,7 @@ if __name__ == '__main__':
 		# Compute a package weight according to how old it is
 		pkgweight = {}
 		for idx, pkg in enumerate(trail):
-			pkgweight[pkg] = 1.-(idx/10)
+			pkgweight[pkg] = 1.-(idx/maxlen)
 
 		# For every tag, find the number of packages in trail that have the tag
 		tagscores = {}
