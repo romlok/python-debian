@@ -23,7 +23,7 @@ class Parser(OptionParser):
 		OptionParser.__init__(self, *args, **kwargs)
 
 	def error(self, msg):
-		sys.stderr.write("%s: error: %s\n\n" % (self._get_prog_name(), msg))
+		sys.stderr.write("%s: error: %s\n\n" % (self.get_prog_name(), msg))
 		self.print_help(sys.stderr)
 		sys.exit(2)
 
@@ -45,34 +45,44 @@ if __name__ == '__main__':
 
 	aptCache = apt.Cache()
 
-	maxlen = 3
+	# Maximum number of previous packages to remember 
+	maxlen = 5
+	# Initial package selection
 	trail = [ args[0] ]
 
+	# Loop until the user chooses to quit
 	done = False
 	while not done:
+		# Compute a package weight according to how old it is
+		pkgweight = {}
+		for idx, pkg in enumerate(trail):
+			pkgweight[pkg] = 1.-(idx/10)
+
 		# For every tag, find the number of packages in trail that have the tag
 		tagscores = {}
 		for pkg in trail:
 			for tag in db.tagsOfPackage(pkg):
 				if tag in tagscores:
-					tagscores[tag] += 1
+					tagscores[tag] += pkgweight[pkg]
 				else:
-					tagscores[tag] = 1
-		# Divide every tag score by the number of packages in the trail
+					tagscores[tag] = pkgweight[pkg]
+
+		# Divide every tag score by the number of packages in the trail,
+		# obtaining a 'tag weight'.  A package can be later scored by summing
+		# the weight of all its tags.
 		for tag in tagscores.iterkeys():
 			tagscores[tag] = float(tagscores[tag]) / float(len(trail))
 
 		# Find the merged tagset of the packages in trail
-		trailtags = tagscores.keys()
+		trailtags = set(tagscores.keys())
 
 		# Get the list of packages whose tagsets intersect the trail tagset
 		nextpkgs = set()
-		ttset = set(trailtags)
 		for pkg, tags in db.iterPackagesTags():
-			if ttset & tags:
+			if trailtags & tags:
 				nextpkgs.add(pkg)
 
-		# Score every package by the sum of the trail cardinalities of its tags
+		# Score every package by the sum of the weight of its tags
 		def pkgscore(pkg):
 			score = 0.0
 			for tag in db.tagsOfPackage(pkg):
@@ -88,7 +98,7 @@ if __name__ == '__main__':
 			desc = aptpkg.rawDescription.split("\n")[0]
 			print "%2d) %s - %s" % (num + 1, pkg, desc)
 
-		# Ask for a new package from the list
+		# Ask the user to choose a new package
 		while True:
 			ans = raw_input("> ").strip()
 			if ans[0] == 'q':
@@ -97,7 +107,8 @@ if __name__ == '__main__':
 			elif ans.isdigit():
 				num = int(ans) - 1
 				if num < len(display):
-					# TODO: on a different kind of interface, display pkg
+					# TODO: on a different kind of interface, display the full
+					# description of pkg
 					trail = [display[num]] + trail[:maxlen]
 					break
 				else:
