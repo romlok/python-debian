@@ -20,6 +20,7 @@ python-debian (0.1.1) UNRELEASED; urgency=low
       to be parsed and used, and I'm not entirely sure what is right.
   * README.changelog:
     - Update the documentation to reflect the changes mentioned above
+  * Add debian/NEWS to warn of the API changes.
 
  -- John Wright <john@movingsucks.org>  Sat, 25 Nov 2006 04:40:14 -0700
 

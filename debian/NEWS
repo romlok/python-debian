@@ -1,0 +1,23 @@
+python-debian (0.1.1) unstable; urgency=low
+
+  This release includes an API incompatible change to changelog.py, sorry for
+  this. The previous behaviour was broken though, and the change fixes that
+  as well as being a cleaner API as well.
+
+  The change is that most methods of Changelog (and Version) are now
+  properties. If you are using them and you get an error message on update
+  from a line something like
+
+     version = changelog.full_version()
+
+  or many of the other methods, then you can just delete the parentheses from
+  the end of the line, and access the property instead.
+
+  The other change is that Version objects are now immutable. If you were
+  using the mutable behaviour then I apologise, but the code was broken. If 
+  you would like mutable objects let me know and I will code up the changes
+  necessary.
+
+  As always details of how to use the model are in README.changelog.
+
+ -- James Westby <jw+debian@jameswestby.net>  Tue, 30 Jan 2007 07:43:41 +0000
