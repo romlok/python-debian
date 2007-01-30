@@ -11,7 +11,7 @@ gnutls13 (1:1.4.1-1) unstable; urgency=low
 
  -- Andreas Metzler <ametzler@debian.org>  Sat, 15 Jul 2006 11:11:08 +0200
 
-gnutls13 (1.4.0-3) unstable; urgency=low
+gnutls13 (1.4aA.0-3) unstable; urgency=low
 
   [ Andreas Metzler ]
   * Strip "libgnutls-config --libs"' output to only list stuff required for

@@ -180,7 +180,7 @@ class ChangeBlock(object):
         block += "\n"
     return block
 
-topline = re.compile('^([a-z0-9][-a-z0-9.+]+) \(([-0-9a-z.:~+]+)\) '
+topline = re.compile('^([a-z0-9][-a-z0-9.+]+) \(([-0-9a-zA-Z.:~+]+)\) '
       +'([-a-zA-Z ]+); urgency=([a-z]+)')
 blankline = re.compile('^[ \t]*$')
 change = re.compile('^[ ][ ]+.*$')
