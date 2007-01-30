@@ -1,5 +1,6 @@
-python-debian (0.1.1) UNRELEASED; urgency=low
+python-debian (0.1.1) unstable; urgency=low
 
+  [ John Wright ]
   * changelog.py:
     - Version class:
       + Subclass debian_support.Version, for rich comparison
@@ -13,15 +14,21 @@ python-debian (0.1.1) UNRELEASED; urgency=low
         properties anyway.  Please see README.changelog.
       + You can now assign a string to the version attribute, and it will be
         coerced into a Version object
-      + Added a method to write the changelog to an open file.
+
+  [ James Westby ]
+  * changelog.py:
+    - Added a method to write the changelog to an open file.
     - Allow single digit day with no extra space in the endline of a
       changelog. Hopefully this wont allow things to be parsed that will
       be rejected by the more important tools. It does allow more files
       to be parsed and used, and I'm not entirely sure what is right.
+    - Allow uppercase characters in the version number when parsing
+      changelogs. Thanks to Jelmer Vernooij for the report and the fix.
   * README.changelog:
     - Update the documentation to reflect the changes mentioned above
+  * Add debian/NEWS to warn of the API changes.
 
- -- John Wright <john@movingsucks.org>  Sat, 25 Nov 2006 04:40:14 -0700
+ -- James Westby <jw+debian@jameswestby.net>  Tue, 30 Jan 2007 20:56:44 +0000
 
 python-debian (0.1.0) experimental; urgency=low
 
