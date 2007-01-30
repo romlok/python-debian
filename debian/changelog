@@ -1,4 +1,4 @@
-python-debian (0.1.1) UNRELEASED; urgency=low
+python-debian (0.1.1) unstable; urgency=low
 
   [ John Wright ]
   * changelog.py:
@@ -28,7 +28,7 @@ python-debian (0.1.1) UNRELEASED; urgency=low
     - Update the documentation to reflect the changes mentioned above
   * Add debian/NEWS to warn of the API changes.
 
- -- James Westby <jw+debian@jameswestby.net>  Tue, 30 Jan 2007 18:57:22 +0000
+ -- James Westby <jw+debian@jameswestby.net>  Tue, 30 Jan 2007 20:56:44 +0000
 
 python-debian (0.1.0) experimental; urgency=low
 
