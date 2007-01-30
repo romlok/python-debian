@@ -28,6 +28,12 @@ python-debian (0.1.1) unstable; urgency=low
     - Update the documentation to reflect the changes mentioned above
   * Add debian/NEWS to warn of the API changes.
 
+  [ Enrico Zini ]
+  * debtags.py:
+    - Added various methods after the work on the inferrer of tag
+      relationships
+    - Added tagminer and pkgwalk examples
+
  -- James Westby <jw+debian@jameswestby.net>  Tue, 30 Jan 2007 20:56:44 +0000
 
 python-debian (0.1.0) experimental; urgency=low
