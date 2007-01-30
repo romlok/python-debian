@@ -7,6 +7,8 @@
 # Foundation; either version 2 of the License, or (at your option) any later
 # version.
 
+# Given a file, search Debian packages that can somehow handle it
+
 import sys
 
 # Requires python-extractor, python-magic and python-debtags
