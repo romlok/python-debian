@@ -1,3 +1,12 @@
+python-debian (0.1.2) unstable; urgency=low
+
+  [ James Westby ]
+  * debian_support.py
+    - Support ~ in version numbers when python-apt is not installed.
+  * Turn on the testsuites of changelog.py and debtags.py in the build.
+
+ -- James Westby <jw+debian@jameswestby.net>  Sun,  4 Feb 2007 16:18:32 +0000
+
 python-debian (0.1.1) unstable; urgency=low
 
   [ John Wright ]
