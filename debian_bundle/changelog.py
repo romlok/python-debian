@@ -449,12 +449,17 @@ class VersionTests(unittest.TestCase):
     self._test_version('20060611-0.0', None, '20060611', '0.0')
     self._test_version('0.52.2-5.1', None, '0.52.2', '5.1')
     self._test_version('7.0-035+1', None, '7.0', '035+1')
-    self._test_version('1.1.0+cvs20060620-1+2.6.15-8', None, 
+    self._test_version('1.1.0+cvs20060620-1+2.6.15-8', None,
         '1.1.0+cvs20060620-1+2.6.15', '8')
-    self._test_version('1.1.0+cvs20060620-1+1.0', None, '1.1.0+cvs20060620', '1+1.0')
-    self._test_version('4.2.0a+stable-2sarge1', None, '4.2.0a+stable', '2sarge1')
+    self._test_version('1.1.0+cvs20060620-1+1.0', None, '1.1.0+cvs20060620',
+                       '1+1.0')
+    self._test_version('4.2.0a+stable-2sarge1', None, '4.2.0a+stable',
+                       '2sarge1')
     self._test_version('1.8RC4b', None, '1.8RC4b', None)
     self._test_version('0.9~rc1-1', None, '0.9~rc1', '1')
+    self._test_version('2:1.0.4+svn26-1ubuntu1', '2', '1.0.4+svn26',
+                       '1ubuntu1')
+    self._test_version('2:1.0.4~rc2-1', '2', '1.0.4~rc2', '1')
 
   def test_version_updating(self):
     v = Version('1:1.4.1-1')

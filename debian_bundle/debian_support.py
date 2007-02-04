@@ -91,7 +91,7 @@ else:
         for x in range(ord('a'), ord('z') + 1):
             letterValue[x] = chr(c)
             c += 1
-        for x in "+-.:":
+        for x in "+-.:~":
             letterValue[ord(x)] = chr(c)
             c += 1
     initLetterValue()
@@ -120,8 +120,8 @@ else:
             return cmp(self.__parsed, other.__parsed)
 
         def __parse(self, v, regexp=\
-                    re.compile(r'^(?:(\d+):)?([A-Za-z0-9.+:-]+?)'
-                               + r'(?:-([A-Za-z0-9.+]+))?$')):
+                    re.compile(r'^(?:(\d+):)?([A-Za-z0-9.+~:-]+?)'
+                               + r'(?:-([A-Za-z0-9.+~]+))?$')):
             match = regexp.match(v)
             if match is None:
                 raise ValueError, "invalid Debian version string"

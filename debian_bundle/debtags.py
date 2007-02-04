@@ -431,10 +431,10 @@ class DB:
 		have 'hasalsotag' with a score of 'score'.
 		"""
 		for pivot in self.iterTags():
-			with = self.filterPackagesTags(lambda pt: pivot in pt[1])
+			with_ = self.filterPackagesTags(lambda pt: pivot in pt[1])
 			without = self.filterPackagesTags(lambda pt: pivot not in pt[1])
-			for tag in with.iterTags():
+			for tag in with_.iterTags():
 				if tag == pivot: continue
-				has = float(with.card(tag)) / float(with.packageCount())
+				has = float(with_.card(tag)) / float(with_.packageCount())
 				hasnt = float(without.card(tag)) / float(without.packageCount())
 				yield pivot, tag, has - hasnt
