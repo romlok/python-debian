@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-import math, re
+import math, re, cPickle
 
 def parseTags(input):
 	lre = re.compile(r"^(.+?)(?::?\s*|:\s+(.+?)\s*)$")
@@ -144,6 +144,16 @@ class DB:
 			db.read(open("/var/lib/debtags/package-tags", "r"))
 		"""
 		self.db, self.rdb = readTagDatabaseBothWays(input, tagFilter)
+
+	def qwrite(self, file):
+		"Quickly write the data to a pickled file"
+		cPickle.dump(self.db, file)
+		cPickle.dump(self.rdb, file)
+
+	def qread(self, file):
+		"Quickly read the data from a pickled file"
+		self.db = cPickle.load(file)
+		self.rdb = cPickle.load(file)
 
 	def insert(self, pkg, tags):
 		self.db[pkg] = tags.copy()
