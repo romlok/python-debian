@@ -5,6 +5,11 @@ Currently supported are
 
   * Debtags data with debtags.py
   * Debian changelogs with changelog.py
+  * Packages files and the like with debian_support.
+
+Some of the modules will use python-apt for some of the functions. It should
+make no difference if it is installed, but if you find a bug installing it
+might help.
 
 If you have a module that is for manipulation or interrogation of Debian 
 specific data then consider adding it to this package. You can discuss it with 
