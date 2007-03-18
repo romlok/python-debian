@@ -3,7 +3,8 @@ python-debian (0.1.2) unstable; urgency=low
   [ James Westby ]
   * debian_support.py
     - Support ~ in version numbers when python-apt is not installed.
-  * Turn on the testsuites of changelog.py and debtags.py in the build.
+  * Turn on the testsuites of changelog.py, debtags.py and python_support.py
+    in the build.
   * debtags.py
     - Rename with to with_ to avoid a warning on python2.5 as with will be
       a keyword in 2.6

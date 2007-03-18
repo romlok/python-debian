@@ -478,6 +478,10 @@ def test():
     assert Version('1:500') < Version('1:5000')
     assert Version('100:500') > Version('11:5000')
     assert Version('1.0.4-2') > Version('1.0pre7-2')
+    assert Version('1.5~rc1') < Version('1.5')
+    assert Version('1.5~rc1') < Version('1.5+b1')
+    assert Version('1.5~rc1') < Version('1.5~rc2')
+    assert Version('1.5~rc1') > Version('1.5~dev0')
 
     # Release
     assert internRelease('sarge') < internRelease('etch')
