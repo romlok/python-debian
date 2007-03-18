@@ -10,8 +10,10 @@ Standards-Version: 3.7.2
 Package: python-debian
 Architecture: all
 Depends: ${python:Depends}
+Suggests: python-apt
 Description: python modules to work with Debian-related data formats
  This package provides python modules that abstract many formats of Debian 
  related files. Currently handled are:
   * Debtags information.
   * debian/changelog.
+  * Packages files.
