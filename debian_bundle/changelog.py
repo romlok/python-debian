@@ -184,8 +184,8 @@ topline = re.compile('^([a-z0-9][-a-z0-9.+]+) \(([-0-9a-zA-Z.:~+]+)\) '
       +'([-a-zA-Z ]+); urgency=([a-z]+)')
 blankline = re.compile('^[ \t]*$')
 change = re.compile('^[ ][ ]+.*$')
-endline = re.compile('^ -- (.*)  (\w\w\w, (\d| \d|\d\d) \w\w\w \d\d\d\d '+
-      '\d\d:\d\d:\d\d [-+]\d\d\d\d( \(.*\))?)$')
+endline = re.compile('^ -- (.*)  (\w\w\w, +(\d| \d|\d\d) \w\w\w \d\d\d\d '+
+      '\d\d:\d\d:\d\d [-+]\d\d\d\d( \(.*\))?)\s*$')
 
 class Changelog(object):
   """Represents a debian/changelog file. You can ask it several things about
