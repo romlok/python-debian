@@ -1,0 +1,58 @@
+python-debian (0.1.2) unstable; urgency=low
+
+  [ James Westby ]
+  * debian_support.py
+    - Support ~ in version numbers when python-apt is not installed.
+  * Turn on the testsuites of changelog.py, and debtags.py in the build.
+  * debtags.py
+    - Rename with to with_ to avoid a warning on python2.5 as with will be
+      a keyword in 2.6. (Closes: #409333)
+  * Suggest python-apt and mention why in the README.
+
+  [Reinhard Tartler]
+  * Fix the regex matching the end line of a debian/changelog. Using
+    improved regex contributed by Francois-Denis Gonthier, thanks!
+    (Closes: #410880)
+  * disable python_support.py testrun, it is missing in the branch.
+  * add myself to uploaders.
+
+ -- Reinhard Tartler <siretart@tauware.de>  Thu, 14 Jun 2007 19:54:13 +0100  
+
+python-debian (0.1.1) unstable; urgency=low
+
+  [ John Wright ]
+  * changelog.py:
+    - Version class:
+      + Subclass debian_support.Version, for rich comparison
+      + Changing any attribute now automatically updates any other affected
+        attribute (i.e. changing full_version will update all of the other
+        attributes; changing debian_version will update full_version)
+    - Changelog class:
+      + Many "getter" and "setter" methods were replaced with properties (so
+        they appear as regular object attributes).  Most set_* methods remain
+        for compatibility, and they're the actual set methods for the
+        properties anyway.  Please see README.changelog.
+      + You can now assign a string to the version attribute, and it will be
+        coerced into a Version object
+
+  [ James Westby ]
+  * changelog.py:
+    - Added a method to write the changelog to an open file.
+    - Allow single digit day with no extra space in the endline of a
+      changelog. Hopefully this wont allow things to be parsed that will
+      be rejected by the more important tools. It does allow more files
+      to be parsed and used, and I'm not entirely sure what is right.
+    - Allow uppercase characters in the version number when parsing
+      changelogs. Thanks to Jelmer Vernooij for the report and the fix.
+  * README.changelog:
+    - Update the documentation to reflect the changes mentioned above
+  * Add debian/NEWS to warn of the API changes.
+
+  [ Enrico Zini ]
+  * debtags.py:
+    - Added various methods after the work on the inferrer of tag
+      relationships
+    - Added tagminer and pkgwalk examples
+
+ -- James Westby <jw+debian@jameswestby.net>  Tue,  30 Jan 2007 20:56:44 +0000
+

@@ -392,6 +392,11 @@ class ChangelogTests(unittest.TestCase):
       self.assertEqual(clines[i], cslines[i])
     self.assertEqual(len(clines), len(cslines), "Different lengths")
 
+  def test_strange_changelogs(self):
+    """ Just opens and parses a strange changelog """
+    c = open('test_strange_changelog').read()
+    cl = Changelog(c)
+
   def test_set_version_with_string(self):
     c1 = Changelog(open('test_modify_changelog1').read())
     c2 = Changelog(open('test_modify_changelog1').read())
