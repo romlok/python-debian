@@ -198,12 +198,12 @@ class Changelog(object):
     self._blocks = []
     if file is not None:
       try:
-        self.parse_changelog(file)
+        self.parse_changelog(file, max_blocks)
       except ChangelogParseError:
         pass
 
 
-  def parse_changelog(self, file):
+  def parse_changelog(self, file, max_blocks=None):
       before = 1
       inblock = 2
 

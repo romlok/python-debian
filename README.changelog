@@ -49,6 +49,11 @@ The Changelog class provides the following interesting attributes and methods:
      The date associated with the current entry. Should be a properly formatted
      string with the date and timezone.
 
+ * parse_changelog(file)
+     If you create an Changelog object without sepcifying a changelog file, you 
+     can parse a changelog file with this method. If the changelog doesn't parse
+     cleanly, a ChangelogParseError exception is thrown. The constructor will
+     parse the changelog on a best efford basis.
  * add_change(change)
      Adds a change entry to the most recent version. The change entry should
      conform to the required format of the changelog (i.e. start with two 
@@ -73,8 +78,8 @@ There are a number of errors that may be thrown by the module.
  * ChangelogParseError
      Indicates that the changelog could not be parsed, i.e. there is a line
      that does not conform to the requirements, or a line was found out of its
-     normal position. May be thrown when using the constructor with an existing
-     changelog.
+     normal position. May be thrown when using the method parse_changelog. The
+     constructor will not throw this exception.
  * ChangelogCreateError
      Some information required to create the changelog was not available. This
      can be thrown when str() is used on the object, and will occur if a 
