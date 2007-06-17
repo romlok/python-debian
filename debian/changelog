@@ -1,3 +1,15 @@
+python-debian (0.1.3) unstable; urgency=low
+
+  [ James Westby ]
+  * changelog.py
+    - Add max_blocks parameter to Changelog constructor. This limits the
+      number of blocks that will be parsed to that number. If you only need
+      the latest entry then pass max_blocks=1 and you will only have one
+      block. This is also useful to avoid trying to parse old changelog
+      entries that don't follow the current format. (Closes: #429357)
+
+ -- James Westby <jw+debian@jameswestby.net>  Sun, 17 Jun 2007 13:25:20 +0100
+
 python-debian (0.1.2) unstable; urgency=low
 
   [ James Westby ]
