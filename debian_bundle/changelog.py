@@ -192,7 +192,7 @@ class Changelog(object):
   the file."""
 
 
-  def __init__(self, file=None):
+  def __init__(self, file=None, max_blocks=None):
     """Set up the Changelog for use. file is the contects of the changelog.
     """
     self._blocks = []
@@ -248,6 +248,8 @@ class Changelog(object):
               (package, version, distributions, urgency, author, date) = \
                   (None, None, None, None, None, None)
               changes = []
+              if max_blocks is not None and len(self._blocks) >= max_blocks:
+                break
             else:
               m = change.match(line)
               if m is None:
@@ -359,6 +361,26 @@ class ChangelogTests(unittest.TestCase):
     for i in range(len(clines)):
       self.assertEqual(clines[i], cslines[i])
     self.assertEqual(len(clines), len(cslines), "Different lengths")
+
+  def test_create_changelog_single_block(self):
+
+    c = open('test_changelog').read()
+    cl = Changelog(c, max_blocks=1)
+    cs = str(cl)
+    self.assertEqual(cs,
+    """gnutls13 (1:1.4.1-1) unstable; urgency=low
+
+  [ James Westby ]
+  * New upstream release.
+  * Remove the following patches as they are now included upstream:
+    - 10_certtoolmanpage.diff
+    - 15_fixcompilewarning.diff
+    - 30_man_hyphen_*.patch
+  * Link the API reference in /usr/share/gtk-doc/html as gnutls rather than
+    gnutls-api so that devhelp can find it.
+
+ -- Andreas Metzler <ametzler@debian.org>  Sat, 15 Jul 2006 11:11:08 +0200
+""")
 
   def test_modify_changelog(self):
 

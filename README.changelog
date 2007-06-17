@@ -10,6 +10,12 @@ Create a changelog object using the constuctor. Pass it the contents of the
 file if there are some entries, or None to create an empty changelog.
 See /usr/share/doc/python-debian/examples/changelog/ for examples of usage.
 
+If you have the full contents of a changelog, but are only interested in the
+most recent versions you can pass the max_blocks keyword parameter to the
+constuctor to limit the number of blocks of the changelog that will be parsed.
+If you are only interested in the most recent version of the package then pass
+max_blocks=1.
+
 The Changelog class provides the following interesting attributes and methods:
 
  * version
