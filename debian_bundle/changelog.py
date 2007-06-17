@@ -192,18 +192,15 @@ class Changelog(object):
   the file."""
 
 
-  def __init__(self, file=None, fatal=True):
+  def __init__(self, file=None):
     """Set up the Changelog for use. file is the contects of the changelog.
     """
     self._blocks = []
     if file is not None:
-      if fatal:
+      try:
         self.parse_changelog(file)
-      else:
-        try:
-          self.parse_changelog(file)
-        except ChangelogParseError:
-          pass
+      except ChangelogParseError:
+        pass
 
 
   def parse_changelog(self, file):
