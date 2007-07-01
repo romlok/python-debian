@@ -8,17 +8,25 @@ python-debian (0.1.4) UNRELEASED; urgency=low
     - added grep-maintainer example to show the Packages parsing API
 
   [ John Wright ]
+  * debian_bundle/deb822.py, debian_bundle/test_deb822.py, deb822.py:
+    - Import latest version of deb822, and create a "dummy" top-level module
+      for compatibility
   * setup.py:
     - The version wasn't getting updated, so I've renamed it to setup.py.in,
       and added a __CHANGELOG_VERSION__ placeholder
   * debian/rules:
     - Generate generate setup.py from setup.py.in, filling in the version
       information from debian/changelog
+    - No longer delete deb822 files
   * debian/control:
     - The above generation depends on m4, so add that as a Build-Depends
     - Add myself as an uploader
+    - Add Provides, Conflicts, and Replaces fields for python-deb822
+    - When describing features, mention which modules they are implemented in
+  * HISTORY.deb822, debian/docs:
+    - Install old changelog for deb822 as /usr/share/doc/python-debian/HISTORY.deb822
 
- -- John Wright <john@movingsucks.org>  Sat, 30 Jun 2007 21:53:00 -0600
+ -- John Wright <john.wright@hp.com>  Sun, 01 Jul 2007 16:03:35 -0600
 
 python-debian (0.1.3) unstable; urgency=low
 

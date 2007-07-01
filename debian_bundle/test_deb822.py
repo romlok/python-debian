@@ -186,6 +186,12 @@ class TestDeb822Dict(unittest.TestCase):
 
         self.assertEqual(keys, keys2)
 
+    def test_derived_dict_equality(self):
+        d1 = self.make_dict()
+        d2 = dict(d1)
+
+        self.assertEqual(d1, d2)
+
 
 class TestDeb822(unittest.TestCase):
     def assertWellParsed(self, deb822_, dict_):
