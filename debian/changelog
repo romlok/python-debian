@@ -24,7 +24,8 @@ python-debian (0.1.4) UNRELEASED; urgency=low
     - Add Provides, Conflicts, and Replaces fields for python-deb822
     - When describing features, mention which modules they are implemented in
   * HISTORY.deb822, debian/docs:
-    - Install old changelog for deb822 as /usr/share/doc/python-debian/HISTORY.deb822
+    - Install old changelog for deb822 as
+      /usr/share/doc/python-debian/HISTORY.deb822
 
  -- John Wright <john.wright@hp.com>  Sun, 01 Jul 2007 16:03:35 -0600
 
