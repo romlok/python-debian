@@ -7,7 +7,18 @@ python-debian (0.1.4) UNRELEASED; urgency=low
   * examples/
     - added grep-maintainer example to show the Packages parsing API
 
- -- Stefano Zacchiroli <zack@debian.org>  Sat, 30 Jun 2007 15:27:46 +0200
+  [ John Wright ]
+  * setup.py:
+    - The version wasn't getting updated, so I've renamed it to setup.py.in,
+      and added a __CHANGELOG_VERSION__ placeholder
+  * debian/rules:
+    - Generate generate setup.py from setup.py.in, filling in the version
+      information from debian/changelog
+  * debian/control:
+    - The above generation depends on m4, so add that as a Build-Depends
+    - Add myself as an uploader
+
+ -- John Wright <john@movingsucks.org>  Sat, 30 Jun 2007 21:53:00 -0600
 
 python-debian (0.1.3) unstable; urgency=low
 

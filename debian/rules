@@ -4,8 +4,13 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+VERSION := $(shell dpkg-parsechangelog | grep '^Version: ' | awk '{print $$2}')
+
+setup.py: setup.py.in
+	m4 -D __CHANGELOG_VERSION__=$(VERSION) < $< > $@
+
 build: build-stamp
-build-stamp:
+build-stamp: setup.py
 	dh_testdir
 
 	# Add here commands to compile the package.
@@ -19,7 +24,7 @@ build-stamp:
 
 	touch $@
 
-clean:
+clean: setup.py
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp
@@ -28,6 +33,7 @@ clean:
 	python setup.py clean
 	rm -rf build/
 	rm -f README.debtags
+	rm -f setup.py
 
 	dh_clean
 
