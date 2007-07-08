@@ -1,3 +1,12 @@
+python-debian (0.1.5) unstable; urgency=low
+
+  [ James Westby ]
+  * changelog.py
+    - Add allow_empty_author option to changelog to allow the author line
+      to have no information.
+
+ -- James Westby <jw+debian@jameswestby.net>  Sun, 08 Jul 2007 19:16:04 +0100
+
 python-debian (0.1.4) UNRELEASED; urgency=low
 
   [ Stefano Zacchiroli ]

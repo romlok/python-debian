@@ -91,6 +91,22 @@ There are a number of errors that may be thrown by the module.
      a Version object directly to assign to the version attribute of a
      Changelog object.
 
+If you have a changelog that may have no author information yet as it is still
+a work in progress, i.e. the author line is just
+
+    --
+
+rather than
+
+    -- Author <author@debian.org>  Thu, 12 Dec 2006 12:23:34 +0000
+
+then you can pass
+
+    allow_empty_author=True
+
+to the Changelog constructor. If you do this then the ``author`` and ``date``
+attributes may be ``None``.
+
 This file is (C) 2006-7 James Westby, and licensed under the GPL, see 
 changelog.py for details.
 

@@ -186,24 +186,26 @@ blankline = re.compile('^[ \t]*$')
 change = re.compile('^[ ][ ]+.*$')
 endline = re.compile('^ -- (.*)  (\w\w\w, +(\d| \d|\d\d) \w\w\w \d\d\d\d '+
       '\d\d:\d\d:\d\d [-+]\d\d\d\d( \(.*\))?)\s*$')
+endline_nodetails = re.compile('^ --(?: (.*)  (\w\w\w, +(\d| \d|\d\d) \w\w\w \d\d\d\d '+
+      '\d\d:\d\d:\d\d [-+]\d\d\d\d( \(.*\))?))?\s*$')
 
 class Changelog(object):
   """Represents a debian/changelog file. You can ask it several things about
   the file."""
 
 
-  def __init__(self, file=None, max_blocks=None):
+  def __init__(self, file=None, max_blocks=None, allow_empty_author=False):
     """Set up the Changelog for use. file is the contects of the changelog.
     """
     self._blocks = []
     if file is not None:
       try:
-        self.parse_changelog(file, max_blocks)
+        self.parse_changelog(file, max_blocks, allow_empty_author=allow_empty_author)
       except ChangelogParseError:
         pass
 
 
-  def parse_changelog(self, file, max_blocks=None):
+  def parse_changelog(self, file, max_blocks=None, allow_empty_author=False):
       before = 1
       inblock = 2
 
@@ -237,7 +239,10 @@ class Changelog(object):
           if m is not None:
             changes.append(line)
           else:
-            m = endline.match(line)
+            if not allow_empty_author:
+              m = endline.match(line)
+            else:
+              m = endline_nodetails.match(line)
             if m is not None:
               state = before
               author = m.group(1)
@@ -436,6 +441,17 @@ class ChangelogTests(unittest.TestCase):
                       c1.debian_version),
                      (c2.full_version, c2.epoch, c2.upstream_version,
                       c2.debian_version))
+
+  def test_changelog_no_author(self):
+    c1 = Changelog("""gnutls13 (1:1.4.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ --
+""", allow_empty_author=True)
+    self.assertEqual(c1.author, None)
+    self.assertEqual(c1.date, None)
+    self.assertEqual(c1.package, "gnutls13")
 
   def test_magic_version_properties(self):
     c = Changelog(open('test_changelog').read())
