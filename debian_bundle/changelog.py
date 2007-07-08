@@ -443,15 +443,19 @@ class ChangelogTests(unittest.TestCase):
                       c2.debian_version))
 
   def test_changelog_no_author(self):
-    c1 = Changelog("""gnutls13 (1:1.4.1-1) unstable; urgency=low
+    cl_no_author = """gnutls13 (1:1.4.1-1) unstable; urgency=low
 
   * New upstream release.
 
  --
-""", allow_empty_author=True)
+"""
+    c1 = Changelog()
+    c1.parse_changelog(cl_no_author, allow_empty_author=True)
     self.assertEqual(c1.author, None)
     self.assertEqual(c1.date, None)
     self.assertEqual(c1.package, "gnutls13")
+    c2 = Changelog()
+    self.assertRaises(ChangelogParseError, c2.parse_changelog, cl_no_author)
 
   def test_magic_version_properties(self):
     c = Changelog(open('test_changelog').read())
