@@ -22,7 +22,6 @@ except:
 
 packages = PackageFile('/var/lib/dpkg/status')
 for pkg in packages:
-    pkg_dict = dict(map(lambda (x,y): (x.lower(), y), pkg))
-    if maint_RE.search(pkg_dict['maintainer']):
-        print pkg_dict['package']
+    if maint_RE.search(pkg['maintainer']):
+        print pkg['package']
 
