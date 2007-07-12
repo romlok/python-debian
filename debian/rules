@@ -7,7 +7,7 @@
 VERSION := $(shell dpkg-parsechangelog | grep '^Version: ' | awk '{print $$2}')
 
 %.py: %.py.in
-	m4 -D __CHANGELOG_VERSION__=$(VERSION) < $< > $@
+	sed -e 's/__CHANGELOG_VERSION__/$(VERSION)/' < $< > $@
 
 build: build-stamp
 build-stamp: setup.py

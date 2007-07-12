@@ -29,7 +29,6 @@ python-debian (0.1.4) UNRELEASED; urgency=low
       information from debian/changelog
     - No longer delete deb822 files
   * debian/control:
-    - The above generation depends on m4, so add that as a Build-Depends
     - Add myself as an uploader
     - Add Provides, Conflicts, and Replaces fields for python-deb822
     - When describing features, mention which modules they are implemented in
