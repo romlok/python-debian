@@ -5,7 +5,7 @@ The Python deb822 aims to provide a dict-like interface to various rfc822-like
 Debian data formats, like Packages/Sources, .changes/.dsc, pdiff Index files,
 etc. The benefit is that deb822 knows about special fields that contain
 whitespace separated sub-fields, and provides named access to them. For
-example, the "Files" filed in Source packages, which has three subfields, or
+example, the "Files" field in Source packages, which has three subfields, or
 "Files" in .changes files, which has five. These are known as "multifields".
 
 deb822 has no external dependencies, but can use python-apt if available to
@@ -13,7 +13,7 @@ parse the data, which gives a very significant performance boost when iterating
 over big Packages files.
 
 Key lookup in Deb822 objects and their multifields is case-insensitive, but the
-original case is always preserved, e.g. when printing the object. [XXX TODO]
+original case is always preserved, e.g. when printing the object.
 
 
 Classes

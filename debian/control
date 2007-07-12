@@ -12,9 +12,15 @@ Package: python-debian
 Architecture: all
 Depends: ${python:Depends}
 Suggests: python-apt
+Provides: python-deb822
+Conflicts: python-deb822
+Replaces: python-deb822
 Description: python modules to work with Debian-related data formats
  This package provides python modules that abstract many formats of Debian 
  related files. Currently handled are:
-  * Debtags information.
-  * debian/changelog.
-  * Packages files.
+  * Debtags information (debian_bundle.debtags module)
+  * debian/changelog (debian_bundle.changelog module)
+  * Packages files, pdiffs (debian_bundle.debian_support module)
+  * Control files of single or multple RFC822-style paragraphs, e.g
+    debian/control, .changes, .dsc, Packages, Sources, Release, etc.
+    (debian_bundle.deb822 module)

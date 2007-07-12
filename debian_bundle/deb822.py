@@ -30,9 +30,19 @@ except ImportError:
 
 import re
 import StringIO
+import UserDict
 
-class Deb822Dict(dict):
-    """A dictionary suitable for storing RFC822-like data.
+class Deb822Dict(UserDict.DictMixin):
+    # Subclassing UserDict.DictMixin because we're overriding so much dict
+    # functionality that subclassing dict requires overriding many more than
+    # the four methods that DictMixin requires.
+    #
+    # HACK: I'm also subclassing dict, but all the methods we care about will
+    # already be provided by DictMixin.  This way, Deb822Dict is a "real"
+    # subclass of dict, i.e.
+    #     isinstance(Deb822Dict(), dict) == True
+    # but we get out of implementing lots of methods.
+    """A dictionary-like object suitable for storing RFC822-like data.
 
     Deb822Dict behaves like a normal dict, except:
         - key lookup is case-insensitive
@@ -49,6 +59,7 @@ class Deb822Dict(dict):
     # See the end of the file for the definition of _strI
 
     def __init__(self, _dict=None, _parsed=None, _fields=None):
+        self.__dict = {}
         self.__keys = []
         self.__parsed = None
 
@@ -73,54 +84,53 @@ class Deb822Dict(dict):
             if _fields is None:
                 self.__keys.extend([ _strI(k) for k in self.__parsed.keys() ])
             else:
-                self.__keys.extend([ _strI(f) for f in fields if self.__parsed.has_key(f) ])
+                self.__keys.extend([ _strI(f) for f in _fields if self.__parsed.has_key(f) ])
 
         
+    ### BEGIN DictMixin methods
+
     def __setitem__(self, key, value):
         key = _strI(key)
         if not key in self:
             self.__keys.append(key)
-        dict.__setitem__(self, key, value)
+        self.__dict[key] = value
         
     def __getitem__(self, key):
         key = _strI(key)
         try:
-            return dict.__getitem__(self, key)
+            return self.__dict[key]
         except KeyError:
-            if self.__parsed is not None:
+            if self.__parsed is not None and key in self.__keys:
                 return self.__parsed[key]
             else:
                 raise
     
     def __delitem__(self, key):
         key = _strI(key)
-        dict.__delitem__(self, key)
+        del self.__dict[key]
         self.__keys.remove(key)
-
-    def __contains__(self, key):
-        key = _strI(key)
-        return key in self.__keys
     
+    def keys(self):
+        return [str(key) for key in self.__keys]
+    
+    ### END DictMixin methods
+
     def __repr__(self):
         return '{%s}' % ', '.join(['%r: %r' % (k, v) for k, v in self.items()])
 
-    def keys(self):
-        return list(self.__keys)
+    def __eq__(self, other):
+        mykeys = self.keys(); mykeys.sort()
+        otherkeys = other.keys(); otherkeys.sort()
+        if not mykeys == otherkeys:
+            return False
 
-    def items(self):
-        return [(k, self[k]) for k in self.keys()]
+        for key in mykeys:
+            if self[key] != other[key]:
+                return False
 
-    def values(self):
-        return [self[k] for k in self.keys()]
+        # If we got here, everything matched
+        return True
 
-    def iterkeys(self):
-        return iter(self.__keys)
-    __iter__ = iterkeys
-
-    def iteritems(self):
-        for k in self.iterkeys():
-            yield (k, self[k])
-    
     def copy(self):
         copy = Deb822Dict(self)
         return copy
@@ -134,7 +144,8 @@ class Deb822(Deb822Dict):
         """Create a new Deb822 instance.
 
         :param sequence: a string, or any any object that returns a line of
-            input each time, normally a file().
+            input each time, normally a file().  Alternately, sequence can
+            be a dict that contains the initial key-value pairs.
 
         :param fields: if given, it is interpreted as a list of fields that
             should be parsed (the rest will be discarded).
@@ -142,7 +153,12 @@ class Deb822(Deb822Dict):
         :param _parsed: internal parameter.
         """
 
-        Deb822Dict.__init__(self, _parsed=_parsed, _fields=fields)
+        if hasattr(sequence, 'items'):
+            _dict = sequence
+            sequence = None
+        else:
+            _dict = None
+        Deb822Dict.__init__(self, _dict=_dict, _parsed=_parsed, _fields=fields)
 
         if sequence is not None:
             try:
@@ -396,11 +412,11 @@ class _multivalued(Deb822):
                 self[field] = []
                 updater_method = self[field].append
             else:
-                self[field] = {}
+                self[field] = Deb822Dict()
                 updater_method = self[field].update
 
             for line in filter(None, contents.splitlines()):
-                updater_method(dict(zip(fields, line.split())))
+                updater_method(Deb822Dict(zip(fields, line.split())))
 
     def dump(self, fd=None):
         """Dump the contents in the original format
@@ -446,11 +462,43 @@ class Changes(_multivalued):
         "files": [ "md5sum", "size", "section", "priority", "name" ],
     }
 
+    def get_pool_path(self):
+        """Return the path in the pool where the files would be installed"""
+    
+        # This is based on the section listed for the first file.  While
+        # it is possible, I think, for a package to provide files in multiple
+        # sections, I haven't seen it in practice.  In any case, this should
+        # probably detect such a situation and complain, or return a list...
+        
+        s = self['files'][0]['section']
+
+        try:
+            section, subsection = s.split('/')
+        except ValueError:
+            # main is implicit
+            section = 'main'
+
+        if self['source'].startswith('lib'):
+            subdir = self['source'][:4]
+        else:
+            subdir = self['source'][0]
+
+        return 'pool/%s/%s/%s' % (section, subdir, self['source'])
+
+
 class PdiffIndex(_multivalued):
     _multivalued_fields = {
         "sha1-current": [ "SHA1", "size" ],
         "sha1-history": [ "SHA1", "size", "date" ],
         "sha1-patches": [ "SHA1", "size", "date" ],
+    }
+
+
+class Release(_multivalued):
+    _multivalued_fields = {
+        "md5sum": [ "md5sum", "size", "name" ],
+        "sha1": [ "sha1", "size", "name" ],
+        "sha256": [ "sha256", "size", "name" ],
     }
 
 Sources = Dsc
