@@ -4,12 +4,15 @@ import arfile
 import unittest
 import os
 
+from stat import * 
+
 class TestArFile(unittest.TestCase):
-#    def setUp(self):
+
     def setUp(self):
         os.system("ar r test.ar test_debfile.py arfile.py debfile.py") 
         assert os.path.exists("test.ar")
-        self.testmembers = [x.strip() for x in os.popen("ar t test.ar").readlines()]
+        self.testmembers = [ x.strip()
+                for x in os.popen("ar t test.ar").readlines() ]
         a = arfile.ArFile("test.ar")
     
     def test_getnames(self):
@@ -18,7 +21,6 @@ class TestArFile(unittest.TestCase):
 
     def test_getmember(self):
         a = arfile.ArFile("test.ar")
-        from stat import * 
 
         for member in self.testmembers:
             m = a.getmember(member)
@@ -62,4 +64,3 @@ class TestArFile(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-# vim:set ts=4 sw=4 expandtab:

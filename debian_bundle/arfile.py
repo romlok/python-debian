@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 GLOBAL_HEADER = "!<arch>\n"
-GLOBAL_HEADER_LENGTH = 8
+GLOBAL_HEADER_LENGTH = len(GLOBAL_HEADER)
 
 FILE_HEADER_LENGTH = 60
 FILE_MAGIC = "`\n"
@@ -10,21 +10,25 @@ class ArError(Exception):
     pass
 
 class ArFile(object):
-# XXX trying to mimick the interface of TarFile in the standard library
+    """ Representation of an ar archive, see man 1 ar.
+    
+    The interface of this class tries to mimick that of the TarFile module in
+    the standard library. """
 
     def __init__(self, filename=None, mode='r', fileobj=None):
-        self.__members_list = [] 
+        """ Build an ar file representation starting from either a filename or
+        an existing file object. The only supported mode is 'r' """
+
+        self.__members = [] 
+        self.__members_dict = {}
         self.__fname = filename
         self.__fileobj = fileobj
-	    
+        
         if mode == "r":
-            self.__index_archive()
+            self.__indexArchive()
         pass    # TODO write support
 
-    def __iter__(self):
-        return iter(self.getmembers())
-
-    def __index_archive(self):
+    def __indexArchive(self):
         if self.__fname:
             fp = open(self.__fname, "rb")
         elif self.__fileobj:
@@ -39,7 +43,8 @@ class ArFile(object):
             newmember = ArMember.from_file(fp, self.__fname)
             if not newmember:
                 break
-            self.__members_list.append(newmember)
+            self.__members.append(newmember)
+            self.__members_dict[newmember.name] = newmember
             #print newmember.name + " added tell " + str(fp.tell()) + " size: " + repr(newmember.size)
             if newmember.getsize() % 2 == 0: # even, no pad
                 fp.seek(newmember.getsize(), 1) # skip to next header
@@ -50,65 +55,92 @@ class ArFile(object):
             fp.close()
 
     def getmember(self, name):
-		for m in self.__members_list:
-			if name == m.name:
-				return m
+        """ Return the (last occurrence of a) member in the archive whose name
+        is 'name'. Raise KeyError if no member matches the given name.
 
-		return None
+        Note that in case of name collisions the only way to retrieve all
+        members matching a given name is to use getmembers. """
 
-    def getmembers(self): return self.__members_list
+        return self.__members_dict[name]
+
+    def getmembers(self):
+        """ Return a list of all members contained in the archive.
+
+        The list has the same order of members in the archive and can contain
+        duplicate members (i.e. members with the same name) if they are
+        duplicate in the archive itself. """
+
+        return self.__members
+
     members = property(getmembers)
 
     def getnames(self):
-        return map(lambda f: f.name, self.__members_list)
+        """ Return a list of all member names in the archive. """
 
-	def __iter__(self):
-		return self.__members_list.__iter__()
+        return map(lambda f: f.name, self.__members)
 
     def extractall():
-        pass    # TODO
+        """ Not (yet) implemented. """
+
+        raise NotImpelementedError  # TODO
 
     def extract(self, member, path):
-        pass    # TODO
+        """ Not (yet) implemented. """
+
+        raise NotImpelementedError  # TODO
 
     def extractfile(self, member):
-		for m in self__members_list:
-			if isinstance(member, ArMember) and m.name == member.name:
-					return m
-			if member == m.name:
-				return m
+        """ Return a file object corresponding to the requested member. A member
+        can be specified either as a string (its name) or as a ArMember
+        instance. """
 
-		return None 
+        for m in self.__members:
+            if isinstance(member, ArMember) and m.name == member.name:
+                return m
+            elif member == m.name:
+                return m
+            else:
+                return None 
+
+    # container emulation
+
+    def __iter__(self):
+        """ Iterate over the members of the present ar archive. """
+
+        return iter(self.__members)
+
+    def __getitem__(self, name):
+        """ Same as .getmember(name). """
+
+        return self.getmember(name)
+
 
 class ArMember(object):
-    # XXX trying to mimick the interface of TarInfo in the standard library
+    """ Member of an ar archive.
+
+    Implements most of a file object interface: read, readline, next,
+    readlines, seek, tell, close. """
 
     def __init__(self):
         self.__name = None      # member name (i.e. filename) in the archive
-        self.__mtime = None 
-        self.__owner = None 
-        self.__group = None 
-        self.__fmode  = None 
-        self.__size  = None     # member size in bytes
+        self.__mtime = None     # last modification time
+        self.__owner = None     # owner user
+        self.__group = None     # owner group
+        self.__fmode = None     # permissions
+        self.__size = None      # member size in bytes
         self.__fname = None     # file name associated with this member
-        self.__fp    = None     # file pointer 
+        self.__fp = None        # file pointer 
         self.__offset = None    # start-of-data offset
-        self.__end   = None     # end-of-data offset
-        pass    # TODO
+        self.__end = None       # end-of-data offset
 
-    def _from_file(fp, fname):
-        """fp is an open File object positioned to a valid file header or global header.
-        Returns a new ArMember on success"""
+    def from_file(fp, fname):
+        """fp is an open File object positioned on a valid file header inside
+        an ar archive. Return a new ArMember on success, None otherwise. """
 
         buf = fp.read(FILE_HEADER_LENGTH)
 
         if not buf:
-            return False
-
-# XXX testare
-        # fp is an ar archive start
-#		if buf[0:GLOBAL_HEADER_LENGTH] == GLOBAL_HEADER:
-#			buf = buf[GLOBAL_HEADER_LENGTH:] + fp.read(GLOBAL_HEADER_LENGTH)
+            return None
 
         # sanity checks
         if len(buf) < FILE_HEADER_LENGTH:
@@ -117,23 +149,23 @@ class ArMember(object):
         if buf[58:60] != FILE_MAGIC:
             raise IOError, "Incorrect file magic"
 
-# http://en.wikipedia.org/wiki/Ar_(Unix)	
-#from   to 	Name 	   				 	Format
-#0    	15 	File name 					ASCII
-#16 	27 	File modification date 		Decimal
-#28 	33 	Owner ID 					Decimal
-#34 	39 	Group ID 					Decimal
-#40 	47 	File mode 					Octal
-#48 	57 	File size in bytes 			Decimal
-#58 	59 	File magic 					\140\012
+        # http://en.wikipedia.org/wiki/Ar_(Unix)    
+        #from   to     Name                      Format
+        #0      15     File name                 ASCII
+        #16     27     File modification date    Decimal
+        #28     33     Owner ID                  Decimal
+        #34     39     Group ID                  Decimal
+        #40     47     File mode                 Octal
+        #48     57     File size in bytes        Decimal
+        #58     59     File magic                \140\012
 
-# XXX struct.unpack can be used as well here
+        # XXX struct.unpack can be used as well here
         f = ArMember()
         f.__name = buf[0:16].split("/")[0].strip()
         f.__mtime = int(buf[16:28])
         f.__owner = int(buf[28:34])
         f.__group = int(buf[34:40])
-        f.__fmode  = buf[40:48]  # XXX e' un ottale
+        f.__fmode  = buf[40:48]  # XXX octal value
         f.__size  = int(buf[48:58])
 
         f.__fname = fname
@@ -142,11 +174,12 @@ class ArMember(object):
 
         return f
 
-    from_file = staticmethod(_from_file)
+    from_file = staticmethod(from_file)
     
-# file interface
-# XXX this is not a sequence like file objects
-# XXX test padding
+    # file interface
+
+    # XXX this is not a sequence like file objects
+    # XXX test padding
     def read(self, size=0):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
@@ -162,7 +195,7 @@ class ArMember(object):
 
         return self.__fp.read(self.__end - cur)
 
-# XXX check corner cases for readline(s)
+    # XXX check corner cases for readline(s)
     def readline(self, size=None):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
@@ -217,19 +250,6 @@ class ArMember(object):
         elif whence == 2:
             self.__fp.seek(self.__end + offset, 0)
 
-        #if whence == 0: # absolute
-            #if self.__offset + offset > end: # out-of-bounds
-                #self.__fp.seek(end)
-            #else:
-                #self.__fp.seek(self.__offset + offset, 0)
-        #elif whence == 1: # relative
-            #if cur + offset > end: # out-of-bounds
-                #self.__fp.seek(end)
-            #else:
-                #self.__fp.seek(offset, 1)
-        #elif whence == 2: # relative to EOF
-            #self.__fp.seek(end)
-
     def tell(self):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
@@ -254,9 +274,6 @@ class ArMember(object):
 
         return iter(nextline())
 
-    def getoffset(self): return self.__offset
-    offset = property(getoffset)
-
     def getname(self): return self.__name
     name = property(getname)
 
@@ -275,24 +292,16 @@ class ArMember(object):
     def getsize(self): return self.__size
     size = property(getsize)
 
-
-    # ALTRE PROP da aggiungere: mtime, mode, ...
-
-    def tobuf():
-        pass    # TODO
-
-	def tofile(self):
-		return self
-
-#    FINQUI
+    def getfname(self): return self.__fname
+    fname = property(getsize)
 
 if __name__ == '__main__':
-# test
-# ar r test.ar <file1> <file2> .. <fileN>
+    # test
+    # ar r test.ar <file1> <file2> .. <fileN>
     t = ArFile("test.deb")
     print t.getmembers()
     print t.getnames()
     a = t.getmember("debian-binary")
     for l in a:
         print repr(l)
-# vim:et:ts=4
+
