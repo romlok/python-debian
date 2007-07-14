@@ -21,6 +21,9 @@ class ArFile(object):
             self.__index_archive()
         pass    # TODO write support
 
+    def __iter__(self):
+        return iter(self.getmembers())
+
     def __index_archive(self):
         if self.__fname:
             fp = open(self.__fname, "rb")
@@ -53,14 +56,10 @@ class ArFile(object):
 
 		return None
 
-    def __updateMembersList(self):
-		self.__members_list.sort(lambda f1, f2: cmp(f1.offset, f2.offset))
-
     def getmembers(self): return self.__members_list
     members = property(getmembers)
 
     def getnames(self):
-        self.__updateMembersList()
         return map(lambda f: f.name, self.__members_list)
 
 	def __iter__(self):
