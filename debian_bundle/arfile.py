@@ -40,7 +40,7 @@ class ArFile(object):
             if not newmember:
                 break
             self.__members_list.append(newmember)
-            print newmember.name + " added tell " + str(fp.tell()) + " size: " + repr(newmember.size)
+            #print newmember.name + " added tell " + str(fp.tell()) + " size: " + repr(newmember.size)
             if newmember.getsize() % 2 == 0: # even, no pad
                 fp.seek(newmember.getsize(), 1) # skip to next header
             else:
@@ -88,11 +88,12 @@ class ArMember(object):
         self.__mtime = None 
         self.__owner = None 
         self.__group = None 
-        self.__mode  = None 
+        self.__fmode  = None 
         self.__size  = None     # member size in bytes
         self.__fname = None     # file name associated with this member
-        self.__fp    = None     # XXX serve globale?
+        self.__fp    = None     # file pointer 
         self.__offset = None    # start-of-data offset
+        self.__end   = None     # end-of-data offset
         pass    # TODO
 
     def _from_file(fp, fname):
@@ -136,11 +137,12 @@ class ArMember(object):
         f.__mtime = int(buf[16:28])
         f.__owner = int(buf[28:34])
         f.__group = int(buf[34:40])
-        f.__mode  = buf[40:48]  # XXX e' un ottale
+        f.__fmode  = buf[40:48]  # XXX e' un ottale
         f.__size  = int(buf[48:58])
 
         f.__fname = fname
         f.__offset = fp.tell() # start-of-data
+        f.__end = f.__offset + f.__size
 
         return f
 
@@ -203,34 +205,42 @@ class ArMember(object):
         return lines
 
     def seek(self, offset, whence=0):
-        if offset < 0:
-            raise IOError
-
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
 
-        end = self.__offset + self.__size
-        cur = self.__fp.tell()
+        if offset + self.__fp.tell() < self.__offset:
+            raise IOError
+        
+        if whence == 1:
+            self.__fp.seek(offset, 1)
+        elif whence == 0:
+            self.__fp.seek(self.__offset + offset, 0)
+        elif whence == 2:
+            self.__fp.seek(self.__end + offset, 0)
 
-        if whence == 0: # absolute
-            if self.__offset + offset > end: # out-of-bounds
-                self.__fp.seek(end)
-            else:
-                self.__fp.seek(self.__offset + offset, 0)
-        elif whence == 1: # relative
-            if cur + offset > end: # out-of-bounds
-                self.__fp.seek(end)
-            else:
-                self.__fp.seek(offset, 1)
-        elif whence == 2: # relative to EOF
-            self.__fp.seek(end)
+        #if whence == 0: # absolute
+            #if self.__offset + offset > end: # out-of-bounds
+                #self.__fp.seek(end)
+            #else:
+                #self.__fp.seek(self.__offset + offset, 0)
+        #elif whence == 1: # relative
+            #if cur + offset > end: # out-of-bounds
+                #self.__fp.seek(end)
+            #else:
+                #self.__fp.seek(offset, 1)
+        #elif whence == 2: # relative to EOF
+            #self.__fp.seek(end)
 
     def tell(self):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
             self.__fp.seek(self.__offset)
-
-        return self.__fp.tell() - self.__offset
+        
+        cur = self.__fp.tell()
+        if cur < self.__offset:
+            return 0L
+        else:
+            return cur - self.__offset
 
     def close(self):
         if self.__fp is not None:
@@ -259,8 +269,8 @@ class ArMember(object):
     def getgroup(self): return self.__group
     group = property(getgroup)
 
-    def getmode(self): return self.__mode
-    mode = property(getmode)
+    def getfmode(self): return self.__fmode
+    fmode = property(getfmode)
 
     def getsize(self): return self.__size
     size = property(getsize)
