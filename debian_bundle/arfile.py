@@ -10,14 +10,12 @@ class ArFile(object):
 # XXX trying to mimick the interface of TarFile in the standard library
 
     def __init__(self, fname, mode="r"):
-# FIXME i membri possono avere anche lo stesso nome! meglio una lista di Member 
-        self.__members = {}   # dict: member name -> File object
-        self.__members_list = None
+        self.__members_list = [] 
         self.__fname = fname
 		
         if mode == "r":
             self.__index_archive()
-        pass    # TODO
+        pass    # TODO write support
 
     def __index_archive(self):
         fp = open(self.__fname, "rb")
@@ -29,32 +27,28 @@ class ArFile(object):
             newmember = Member.from_file(fp, self.__fname)
             if not newmember:
                 break
-            self.__members.update( {newmember.getname() : newmember} )
+            self.__members_list.append(newmember)
             fp.seek(newmember.getsize(), 1) # skip to next header
 
-        self.__updateMembersList() # XXX serve a qualcosa? 
         fp.close()
-
-
 
     def getmember(self, name):
         return self.__members[name]
 
     def __updateMembersList(self):
-        if self.__members_list is None:
-            self.__members_list = self.__members.values()
-            self.__members_list.sort(lambda f1, f2: cmp(f1.seqno, f2.seqno))
+		self.__members_list.sort(lambda f1, f2: cmp(f1.offset, f2.offset))
 
     def getmembers(self):
-        self.__updateMembersList()
+# XXX non serve, sono gia' in ordine
+#        self.__updateMembersList()
         return self.__members_list
 
     def getnames(self):
         self.__updateMembersList()
         return map(lambda f: f.name, self.__members_list)
 
-    def next():
-        pass    # TODO
+	def __iter__(self):
+		return self.__members_list.__iter__()
 
     def extractall():
         pass    # TODO
@@ -63,13 +57,18 @@ class ArFile(object):
         pass    # TODO
 
     def extractfile(self, member):
-        pass    # TODO
+		for m in self__members_list:
+			if isinstance(member, Member) and m.name == member.name:
+					return m
+			if member == m.name:
+				return m
+
+		return None 
 
 class Member(object):
     # XXX trying to mimick the interface of TarInfo in the standard library
 
     def __init__(self):
-        self.__seqno = None     # sequential number in the archive
         self.__name = None      # member name (i.e. filename) in the archive
         self.__mtime = None 
         self.__owner = None 
@@ -127,9 +126,87 @@ class Member(object):
         return f
 
     from_file = staticmethod(_from_file) # o class method?
+    
+# file interface
+    def read(self, size=0):
+        if self.__fp is None:
+            self.__fp = open(self.__fname, "r")
+            self.__fp.seek(self.__offset)
 
-    def getseqno(self): return self.__seqno
-    seqno = property(getseqno)
+        end = self.__offset + self.__size
+        cur = self.__fp.tell()
+
+        if size > 0 and size <= end - cur: # there's room
+            return self.__fp.read(size)
+
+        if cur >= end:
+            return ''
+
+        return self.__fp.read(end - cur)
+
+# XXX check corner cases for readline(s)
+    def readline(self, size=None):
+        if self.__fp is None:
+            self.__fp = open(self.__fname, "r")
+            self.__fp.seek(self.__offset)
+
+        end = self.__offset + self.__size
+
+        if size is not None: 
+            buf = self.__fp.readline(size)
+            if self.__fp.tell() > end:
+                return ''
+
+            return buf
+
+        buf = self.__fp.readline()
+        if self.__fp.tell() > end:
+            return ''
+
+        return buf
+
+    def readlines(self, sizehint=0):
+        if self.__fp is None:
+            self.__fp = open(self.__fname, "r")
+            self.__fp.seek(self.__offset)
+
+    def seek(self, offset, whence=0):
+        if offset < 0:
+            raise IOError
+
+        if self.__fp is None:
+            self.__fp = open(self.__fname, "r")
+
+        end = self.__offset + self.__size
+        cur = self.__fp.tell()
+
+        if whence == 0: # absolute
+            if self.__offset + offset > end: # out-of-bounds
+                self.__fp.seek(end)
+            else:
+                self.__fp.seek(self.__offset + offset, 0)
+        elif whence == 1: # relative
+            if cur + offset > end: # out-of-bounds
+                self.__fp.seek(end)
+            else:
+                self.__fp.seek(offset, 1)
+        elif whence == 2: # relative to EOF
+            self.__fp.seek(end)
+
+    def tell(self):
+        if self.__fp is None:
+            self.__fp = open(self.__fname, "r")
+            self.__fp.seek(self.__offset)
+
+        return self.__fp.tell() - self.__offset
+
+    def close(self):
+        if self.__fp is not None:
+            self.__fp.close()
+
+
+    def getoffset(self): return self.__offset
+    offset = property(getoffset)
 
     def getname(self): return self.__name
     name = property(getname)
@@ -160,9 +237,8 @@ class Member(object):
 if __name__ == '__main__':
 # test
 # ar r test.ar <file1> <file2> .. <fileN>
-	t = ArFile("test.ar")
-	print t.getmembers()
-	print t.getnames()
-
+    t = ArFile("test.ar")
+    print t.getmembers()
+    print t.getnames()
 
 # vim:et:ts=4
