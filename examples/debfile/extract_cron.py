@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
-"""Script that extracts all cron-related files from a (list of) .deb
-package(s)."""
+"""Extracts all cron-related files from a (list of) .deb package(s)."""
 
 import os
 import re
