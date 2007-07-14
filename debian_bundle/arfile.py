@@ -30,10 +30,10 @@ class ArFile(object):
         elif self.__fileobj:
             fp = self.__fileobj
         else:
-            raise ArError
+            raise ArError, "Unable to open valid file"
 
         if fp.read(GLOBAL_HEADER_LENGTH) != GLOBAL_HEADER:
-            raise IOError
+            raise ArError, "Unable to find global header"
 
         while True:
             newmember = ArMember.from_file(fp, self.__fname)
@@ -112,14 +112,10 @@ class ArMember(object):
 
         # sanity checks
         if len(buf) < FILE_HEADER_LENGTH:
-            print len(buf)
-            print repr(buf)
-            print fp.tell()
-            raise IOError
+            raise IOError, "Incorrect header length"
 
         if buf[58:60] != FILE_MAGIC:
-            print repr(buf)
-            raise IOError
+            raise IOError, "Incorrect file magic"
 
 # http://en.wikipedia.org/wiki/Ar_(Unix)	
 #from   to 	Name 	   				 	Format
@@ -156,16 +152,15 @@ class ArMember(object):
             self.__fp = open(self.__fname, "r")
             self.__fp.seek(self.__offset)
 
-        end = self.__offset + self.__size
         cur = self.__fp.tell()
 
-        if size > 0 and size <= end - cur: # there's room
+        if size > 0 and size <= self.__end - cur: # there's room
             return self.__fp.read(size)
 
-        if cur >= end:
+        if cur >= self.__end or cur < self.__offset:
             return ''
 
-        return self.__fp.read(end - cur)
+        return self.__fp.read(self.__end - cur)
 
 # XXX check corner cases for readline(s)
     def readline(self, size=None):
@@ -207,9 +202,13 @@ class ArMember(object):
     def seek(self, offset, whence=0):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
+            self.__fp.seek(self.__offset)
 
-        if offset + self.__fp.tell() < self.__offset:
-            raise IOError
+        if self.__fp.tell() < self.__offset:
+            self.__fp.seek(self.__offset)
+
+        if whence < 2 and offset + self.__fp.tell() < self.__offset:
+            raise IOError, "Can't seek at %d" % offset
         
         if whence == 1:
             self.__fp.seek(offset, 1)
@@ -235,8 +234,9 @@ class ArMember(object):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
             self.__fp.seek(self.__offset)
-        
+
         cur = self.__fp.tell()
+        
         if cur < self.__offset:
             return 0L
         else:

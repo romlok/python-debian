@@ -31,48 +31,33 @@ class TestArFile(unittest.TestCase):
             self.assertEqual(m.owner, mstat[ST_UID])
             self.assertEqual(m.group, mstat[ST_GID])
 
-    #def mkdb(self):
-        #db = debtags.DB()
-        #db.read(open("test_tagdb", "r"))
-        #return db
+    def test_file_seek(self):
+        a = arfile.ArFile("test.ar")
+        m = a.getmember(self.testmembers[0])
 
-    #def test_insert(self):
-        #db = debtags.DB()
-        #db.insert("test", set(("a", "b")));
-        #assert db.hasPackage("test")
-        #assert not db.hasPackage("a")
-        #assert not db.hasPackage("b")
-        #assert db.hasTag("a")
-        #assert db.hasTag("b")
-        #assert not db.hasTag("test")
-        #self.assertEqual(db.tagsOfPackage("test"), set(("a", "b")))
-        #self.assertEqual(db.packagesOfTag("a"), set(("test")))
-        #self.assertEqual(db.packagesOfTag("b"), set(("test")))
-        #self.assertEqual(db.packageCount(), 1)
-        #self.assertEqual(db.tagCount(), 2)
+        for i in [10,100,10000,100000]:
+            m.seek(i, 0)
+            self.assertEqual(m.tell(), i, "failed tell()")
+            
+            m.seek(-i, 1)
+            self.assertEqual(m.tell(), 0L, "failed tell()")
 
-    #def test_reverse(self):
-        #db = debtags.DB()
-        #db.insert("test", set(("a", "b")));
-        #db = db.reverse()
-        #assert db.hasPackage("a")
-        #assert db.hasPackage("b")
-        #assert not db.hasPackage("test")
-        #assert db.hasTag("test")
-        #assert not db.hasTag("a")
-        #assert not db.hasTag("b")
-        #self.assertEqual(db.packagesOfTag("test"), set(("a", "b")))
-        #self.assertEqual(db.tagsOfPackage("a"), set(("test")))
-        #self.assertEqual(db.tagsOfPackage("b"), set(("test")))
-        #self.assertEqual(db.packageCount(), 2)
-        #self.assertEqual(db.tagCount(), 1)
-
-    #def test_read(self):
-        #db = self.mkdb()
-        #self.assertEqual(db.tagsOfPackage("polygen"), set(("devel::interpreter", "game::toys", "interface::commandline", "works-with::text")))
-        #assert "polygen" in db.packagesOfTag("interface::commandline")
-        #self.assertEqual(db.packageCount(), 144)
-        #self.assertEqual(db.tagCount(), 94)
+        m.seek(0)
+        self.assertRaises(IOError, m.seek, -1, 0)
+        self.assertRaises(IOError, m.seek, -1, 1)
+        m.seek(0)
+    
+    def test_file_read(self):
+        a = arfile.ArFile("test.ar")
+        m = a.getmember(self.testmembers[0])
+        f = open(self.testmembers[0])
+        
+        #self.assertEqual(m.readlines(), f.readlines())
+       
+        for i in [10, 100, 10000]:
+            self.assertEqual(m.read(i), f.read(i))
+        
+        f.close()
 
 if __name__ == '__main__':
     unittest.main()
