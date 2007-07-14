@@ -37,7 +37,11 @@ class ArFile(object):
             if not newmember:
                 break
             self.__members_list.append(newmember)
-            fp.seek(newmember.getsize(), 1) # skip to next header
+            print newmember.name + " added tell " + str(fp.tell()) + " size: " + repr(newmember.size)
+            if newmember.getsize() % 2 == 0: # even, no pad
+                fp.seek(newmember.getsize(), 1) # skip to next header
+            else:
+                fp.seek(newmember.getsize() + 1 , 1) # skip to next header
         
         if self.__fname:
             fp.close()
@@ -52,10 +56,8 @@ class ArFile(object):
     def __updateMembersList(self):
 		self.__members_list.sort(lambda f1, f2: cmp(f1.offset, f2.offset))
 
-    def getmembers(self):
-# XXX non serve, sono gia' in ordine
-#        self.__updateMembersList()
-        return self.__members_list
+    def getmembers(self): return self.__members_list
+    members = property(getmembers)
 
     def getnames(self):
         self.__updateMembersList()
@@ -110,9 +112,13 @@ class ArMember(object):
 
         # sanity checks
         if len(buf) < FILE_HEADER_LENGTH:
+            print len(buf)
+            print repr(buf)
+            print fp.tell()
             raise IOError
 
         if buf[58:60] != FILE_MAGIC:
+            print repr(buf)
             raise IOError
 
 # http://en.wikipedia.org/wiki/Ar_(Unix)	
@@ -127,7 +133,7 @@ class ArMember(object):
 
 # XXX struct.unpack can be used as well here
         f = ArMember()
-        f.__name = buf[0:16].split("/")[0]
+        f.__name = buf[0:16].split("/")[0].strip()
         f.__mtime = int(buf[16:28])
         f.__owner = int(buf[28:34])
         f.__group = int(buf[34:40])
@@ -143,6 +149,7 @@ class ArMember(object):
     
 # file interface
 # XXX this is not a sequence like file objects
+# XXX test padding
     def read(self, size=0):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
@@ -273,11 +280,10 @@ class ArMember(object):
 if __name__ == '__main__':
 # test
 # ar r test.ar <file1> <file2> .. <fileN>
-    t = ArFile("test.ar")
+    t = ArFile("test.deb")
     print t.getmembers()
     print t.getnames()
-    a = t.getmember("gettimeofday.c")
-    print a.readline()
-    print a.readline()
-    print a.readline()
+    a = t.getmember("debian-binary")
+    for l in a:
+        print repr(l)
 # vim:et:ts=4
