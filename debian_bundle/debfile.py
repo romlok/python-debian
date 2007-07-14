@@ -1,6 +1,8 @@
-import arfile
+#!/usr/bin/python
+
 import gzip
 import tarfile
+from arfile import ArFile, ArError
 
 DATA_PART = 'data.tar.gz'
 CTRL_PART = 'control.tar.gz'
@@ -10,7 +12,7 @@ MAINT_SCRIPTS = ['preinst', 'postinst', 'prerm', 'postrm', 'config']
 CTRL_FILE = 'control'
 MD5_FILE = 'md5sums'
 
-class DebError(arfile.ArError):
+class DebError(ArError):
     pass
 
 
@@ -106,11 +108,11 @@ class DebControl(DebPart):
         md5_file.close()
         return sums
 
-class DebFile(arfile.ArFile):
+class DebFile(ArFile):
 
-    def __init__(self, **args):
-        ArFile.__init__(self, **args)
-        if set(self.getnames()) != set([INFO_PART, CTRL_PART, DATA_PART])
+    def __init__(self, filename=None, mode='r', fileobj=None):
+        ArFile.__init__(self, filename, mode, fileobj)
+        if set(self.getnames()) != set([INFO_PART, CTRL_PART, DATA_PART]):
             raise DebError('unexpected .deb content')
 
         self.__parts = {}
@@ -129,4 +131,8 @@ class DebFile(arfile.ArFile):
 
     def getCtrl(self): return self.__parts[CTRL_PART]
     control = property(getCtrl)
+
+if __name__ == '__main__':
+    import sys
+    deb = DebFile(filename=sys.argv[1])
 
