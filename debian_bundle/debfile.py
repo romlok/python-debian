@@ -2,14 +2,20 @@
 
 import gzip
 import tarfile
+import zlib
+
 from arfile import ArFile, ArError
+from changelog import Changelog
+from deb822 import Deb822
 
 DATA_PART = 'data.tar.gz'
 CTRL_PART = 'control.tar.gz'
 INFO_PART = 'debian-binary'
 MAINT_SCRIPTS = ['preinst', 'postinst', 'prerm', 'postrm', 'config']
 
-CTRL_FILE = 'control'
+CONTROL_FILE = 'control'
+CHANGELOG_NATIVE = 'usr/share/doc/%s/changelog.gz'  # with package stem
+CHANGELOG_DEBIAN = 'usr/share/doc/%s/changelog.Debian.gz'
 MD5_FILE = 'md5sums'
 
 class DebError(ArError):
@@ -70,7 +76,6 @@ class DebData(DebPart):
 
     pass
 
-
 class DebControl(DebPart):
 
     def scripts(self):
@@ -84,12 +89,14 @@ class DebControl(DebPart):
 
         return scripts
 
-    def control(self):
-        """ Return the debian/control as a string.
+    def debcontrol(self):
+        """ Return the debian/control as a Deb822 (a Debian-specific dict-like
+        class) object.
         
-        Convenience method, same as: .get_content('control') """
+        For a string representation of debian/control try
+        .get_content('control') """
 
-        return self.get_content(CTRL_FILE)
+        return Deb822(self.get_content(CONTROL_FILE))
 
     def md5sums(self):
         """ Return a dictionary mapping filenames (of the data part) to
@@ -115,12 +122,16 @@ class DebFile(ArFile):
             raise DebError('unexpected .deb content')
 
         self.__parts = {}
-        self.__parts[DATA_PART] = DebData(self.getmember(DATA_PART))
         self.__parts[CTRL_PART] = DebControl(self.getmember(CTRL_PART))
+        self.__parts[DATA_PART] = DebData(self.getmember(DATA_PART))
+        self.__pkgname = None   # updated lazily by __updatePkgName
 
         f = self.getmember(INFO_PART)
         self.__version = f.read().strip()
         f.close()
+
+    def __updatePkgName(self):
+        self.__pkgname = self.debcontrol()['package']
 
     def getVersion(self): return self.__version
     version = property(getVersion)
@@ -130,6 +141,36 @@ class DebFile(ArFile):
 
     def getCtrl(self): return self.__parts[CTRL_PART]
     control = property(getCtrl)
+
+    # proxy methods for the appropriate parts
+
+    def debcontrol(self):
+        """ See .control.debcontrol() """
+        return self.control.debcontrol()
+
+    def scripts(self):
+        """ See .control.scripts() """
+        return self.control.scripts()
+
+    def md5sums(self):
+        """ See .control.md5sums() """
+        return self.control.md5sums
+
+    def changelog(self):
+        """ Return a Changelog object for the changelog.Debian.gz of the
+        present .deb package. Return None if no changelog can be found. """
+
+        if self.__pkgname is None:
+            self.__updatePkgName()
+
+        for fname in [ CHANGELOG_DEBIAN % self.__pkgname,
+                CHANGELOG_NATIVE % self.__pkgname ]:
+            if self.data.has_file(fname):
+                gz = gzip.GzipFile(fileobj=self.data.get_file(fname))
+                raw_changelog = gz.read()
+                gz.close()
+                return Changelog(raw_changelog)
+        return None
 
 if __name__ == '__main__':
     import sys
