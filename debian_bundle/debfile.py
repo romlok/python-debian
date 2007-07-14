@@ -53,11 +53,14 @@ class DebPart(object):
         return (self.tgz().extractfile(fname))
 
     def get_content(self, fname):
-        """Return the string content of a given file."""
+        """Return the string content of a given file, or None (e.g. for
+        directories)."""
 
         f = self.tgz().extractfile(fname)
-        content = f.read()
-        f.close()
+        content = None
+        if f:   # can be None for non regular or link files
+            content = f.read()
+            f.close()
         return content
 
     # container emulation
