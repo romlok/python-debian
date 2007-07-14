@@ -1,5 +1,13 @@
 #!/usr/bin/python
 
+# changelog_head - head like tool for .deb changelog entries
+# Copyright (C) 2007 Stefano Zacchiroli <zack@debian.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
 """Like "head" for changelog entries, return last n-th entries of the changelog
 shipped in a .deb file."""
 
