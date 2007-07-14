@@ -32,9 +32,8 @@ class DebPart(object):
         package."""
 
         if self.__tgz is None:
-            gzfile = gzip.GzipFile(fileobj=self.__member)
-            tarfile = tarfile.TarFile(fileobj=gzfile)
-            self.__tgz = tarfile
+            gz = gzip.GzipFile(fileobj=self.__member, mode='r')
+            self.__tgz = tarfile.TarFile(fileobj=gz, mode='r')
         return self.__tgz
 
     def has_file(self, fname):
@@ -135,4 +134,6 @@ class DebFile(ArFile):
 if __name__ == '__main__':
     import sys
     deb = DebFile(filename=sys.argv[1])
+    tgz = deb.control.tgz()
+    print tgz.getmember('control')
 
