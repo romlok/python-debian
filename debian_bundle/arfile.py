@@ -6,34 +6,48 @@ GLOBAL_HEADER_LENGTH = 8
 FILE_HEADER_LENGTH = 60
 FILE_MAGIC = "`\n"
 
+class ArError(Exception):
+    pass
+
 class ArFile(object):
 # XXX trying to mimick the interface of TarFile in the standard library
 
-    def __init__(self, fname, mode="r"):
+    def __init__(self, filename=None, mode='r', fileobj=None):
         self.__members_list = [] 
-        self.__fname = fname
-		
+        self.__fname = filename
+        self.__fileobj = fileobj
+	    
         if mode == "r":
             self.__index_archive()
         pass    # TODO write support
 
     def __index_archive(self):
-        fp = open(self.__fname, "rb")
+        if self.__fname:
+            fp = open(self.__fname, "rb")
+        elif self.__fileobj:
+            fp = self.__fileobj
+        else:
+            raise ArError
 
         if fp.read(GLOBAL_HEADER_LENGTH) != GLOBAL_HEADER:
             raise IOError
 
         while True:
-            newmember = Member.from_file(fp, self.__fname)
+            newmember = ArMember.from_file(fp, self.__fname)
             if not newmember:
                 break
             self.__members_list.append(newmember)
             fp.seek(newmember.getsize(), 1) # skip to next header
-
-        fp.close()
+        
+        if self.__fname:
+            fp.close()
 
     def getmember(self, name):
-        return self.__members[name]
+		for m in self.__members_list:
+			if name == m.name:
+				return m
+
+		return None
 
     def __updateMembersList(self):
 		self.__members_list.sort(lambda f1, f2: cmp(f1.offset, f2.offset))
@@ -58,14 +72,14 @@ class ArFile(object):
 
     def extractfile(self, member):
 		for m in self__members_list:
-			if isinstance(member, Member) and m.name == member.name:
+			if isinstance(member, ArMember) and m.name == member.name:
 					return m
 			if member == m.name:
 				return m
 
 		return None 
 
-class Member(object):
+class ArMember(object):
     # XXX trying to mimick the interface of TarInfo in the standard library
 
     def __init__(self):
@@ -82,7 +96,7 @@ class Member(object):
 
     def _from_file(fp, fname):
         """fp is an open File object positioned to a valid file header or global header.
-        Returns a new Member on success"""
+        Returns a new ArMember on success"""
 
         buf = fp.read(FILE_HEADER_LENGTH)
 
@@ -111,23 +125,24 @@ class Member(object):
 #48 	57 	File size in bytes 			Decimal
 #58 	59 	File magic 					\140\012
 
-        f = Member()
+# XXX struct.unpack can be used as well here
+        f = ArMember()
         f.__name = buf[0:16].split("/")[0]
         f.__mtime = int(buf[16:28])
         f.__owner = int(buf[28:34])
         f.__group = int(buf[34:40])
         f.__mode  = buf[40:48]  # XXX e' un ottale
         f.__size  = int(buf[48:58])
-# XXX seqno a cosa serve? se e' solo per ordinarli si puo' usare l'offset
 
         f.__fname = fname
         f.__offset = fp.tell() # start-of-data
 
         return f
 
-    from_file = staticmethod(_from_file) # o class method?
+    from_file = staticmethod(_from_file)
     
 # file interface
+# XXX this is not a sequence like file objects
     def read(self, size=0):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
@@ -165,10 +180,21 @@ class Member(object):
 
         return buf
 
+    def next(self):
+        return self.readline()
+
     def readlines(self, sizehint=0):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
             self.__fp.seek(self.__offset)
+        
+        buf = None
+        lines = []
+        while not buf == '':
+            buf = self.readline()
+            lines.append(buf)
+
+        return lines
 
     def seek(self, offset, whence=0):
         if offset < 0:
@@ -203,7 +229,14 @@ class Member(object):
     def close(self):
         if self.__fp is not None:
             self.__fp.close()
+   
+    def __iter__(self):
+        def nextline():
+            line = self.readline()
+            if line:
+                yield line
 
+        return iter(nextline())
 
     def getoffset(self): return self.__offset
     offset = property(getoffset)
@@ -232,6 +265,9 @@ class Member(object):
     def tobuf():
         pass    # TODO
 
+	def tofile(self):
+		return self
+
 #    FINQUI
 
 if __name__ == '__main__':
@@ -240,5 +276,8 @@ if __name__ == '__main__':
     t = ArFile("test.ar")
     print t.getmembers()
     print t.getnames()
-
+    a = t.getmember("gettimeofday.c")
+    print a.readline()
+    print a.readline()
+    print a.readline()
 # vim:et:ts=4
