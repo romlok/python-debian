@@ -13,7 +13,7 @@ python-debian (0.1.4) UNRELEASED; urgency=low
     - new modules implementing (read-only) dpkg-deb like access to .deb
       packages; when possible, access to information contained in .deb is made
       available via other debian_bundle classes (e.g. Changelog, Deb822, ...)
-    - code contributed by Stefano Zacchiroli and Filippo Ginchedi
+    - code contributed by Stefano Zacchiroli and Filippo Giunchedi
     - corresponding examples in examples/debfile
   * debian_support.py
     - yield dictionaries instead of tuples in Packages parsing and normalize
