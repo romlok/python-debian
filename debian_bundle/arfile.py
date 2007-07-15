@@ -216,17 +216,15 @@ class ArMember(object):
             self.__fp = open(self.__fname, "r")
             self.__fp.seek(self.__offset)
 
-        end = self.__offset + self.__size
-
         if size is not None: 
             buf = self.__fp.readline(size)
-            if self.__fp.tell() > end:
+            if self.__fp.tell() > self.__end:
                 return ''
 
             return buf
 
         buf = self.__fp.readline()
-        if self.__fp.tell() > end:
+        if self.__fp.tell() > self.__end:
             return ''
 
         return buf
@@ -241,8 +239,10 @@ class ArMember(object):
         
         buf = None
         lines = []
-        while not buf == '':
+        while True: 
             buf = self.readline()
+            if buf == '':
+                break
             lines.append(buf)
 
         return lines
@@ -319,4 +319,7 @@ if __name__ == '__main__':
     a = t.getmember("debian-binary")
     for l in a:
         print repr(l)
-
+    
+    t = ArFile("test.deb")
+    a = t.getmember("debian-binary")
+    print a.readlines()

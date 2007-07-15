@@ -1,10 +1,13 @@
 #! /usr/bin/python
 
 import arfile 
+import debfile
 import unittest
-import os
+import os, sys
 
 from stat import * 
+
+deb_testfile = None
 
 class TestArFile(unittest.TestCase):
 
@@ -13,17 +16,16 @@ class TestArFile(unittest.TestCase):
         assert os.path.exists("test.ar")
         self.testmembers = [ x.strip()
                 for x in os.popen("ar t test.ar").readlines() ]
-        a = arfile.ArFile("test.ar")
+        self.a = arfile.ArFile("test.ar")
     
     def test_getnames(self):
-        a = arfile.ArFile("test.ar")
-        self.assertEqual(a.getnames(), self.testmembers)
+        """ test for file list equality """
+        self.assertEqual(self.a.getnames(), self.testmembers)
 
     def test_getmember(self):
-        a = arfile.ArFile("test.ar")
-
+        """ test for each member equality """
         for member in self.testmembers:
-            m = a.getmember(member)
+            m = self.a.getmember(member)
             assert m
             self.assertEqual(m.name, member)
             
@@ -34,8 +36,8 @@ class TestArFile(unittest.TestCase):
             self.assertEqual(m.group, mstat[ST_GID])
 
     def test_file_seek(self):
-        a = arfile.ArFile("test.ar")
-        m = a.getmember(self.testmembers[0])
+        """ test for faked seek """
+        m = self.a.getmember(self.testmembers[0])
 
         for i in [10,100,10000,100000]:
             m.seek(i, 0)
@@ -50,17 +52,57 @@ class TestArFile(unittest.TestCase):
         m.seek(0)
     
     def test_file_read(self):
-        a = arfile.ArFile("test.ar")
-        m = a.getmember(self.testmembers[0])
-        f = open(self.testmembers[0])
+        """ test for faked read """
+        for m in self.a.getmembers():
+            f = open(m.name)
         
-        #self.assertEqual(m.readlines(), f.readlines())
+            for i in [10, 100, 10000]:
+                self.assertEqual(m.read(i), f.read(i))
        
-        for i in [10, 100, 10000]:
-            self.assertEqual(m.read(i), f.read(i))
+            m.close()
+            f.close()
+
+    def test_file_readlines(self):
+        """ test for faked readlines """
+
+        for m in self.a.getmembers():
+            f = open(m.name)
         
-        f.close()
+            self.assertEqual(m.readlines(), f.readlines())
+            
+            m.close()
+            f.close()
+
+class TestDebFile(unittest.TestCase):
+    def setUp(self):
+        self.d = debfile.DebFile(deb_testfile)
+
+    def test_data_names(self):
+        """ test for file list equality """ 
+        tgz = self.d.data.tgz()
+        filelist = [ x.strip()[2:] # remove "./"
+                for x in
+                os.popen("dpkg-deb --fsys-tarfile %s | tar t" % deb_testfile).readlines() ]
+        
+        # skip the root
+        self.assertEqual(tgz.getnames()[1:], filelist[1:])
+
+    def test_control(self):
+        """ test for control equality """
+        filecontrol = "".join(os.popen("dpkg-deb -f %s" % deb_testfile).readlines())
+
+        self.assertEqual(self.d.control.get_content("control"), filecontrol)
 
 if __name__ == '__main__':
-    unittest.main()
+    debfileSuite = [ unittest.TestLoader().loadTestsFromTestCase(TestArFile) ]
+    
+    if os.path.exists("hello_2.2-2_powerpc.deb"):
+        deb_testfile = "hello_2.2-2_powerpc.deb"
+    
+    if len(sys.argv) > 1:
+        deb_testfile = sys.argv[1]
 
+    if deb_testfile:
+        debfileSuite.append( unittest.TestLoader().loadTestsFromTestCase(TestDebFile) ) 
+    
+    unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(debfileSuite))
