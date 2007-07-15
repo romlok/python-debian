@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # ArFile: a Python representation of ar (as in "man 1 ar") archives.
 # Copyright (C) 2007    Stefano Zacchiroli  <zack@debian.org>
 # Copyright (C) 2007    Filippo Giunchedi   <filippo@debian.org>
@@ -60,8 +62,7 @@ class ArFile(object):
                 break
             self.__members.append(newmember)
             self.__members_dict[newmember.name] = newmember
-            #print newmember.name + " added tell " + str(fp.tell()) + " size: " + repr(newmember.size)
-            if newmember.getsize() % 2 == 0: # even, no pad
+            if newmember.getsize() % 2 == 0: # even, no padding
                 fp.seek(newmember.getsize(), 1) # skip to next header
             else:
                 fp.seek(newmember.getsize() + 1 , 1) # skip to next header
@@ -194,7 +195,6 @@ class ArMember(object):
     # file interface
 
     # XXX this is not a sequence like file objects
-    # XXX test padding
     def read(self, size=0):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
@@ -210,7 +210,6 @@ class ArMember(object):
 
         return self.__fp.read(self.__end - cur)
 
-    # XXX check corner cases for readline(s)
     def readline(self, size=None):
         if self.__fp is None:
             self.__fp = open(self.__fname, "r")
@@ -241,7 +240,7 @@ class ArMember(object):
         lines = []
         while True: 
             buf = self.readline()
-            if buf == '':
+            if not buf: 
                 break
             lines.append(buf)
 
@@ -313,13 +312,5 @@ class ArMember(object):
 if __name__ == '__main__':
     # test
     # ar r test.ar <file1> <file2> .. <fileN>
-    t = ArFile("test.deb")
-    print t.getmembers()
-    print t.getnames()
-    a = t.getmember("debian-binary")
-    for l in a:
-        print repr(l)
-    
-    t = ArFile("test.deb")
-    a = t.getmember("debian-binary")
-    print a.readlines()
+    a = ArFile("test.ar")
+    print "\n".join(a.getnames())
