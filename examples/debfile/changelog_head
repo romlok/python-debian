@@ -30,6 +30,6 @@ if __name__ == '__main__':
 
     deb = debfile.DebFile(sys.argv[1])
     chg = deb.changelog()
-    entries = chg._blocks[:10]
+    entries = chg._blocks[:entries]
     print string.join(map(str, entries), '')
 
