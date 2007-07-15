@@ -16,11 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import arfile, os, sys
+import os
+import sys
+
+import arfile
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print "usage: arfile.py [t|p] <arfile>"
+        print "usage: arfile.py [tp] <arfile>"
         sys.exit(1)
     
     if not os.path.exists(sys.argv[2]):
@@ -33,4 +36,5 @@ if __name__ == '__main__':
         print "\n".join(a.getnames())
     elif sys.argv[1] == 'p':
         for m in a.getmembers():
-            print "".join(m.readlines())
+            #print "".join(m.readlines())
+            sys.stdout.write("".join(m.readlines()))
