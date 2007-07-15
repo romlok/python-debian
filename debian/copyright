@@ -24,43 +24,15 @@ Copyright:
   
 Licenses:
 
-   deb822.py is under the following license
+  The following modules are released under GPL v2 or above:
+    deb822.py, changelog.py, debian_support.py
+  The following modules are released under GPL v3 or above:
+    debfile.py, arfile.py, debtags.py
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; version 2
-   dated June, 1991.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-  
-   debian_support.py, changelog.py, README.changelog, Debtags.py, and the
-   contents of examples/debtags/ and examples/changelog/ are under the
-   following license
+  The Debian packaging is (C) Debian python-debian Maintainers (see
+  debian/control for maintainer names), and is placed under GPL v2 or
+  above.
 
-   This package is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-
-   This package is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this package; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-On Debian systems, the complete text of the GNU General
-Public License can be found in `/usr/share/common-licenses/GPL'.
-
-The Debian packaging is (C) 2006 James Westby <jw+debian@ajemswestby.net>,
-and is placed under the GPL, see above.
+On Debian systems, the complete text of the GNU General Public License
+can be found in `/usr/share/common-licenses/GPL'.
 

@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # ArFile: a Python representation of ar (as in "man 1 ar") archives.
 # Copyright (C) 2007    Stefano Zacchiroli  <zack@debian.org>
 # Copyright (C) 2007    Filippo Giunchedi   <filippo@debian.org>
