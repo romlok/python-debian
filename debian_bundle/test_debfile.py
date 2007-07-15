@@ -17,14 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import unittest
+import os
+import stat
+import sys
+import tempfile
+import uu
+
 import arfile 
 import debfile
-import unittest
-import os, sys
-
-from stat import * 
-
-deb_testfile = None
 
 class TestArFile(unittest.TestCase):
 
@@ -34,6 +35,10 @@ class TestArFile(unittest.TestCase):
         self.testmembers = [ x.strip()
                 for x in os.popen("ar t test.ar").readlines() ]
         self.a = arfile.ArFile("test.ar")
+
+    def tearDown(self):
+        if os.path.exists('test.ar'):
+            os.unlink('test.ar')
     
     def test_getnames(self):
         """ test for file list equality """
@@ -48,9 +53,9 @@ class TestArFile(unittest.TestCase):
             
             mstat = os.stat(member)
 
-            self.assertEqual(m.size, mstat[ST_SIZE])
-            self.assertEqual(m.owner, mstat[ST_UID])
-            self.assertEqual(m.group, mstat[ST_GID])
+            self.assertEqual(m.size, mstat[stat.ST_SIZE])
+            self.assertEqual(m.owner, mstat[stat.ST_UID])
+            self.assertEqual(m.group, mstat[stat.ST_GID])
 
     def test_file_seek(self):
         """ test for faked seek """
@@ -91,35 +96,37 @@ class TestArFile(unittest.TestCase):
             f.close()
 
 class TestDebFile(unittest.TestCase):
+
     def setUp(self):
-        self.d = debfile.DebFile(deb_testfile)
+        self.debname = 'test.deb'
+        uu_deb = open('test.deb.uu', 'r')
+        bin_deb = open(self.debname, 'w')
+        uu.decode(uu_deb, bin_deb)
+        uu_deb.close()
+        bin_deb.close()
+        self.d = debfile.DebFile(self.debname)
+
+    def tearDown(self):
+        os.unlink(self.debname)
 
     def test_data_names(self):
         """ test for file list equality """ 
         tgz = self.d.data.tgz()
         filelist = [ x.strip()[2:] # remove "./"
                 for x in
-                os.popen("dpkg-deb --fsys-tarfile %s | tar t" % deb_testfile).readlines() ]
+                os.popen("dpkg-deb --fsys-tarfile %s | tar t" %
+                    self.debname).readlines() ]
         
         # skip the root
         self.assertEqual(tgz.getnames()[1:], filelist[1:])
 
     def test_control(self):
         """ test for control equality """
-        filecontrol = "".join(os.popen("dpkg-deb -f %s" % deb_testfile).readlines())
+        filecontrol = "".join(os.popen("dpkg-deb -f %s" %
+            self.debname).readlines())
 
         self.assertEqual(self.d.control.get_content("control"), filecontrol)
 
 if __name__ == '__main__':
-    debfileSuite = [ unittest.TestLoader().loadTestsFromTestCase(TestArFile) ]
-    
-    if os.path.exists("hello_2.2-2_powerpc.deb"):
-        deb_testfile = "hello_2.2-2_powerpc.deb"
-    
-    if len(sys.argv) > 1:
-        deb_testfile = sys.argv[1]
+    unittest.main()
 
-    if deb_testfile:
-        debfileSuite.append( unittest.TestLoader().loadTestsFromTestCase(TestDebFile) ) 
-    
-    unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(debfileSuite))
