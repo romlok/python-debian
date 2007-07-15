@@ -17,6 +17,10 @@ Copyright:
 
   Debtags.py, and the contents of examples/debtags/ are 
                Copyright (C) 2003--3006 Enrico Zini <enrico@debian.org> 
+
+  debfile.py, arfile.py, and examples/debfile/* are
+               Copyright (C) 2007   Stefano Zacchiroli  <zack@debian.org> 
+                             2007   Filippo Giunchedi   <filippo@debian.org>
   
 Licenses:
 
