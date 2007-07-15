@@ -225,11 +225,8 @@ class ArMember(object):
         buf = self.__fp.readline()
         if self.__fp.tell() > self.__end:
             return ''
-
-        return buf
-
-    def next(self):
-        return self.readline()
+        else:
+            return buf
 
     def readlines(self, sizehint=0):
         if self.__fp is None:
@@ -280,6 +277,9 @@ class ArMember(object):
         if self.__fp is not None:
             self.__fp.close()
    
+    def next(self):
+        return self.readline()
+    
     def __iter__(self):
         def nextline():
             line = self.readline()
