@@ -19,6 +19,7 @@ build-stamp: setup.py
 	# the files.
 	cd debian_bundle && python test_debtags.py
 	cd debian_bundle && python changelog.py
+	cd debian_bundle && python test_debfile.py
 	#python debian_bundle/python_support.py
 	debian_bundle/doc-debtags > README.debtags
 

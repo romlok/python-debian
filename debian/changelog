@@ -9,6 +9,12 @@ python-debian (0.1.4) UNRELEASED; urgency=low
   * debian/control
     - joining the team: add myself as an uploader
     - add Vcs-Bzr field pointing to our Bzr repository on bzr.debian.org
+  * arfile.py / debfile.py
+    - new modules implementing (read-only) dpkg-deb like access to .deb
+      packages; when possible, access to information contained in .deb is made
+      available via other debian_bundle classes (e.g. Changelog, Deb822, ...)
+    - code contributed by Stefano Zacchiroli and Filippo Giunchedi
+    - corresponding examples in examples/debfile
   * debian_support.py
     - yield dictionaries instead of tuples in Packages parsing and normalize
       to lower case 822 field names (Closes: #431087)
@@ -36,7 +42,7 @@ python-debian (0.1.4) UNRELEASED; urgency=low
     - Install old changelog for deb822 as
       /usr/share/doc/python-debian/HISTORY.deb822
 
- -- John Wright <john@movingsucks.org>  Thu, 12 Jul 2007 15:01:08 -0600
+ -- Stefano Zacchiroli <zack@debian.org>  Sun, 15 Jul 2007 11:37:05 +0200
 
 python-debian (0.1.3) unstable; urgency=low
 
