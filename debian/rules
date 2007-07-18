@@ -17,6 +17,7 @@ build-stamp: setup.py
 	python setup.py build
 	# The tests for changelog and debtags need to be run from the same dir as
 	# the files.
+	cd debian_bundle && python test_deb822.py
 	cd debian_bundle && python test_debtags.py
 	cd debian_bundle && python changelog.py
 	cd debian_bundle && python test_debfile.py
