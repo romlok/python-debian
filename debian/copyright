@@ -24,8 +24,10 @@ Copyright:
   
 Licenses:
 
+  The following module is released under GPL v2 only:
+    deb822.py
   The following modules are released under GPL v2 or above:
-    deb822.py, changelog.py, debian_support.py
+    changelog.py, debian_support.py
   The following modules are released under GPL v3 or above:
     debfile.py, arfile.py, debtags.py
 
