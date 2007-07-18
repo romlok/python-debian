@@ -133,6 +133,17 @@ class DebControl(DebPart):
         return sums
 
 class DebFile(ArFile):
+    """Representation of a .deb file (a Debian binary package)
+
+    DebFile objects have the following (read-only) properties:
+        - version       debian .deb file format version (not related with the
+                        contained package version), 2.0 at the time of writing
+                        for all .deb packages in the Debian archive
+        - data          DebPart object corresponding to the data.tar.gz
+                        archive contained in the .deb file
+        - control       DebPart object corresponding to the control.tar.gz
+                        archive contained in the .deb file
+    """
 
     def __init__(self, filename=None, mode='r', fileobj=None):
         ArFile.__init__(self, filename, mode, fileobj)
@@ -151,14 +162,9 @@ class DebFile(ArFile):
     def __updatePkgName(self):
         self.__pkgname = self.debcontrol()['package']
 
-    def getVersion(self): return self.__version
-    version = property(getVersion)
-
-    def getData(self): return self.__parts[DATA_PART]
-    data = property(getData)
-
-    def getCtrl(self): return self.__parts[CTRL_PART]
-    control = property(getCtrl)
+    version = property(lambda self: self.__version)
+    data = property(lambda self: self.__parts[DATA_PART])
+    control = property(lambda self: self.__parts[CTRL_PART])
 
     # proxy methods for the appropriate parts
 

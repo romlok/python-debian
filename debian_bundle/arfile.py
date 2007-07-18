@@ -28,7 +28,11 @@ class ArFile(object):
     """ Representation of an ar archive, see man 1 ar.
     
     The interface of this class tries to mimick that of the TarFile module in
-    the standard library. """
+    the standard library.
+    
+    ArFile objects have the following (read-only) properties:
+        - members       same as getmembers()
+    """
 
     def __init__(self, filename=None, mode='r', fileobj=None):
         """ Build an ar file representation starting from either a filename or
@@ -60,10 +64,10 @@ class ArFile(object):
                 break
             self.__members.append(newmember)
             self.__members_dict[newmember.name] = newmember
-            if newmember.getsize() % 2 == 0: # even, no padding
-                fp.seek(newmember.getsize(), 1) # skip to next header
+            if newmember.size % 2 == 0: # even, no padding
+                fp.seek(newmember.size, 1) # skip to next header
             else:
-                fp.seek(newmember.getsize() + 1 , 1) # skip to next header
+                fp.seek(newmember.size + 1 , 1) # skip to next header
         
         if self.__fname:
             fp.close()
@@ -133,7 +137,16 @@ class ArMember(object):
     """ Member of an ar archive.
 
     Implements most of a file object interface: read, readline, next,
-    readlines, seek, tell, close. """
+    readlines, seek, tell, close.
+    
+    ArMember objects have the following (read-only) properties:
+        - name      member name in an ar archive
+        - mtime     modification time
+        - owner     owner user
+        - group     owner group
+        - fmode     file permissions
+        - size      size in bytes
+        - fname     file name"""
 
     def __init__(self):
         self.__name = None      # member name (i.e. filename) in the archive
@@ -286,26 +299,13 @@ class ArMember(object):
 
         return iter(nextline())
 
-    def getname(self): return self.__name
-    name = property(getname)
-
-    def getmtime(self): return self.__mtime
-    mtime = property(getmtime)
-
-    def getowner(self): return self.__owner
-    owner = property(getowner)
-
-    def getgroup(self): return self.__group
-    group = property(getgroup)
-
-    def getfmode(self): return self.__fmode
-    fmode = property(getfmode)
-
-    def getsize(self): return self.__size
-    size = property(getsize)
-
-    def getfname(self): return self.__fname
-    fname = property(getsize)
+    name = property(lambda self: self.__name)
+    mtime = property(lambda self: self.__mtime)
+    owner = property(lambda self: self.__owner)
+    group = property(lambda self: self.__group)
+    fmode = property(lambda self: self.__fmode)
+    size = property(lambda self: self.__size)
+    fname = property(lambda self: self.__fname)
 
 if __name__ == '__main__':
     # test
