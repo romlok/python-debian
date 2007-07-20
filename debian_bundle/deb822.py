@@ -268,7 +268,7 @@ class Deb822(Deb822Dict):
             if value[0] == '\n':
                 # Avoid trailing whitespace after "Field:" if it's on its own
                 # line
-                fd.write('%s:%s' % (key, value))
+                fd.write('%s:%s\n' % (key, value))
             else:
                 fd.write('%s: %s\n' % (key, value))
         if return_string:
