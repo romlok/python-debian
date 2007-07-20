@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import re
 import deb822
 import unittest
 from StringIO import StringIO
@@ -350,6 +351,68 @@ class TestDeb822(unittest.TestCase):
         for k in deb822_.keys():
             self.assertEqual(deb822_[k], deb822_[k.lower()])
 
+    def test_multiline_trailing_whitespace_after_colon(self):
+        """Trailing whitespace after the field name on multiline fields
+
+        If the field's value starts with a newline (e.g. on MD5Sum fields in
+        Release files, or Files field in .dsc's, the dumped string should not
+        have a trailing space after the colon.  If the value does not start
+        with a newline (e.g. the control file Description field), then there
+        should be a space after the colon, as with non-multiline fields.
+        """
+        
+        dsc_string = """Format: 1.0
+Source: python-debian
+Binary: python-debian
+Architecture: all
+Version: 0.1.4
+Maintainer: Debian python-debian Maintainers <pkg-python-debian-maint@lists.alioth.debian.org>
+Uploaders: Adeodato Simó <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>, Reinhard Tartler <siretart@tauware.de>, Stefano Zacchiroli <zack@debian.org>, John Wright <john@movingsucks.org>
+Standards-Version: 3.7.2
+Build-Depends: debhelper (>= 5.0.37.2), python, m4
+Build-Depends-Indep: python-support (>= 0.3)
+Files:
+ 065aa27943a4fc9e7020f324fed57b65 68575 python-debian_0.1.4.tar.gz
+Vcs-Bzr: http://bzr.debian.org/pkg-python-debian/trunk/
+"""
+        parsed_dsc = deb822.Deb822(dsc_string.splitlines())
+
+        # bad_re: match a line that starts with a "Field:", and ends in
+        # whitespace
+        bad_re = re.compile(r"^\S+:\s+$")
+        for line in parsed_dsc.dump().splitlines():
+            self.assert_(bad_re.match(line) is None,
+                         "There should not be trailing whitespace after the "
+                         "colon in a multiline field starting with a newline")
+
+        
+        control_paragraph = """Package: python-debian
+Architecture: all
+Depends: ${python:Depends}
+Suggests: python-apt
+Provides: python-deb822
+Conflicts: python-deb822
+Replaces: python-deb822
+Description: python modules to work with Debian-related data formats
+ This package provides python modules that abstract many formats of Debian
+ related files. Currently handled are:
+  * Debtags information (debian_bundle.debtags module)
+  * debian/changelog (debian_bundle.changelog module)
+  * Packages files, pdiffs (debian_bundle.debian_support module)
+  * Control files of single or multple RFC822-style paragraphs, e.g
+    debian/control, .changes, .dsc, Packages, Sources, Release, etc.
+    (debian_bundle.deb822 module)
+"""
+        parsed_control = deb822.Deb822(control_paragraph.splitlines())
+        field_re = re.compile(r"^\S+:")
+        field_with_space_re = re.compile(r"^\S+: ")
+        for line in parsed_control.dump().splitlines():
+            if field_re.match(line):
+                self.assert_(field_with_space_re.match(line),
+                             "Multiline fields that do not start with newline "
+                             "should have a space between the colon and the "
+                             "beginning of the value")
+        
 
 if __name__ == '__main__':
     unittest.main()

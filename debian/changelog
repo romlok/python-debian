@@ -27,6 +27,9 @@ python-debian (0.1.4) UNRELEASED; urgency=low
   * debian_bundle/deb822.py, debian_bundle/test_deb822.py, deb822.py:
     - Import latest version of deb822, and create a "dummy" top-level module
       for compatibility
+    - For multiline fields that start with a newline (e.g. Files in a .dsc,
+      MD5Sum in Release files), the line with the "Field:" should not end in
+      trailing whitespace.  Fixed and added test cases.
   * setup.py:
     - The version wasn't getting updated, so I've renamed it to setup.py.in,
       and added a __CHANGELOG_VERSION__ placeholder
@@ -42,7 +45,7 @@ python-debian (0.1.4) UNRELEASED; urgency=low
     - Install old changelog for deb822 as
       /usr/share/doc/python-debian/HISTORY.deb822
 
- -- Stefano Zacchiroli <zack@debian.org>  Sun, 15 Jul 2007 11:37:05 +0200
+ -- John Wright <john.wright@hp.com>  Fri, 20 Jul 2007 16:27:24 -0600
 
 python-debian (0.1.3) unstable; urgency=low
 
