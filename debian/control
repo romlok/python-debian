@@ -2,7 +2,7 @@ Source: python-debian
 Section: devel
 Priority: optional
 Maintainer: Debian python-debian Maintainers <pkg-python-debian-maint@lists.alioth.debian.org>
-Uploaders: Adeodato Simó <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>, Reinhard Tartler <siretart@tauware.de>, Stefano Zacchiroli <zack@debian.org>, John Wright <john@movingsucks.org>
+Uploaders: Adeodato Simó <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>, Reinhard Tartler <siretart@tauware.de>, Stefano Zacchiroli <zack@debian.org>, John Wright <jsw@debian.org>
 Build-Depends: debhelper (>= 5.0.37.2), python
 Build-Depends-Indep: python-support (>= 0.3)
 Standards-Version: 3.7.2
