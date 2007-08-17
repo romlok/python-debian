@@ -6,7 +6,14 @@ python-debian (0.1.5) UNRELEASED; urgency=low
       extra ar members should be ignored (closes: #438486). Also add the
       corresponding regression test to test_debfile.py
 
- -- Stefano Zacchiroli <zack@debian.org>  Fri, 17 Aug 2007 14:59:34 +0200
+  [ John Wright ]
+  * examples/debfile/ar, examples/debfile/changelog_head,
+    examples/debfile/dpkg-info, examples/debfile/extract_cron:
+    - Fix ImportError caused by importing modules as if they were top-level
+      modules, rather than modules in the debian_bundle package
+      (Closes: #438428)
+
+ -- John Wright <jsw@debian.org>  Fri, 17 Aug 2007 11:37:42 -0600
 
 python-debian (0.1.4) unstable; urgency=low
 

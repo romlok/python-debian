@@ -14,7 +14,7 @@ shipped in a .deb file."""
 import string
 import sys
 
-import debfile
+from debian_bundle import debfile
 
 if __name__ == '__main__':
     if len(sys.argv) > 3 or len(sys.argv) < 2:

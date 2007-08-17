@@ -14,7 +14,7 @@ import os
 import re
 import sys
 
-import debfile
+from debian_bundle import debfile
 
 def is_cron(fname):
     return re.match(r'^etc/cron\.(d|daily|hourly|monthly|weekly)\b', fname)
