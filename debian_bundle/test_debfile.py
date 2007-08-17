@@ -98,6 +98,18 @@ class TestArFile(unittest.TestCase):
 class TestDebFile(unittest.TestCase):
 
     def setUp(self):
+        def uudecode(infile, outfile):
+            uu_deb = open(infile, 'r')
+            bin_deb = open(outfile, 'w')
+            uu.decode(uu_deb, bin_deb)
+            uu_deb.close()
+            bin_deb.close()
+
+        self.debname = 'test.deb'
+        self.broken_debname = 'test-broken.deb'
+        uudecode('test.deb.uu', self.debname)
+        uudecode('test-broken.deb.uu', self.broken_debname)
+
         self.debname = 'test.deb'
         uu_deb = open('test.deb.uu', 'r')
         bin_deb = open(self.debname, 'w')
@@ -108,6 +120,11 @@ class TestDebFile(unittest.TestCase):
 
     def tearDown(self):
         os.unlink(self.debname)
+        os.unlink(self.broken_debname)
+
+    def test_missing_members(self):
+        self.assertRaises(debfile.DebError,
+                lambda _: debfile.DebFile(self.broken_debname), None)
 
     def test_data_names(self):
         """ test for file list equality """ 

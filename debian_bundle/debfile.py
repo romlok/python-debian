@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import gzip
+import string
 import tarfile
 import zlib
 
@@ -147,8 +148,12 @@ class DebFile(ArFile):
 
     def __init__(self, filename=None, mode='r', fileobj=None):
         ArFile.__init__(self, filename, mode, fileobj)
-        if set(self.getnames()) != set([INFO_PART, CTRL_PART, DATA_PART]):
-            raise DebError('unexpected .deb content')
+        required_names = set([INFO_PART, CTRL_PART, DATA_PART])
+        actual_names = set(self.getnames())
+        if not (required_names <= actual_names):
+            raise DebError(
+                    "the following required .deb members are missing: " \
+                            + string.join(required_names - actual_names))
 
         self.__parts = {}
         self.__parts[CTRL_PART] = DebControl(self.getmember(CTRL_PART))

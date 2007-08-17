@@ -1,3 +1,13 @@
+python-debian (0.1.5) UNRELEASED; urgency=low
+
+  [ Stefano Zacchiroli ]
+  * debfile.py
+    - do not fail if extra ar members exist in a .deb, according to deb(5)
+      extra ar members should be ignored (closes: #438486). Also add the
+      corresponding regression test to test_debfile.py
+
+ -- Stefano Zacchiroli <zack@debian.org>  Fri, 17 Aug 2007 14:59:34 +0200
+
 python-debian (0.1.4) unstable; urgency=low
 
   [ James Westby ]
