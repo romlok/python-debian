@@ -5,8 +5,12 @@ python-debian (0.1.5) UNRELEASED; urgency=low
     - do not fail if extra ar members exist in a .deb, according to deb(5)
       extra ar members should be ignored (closes: #438486). Also add the
       corresponding regression test to test_debfile.py
+    - support both the (buggy) file naming scheme for TarFile of python << 2.5
+      (e.g. "control") and of python >= 2.5 (e.g. "./control"). In addition,
+      enable users to specify file members in three equivalent formats:
+      "file", "./file", and "/file" (closes: #438603)
 
- -- Stefano Zacchiroli <zack@debian.org>  Fri, 17 Aug 2007 14:59:34 +0200
+ -- Stefano Zacchiroli <zack@debian.org>  Sat, 18 Aug 2007 17:20:44 +0200
 
 python-debian (0.1.4) unstable; urgency=low
 

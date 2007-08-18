@@ -34,6 +34,7 @@ CHANGELOG_NATIVE = 'usr/share/doc/%s/changelog.gz'  # with package stem
 CHANGELOG_DEBIAN = 'usr/share/doc/%s/changelog.Debian.gz'
 MD5_FILE = 'md5sums'
 
+
 class DebError(ArError):
     pass
 
@@ -43,7 +44,16 @@ class DebPart(object):
     
     A .deb package is considered as made of 2 parts: a 'data' part
     (corresponding to the 'data.tar.gz' archive embedded in a .deb) and a
-    'control' part (the 'control.tar.gz' archive)."""
+    'control' part (the 'control.tar.gz' archive). Each of them is represented
+    by an instance of this class.
+
+    When referring to file members of the underlying .tar.gz archive, file
+    names can be specified in one of 3 formats "file", "./file", "/file". In
+    all cases the file is considered relative to the root of the archive. For
+    the control part the preferred mechanism is the first one (as in
+    deb.control.get_content('control') ); for the data part the preferred
+    mechanism is the third one (as in deb.data.get_file('/etc/vim/vimrc') ).
+    """
 
     def __init__(self, member):
         self.__member = member  # arfile.ArMember file member
@@ -58,21 +68,45 @@ class DebPart(object):
             self.__tgz = tarfile.TarFile(fileobj=gz, mode='r')
         return self.__tgz
 
+    @staticmethod
+    def __normalize_member(fname):
+        """ try (not so hard) to obtain a member file name in a form relative
+        to the .tar.gz root and with no heading '.' """
+
+        if fname.startswith('./'):
+            fname = fname[2:]
+        elif fname.startswith('/'):
+            fname = fname[1:]
+        return fname
+
+    # XXX in some of the following methods, compatibility among >= 2.5 and <<
+    # 2.5 python versions had to be taken into account. TarFile << 2.5 indeed
+    # was buggied and returned member file names with an heading './' only for
+    # the *first* file member. TarFile >= 2.5 fixed this and has the heading
+    # './' for all file members.
+
     def has_file(self, fname):
         """Check if this part contains a given file name."""
 
-        return (fname in self.tgz().getnames())
+        fname = DebPart.__normalize_member(fname)
+        names = self.tgz().getnames()
+        return (('./' + fname in names) \
+                or (fname in names)) # XXX python << 2.5 TarFile compatibility
 
     def get_file(self, fname):
         """Return a file object corresponding to a given file name."""
 
-        return (self.tgz().extractfile(fname))
+        fname = DebPart.__normalize_member(fname)
+        try:
+            return (self.tgz().extractfile('./' + fname))
+        except KeyError:    # XXX python << 2.5 TarFile compatibility
+            return (self.tgz().extractfile(fname))
 
     def get_content(self, fname):
         """Return the string content of a given file, or None (e.g. for
         directories)."""
 
-        f = self.tgz().extractfile(fname)
+        f = self.get_file(fname)
         content = None
         if f:   # can be None for non regular or link files
             content = f.read()
@@ -94,6 +128,7 @@ class DebPart(object):
 class DebData(DebPart):
 
     pass
+
 
 class DebControl(DebPart):
 
@@ -132,6 +167,7 @@ class DebControl(DebPart):
             sums[fname] = md5
         md5_file.close()
         return sums
+
 
 class DebFile(ArFile):
     """Representation of a .deb file (a Debian binary package)
@@ -200,6 +236,7 @@ class DebFile(ArFile):
                 gz.close()
                 return Changelog(raw_changelog)
         return None
+
 
 if __name__ == '__main__':
     import sys
