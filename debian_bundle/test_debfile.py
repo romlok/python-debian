@@ -19,6 +19,7 @@
 
 import unittest
 import os
+import re
 import stat
 import sys
 import tempfile
@@ -128,14 +129,16 @@ class TestDebFile(unittest.TestCase):
 
     def test_data_names(self):
         """ test for file list equality """ 
+        strip_dot_slash = lambda s: re.sub(r'^\./', '', s)
         tgz = self.d.data.tgz()
-        filelist = [ x.strip()[2:] # remove "./"
-                for x in
-                os.popen("dpkg-deb --fsys-tarfile %s | tar t" %
-                    self.debname).readlines() ]
+        dpkg_names = map(strip_dot_slash,
+                [ x.strip() for x in
+                    os.popen("dpkg-deb --fsys-tarfile %s | tar t" %
+                        self.debname).readlines() ])
+        debfile_names = map(strip_dot_slash, tgz.getnames())
         
         # skip the root
-        self.assertEqual(tgz.getnames()[1:], filelist[1:])
+        self.assertEqual(debfile_names[1:], dpkg_names[1:])
 
     def test_control(self):
         """ test for control equality """
