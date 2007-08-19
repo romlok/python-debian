@@ -1,5 +1,6 @@
-from debian_bundle.deb822 import *
+import sys
+print >> sys.stderr, "WARNING:",    \
+        "the 'deb822' top-level module is *DEPRECATED*,",   \
+        "please use 'debian_bundle.deb822'"
 
-# FIXME: Give a warning about path change.  Should we raise DeprecationWarning
-# (I vote no, since that will stop execution unless caught), or just print a
-# message to stderr?
+from debian_bundle.deb822 import *
