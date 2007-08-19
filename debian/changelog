@@ -1,4 +1,4 @@
-python-debian (0.1.5) UNRELEASED; urgency=low
+python-debian (0.1.5) unstable; urgency=low
 
   [ Stefano Zacchiroli ]
   * debfile.py
@@ -20,7 +20,7 @@ python-debian (0.1.5) UNRELEASED; urgency=low
       modules, rather than modules in the debian_bundle package
       (Closes: #438428)
 
- -- Stefano Zacchiroli <zack@debian.org>  Sun, 19 Aug 2007 09:35:01 +0200
+ -- Stefano Zacchiroli <zack@debian.org>  Sun, 19 Aug 2007 09:38:20 +0200
 
 python-debian (0.1.4) unstable; urgency=low
 
