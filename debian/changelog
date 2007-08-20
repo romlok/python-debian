@@ -1,3 +1,14 @@
+python-debian (0.1.6) UNRELEASED; urgency=low
+
+  [ Stefano Zacchiroli ]
+  * debfile.py
+    - bugfix: make md5sums top-level method acts as a proxy instead of
+      returning a method
+    - bugfix: use readlines() to iterate over the md5sums file since direct
+      iteration on files is available only in python >= 2.5 (closes: #438804)
+
+ -- Stefano Zacchiroli <zack@debian.org>  Mon, 20 Aug 2007 12:46:02 +0200
+
 python-debian (0.1.5) unstable; urgency=low
 
   [ Stefano Zacchiroli ]

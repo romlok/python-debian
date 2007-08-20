@@ -147,6 +147,14 @@ class TestDebFile(unittest.TestCase):
 
         self.assertEqual(self.d.control.get_content("control"), filecontrol)
 
+    def test_md5sums(self):
+        """test md5 extraction from .debs"""
+        md5 = self.d.md5sums()
+        self.assertEqual(md5['usr/bin/hello'],
+                '9c1a72a78f82216a0305b6c90ab71058')
+        self.assertEqual(md5['usr/share/locale/zh_TW/LC_MESSAGES/hello.mo'],
+                'a7356e05bd420872d03cd3f5369de42f')
+
 if __name__ == '__main__':
     unittest.main()
 
