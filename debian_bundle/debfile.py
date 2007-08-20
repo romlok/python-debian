@@ -167,7 +167,8 @@ class DebControl(DebPart):
         md5_file = self.get_file(MD5_FILE)
         sums = {}
         for line in md5_file.readlines():
-            md5, fname = line.split()
+            # we need to support spaces in filenames, .split() is not enough
+            md5, fname = line.rstrip('\n').split(None, 1)
             sums[fname] = md5
         md5_file.close()
         return sums
