@@ -9,7 +9,12 @@ python-debian (0.1.6) UNRELEASED; urgency=low
     - bugfix: support spaces in filenames when accessing md5sums; thanks to
       Romain Francoise for the patch (closes: #438909)
 
- -- Stefano Zacchiroli <zack@debian.org>  Mon, 20 Aug 2007 19:31:08 +0200
+  [ John Wright ]
+  * debian/pyversions:
+    - Since there are some Python 2.4-isms in this package, support only Python
+      >= 2.4, rather than all versions (Closes: #438920)
+
+ -- John Wright <jsw@debian.org>  Mon, 20 Aug 2007 14:38:06 -0600
 
 python-debian (0.1.5) unstable; urgency=low
 
