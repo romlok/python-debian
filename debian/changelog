@@ -1,4 +1,4 @@
-python-debian (0.1.6) UNRELEASED; urgency=low
+python-debian (0.1.6) unstable; urgency=low
 
   [ Stefano Zacchiroli ]
   * debfile.py
@@ -14,7 +14,7 @@ python-debian (0.1.6) UNRELEASED; urgency=low
     - Since there are some Python 2.4-isms in this package, support only Python
       >= 2.4, rather than all versions (Closes: #438920)
 
- -- John Wright <jsw@debian.org>  Mon, 20 Aug 2007 14:38:06 -0600
+ -- Stefano Zacchiroli <zack@debian.org>  Sat, 08 Sep 2007 10:12:20 +0200
 
 python-debian (0.1.5) unstable; urgency=low
 
