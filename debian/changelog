@@ -1,8 +1,13 @@
 python-debian (0.1.7) UNRELEASED; urgency=low
 
-  * NOT YET RELEASED
+  [ John Wright ]
+  * debian_bundle/deb822.py, debian_bundle/test_deb822.py
+    - Bug fix: Allow fields with blank (empty string) values.  Previously,
+      these were parsed fine, but if you tried to dump the resulting Deb822
+      object, you'd get an IndexError (because of how we handled fields whose
+      values start with newlines).  Added a test case.
 
- -- Stefano Zacchiroli <zack@debian.org>  Sat, 08 Sep 2007 10:20:37 +0200
+ -- John Wright <jsw@debian.org>  Tue, 11 Sep 2007 18:09:21 -0600
 
 python-debian (0.1.6) unstable; urgency=low
 

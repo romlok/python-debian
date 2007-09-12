@@ -265,9 +265,9 @@ class Deb822(Deb822Dict):
         else:
             return_string = False
         for key, value in self.iteritems():
-            if value[0] == '\n':
+            if not value or value[0] == '\n':
                 # Avoid trailing whitespace after "Field:" if it's on its own
-                # line
+                # line or the value is empty
                 fd.write('%s:%s\n' % (key, value))
             else:
                 fd.write('%s: %s\n' % (key, value))
