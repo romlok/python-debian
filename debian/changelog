@@ -6,8 +6,12 @@ python-debian (0.1.7) UNRELEASED; urgency=low
       these were parsed fine, but if you tried to dump the resulting Deb822
       object, you'd get an IndexError (because of how we handled fields whose
       values start with newlines).  Added a test case.
+    - Fix the copy method of Deb822Dict so that it returns an object of the
+      same type, rather than explicitly instantiating Deb822Dict (so that
+      subclasses like Deb822 can directly use the copy method and have it "just
+      work").  Added a test case.
 
- -- John Wright <jsw@debian.org>  Tue, 11 Sep 2007 18:09:21 -0600
+ -- John Wright <jsw@debian.org>  Wed, 26 Sep 2007 22:50:52 -0600
 
 python-debian (0.1.6) unstable; urgency=low
 

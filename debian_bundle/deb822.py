@@ -36,12 +36,6 @@ class Deb822Dict(UserDict.DictMixin):
     # Subclassing UserDict.DictMixin because we're overriding so much dict
     # functionality that subclassing dict requires overriding many more than
     # the four methods that DictMixin requires.
-    #
-    # HACK: I'm also subclassing dict, but all the methods we care about will
-    # already be provided by DictMixin.  This way, Deb822Dict is a "real"
-    # subclass of dict, i.e.
-    #     isinstance(Deb822Dict(), dict) == True
-    # but we get out of implementing lots of methods.
     """A dictionary-like object suitable for storing RFC822-like data.
 
     Deb822Dict behaves like a normal dict, except:
@@ -132,7 +126,8 @@ class Deb822Dict(UserDict.DictMixin):
         return True
 
     def copy(self):
-        copy = Deb822Dict(self)
+        # Use self.__class__ so this works as expected for subclasses
+        copy = self.__class__(self)
         return copy
 
     # TODO implement __str__() and make dump() use that?

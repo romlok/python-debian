@@ -9,9 +9,7 @@
 # dated June, 1991.
 #
 # This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# but WITHOUT ANY WARRANTY; without even the implied warranty of # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
@@ -430,6 +428,16 @@ Description: python modules to work with Debian-related data formats
         expected = "Foo: bar\nBaz:\nAnother-Key: another value\n"
         self.assertEqual(dumped, expected)
 
+    def test_copy(self):
+        """The copy method of Deb822 should return another Deb822 object"""
+        d = deb822.Deb822()
+        d['Foo'] = 'bar'
+        d['Bar'] = 'baz'
+        d_copy = d.copy()
+
+        self.assert_(isinstance(d_copy, deb822.Deb822))
+        expected_dump = "Foo: bar\nBar: baz\n"
+        self.assertEqual(d_copy.dump(), expected_dump)
 
 if __name__ == '__main__':
     unittest.main()
