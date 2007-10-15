@@ -11,7 +11,11 @@ python-debian (0.1.7) UNRELEASED; urgency=low
       subclasses like Deb822 can directly use the copy method and have it "just
       work").  Added a test case.
 
- -- John Wright <jsw@debian.org>  Wed, 26 Sep 2007 22:50:52 -0600
+  [ Stefano Zacchiroli ]
+  * debian/control
+    - mention the debfile module in the long description
+
+ -- Stefano Zacchiroli <zack@debian.org>  Mon, 15 Oct 2007 12:40:36 +0200
 
 python-debian (0.1.6) unstable; urgency=low
 

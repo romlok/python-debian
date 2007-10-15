@@ -24,3 +24,6 @@ Description: python modules to work with Debian-related data formats
   * Control files of single or multple RFC822-style paragraphs, e.g
     debian/control, .changes, .dsc, Packages, Sources, Release, etc.
     (debian_bundle.deb822 module)
+  * Raw .deb and .ar files, with (read-only) access to contained
+    files and meta-information
+
