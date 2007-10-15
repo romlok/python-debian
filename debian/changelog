@@ -14,6 +14,7 @@ python-debian (0.1.7) UNRELEASED; urgency=low
   [ Stefano Zacchiroli ]
   * debian/control
     - mention the debfile module in the long description
+    - promote Vcs-Bzr to a real field, now that dpkg supports it
 
  -- Stefano Zacchiroli <zack@debian.org>  Mon, 15 Oct 2007 12:40:36 +0200
 

@@ -6,7 +6,7 @@ Uploaders: Adeodato Simó <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>
 Build-Depends: debhelper (>= 5.0.37.2), python
 Build-Depends-Indep: python-support (>= 0.3)
 Standards-Version: 3.7.2
-XS-Vcs-Bzr: http://bzr.debian.org/pkg-python-debian/trunk/
+Vcs-Bzr: http://bzr.debian.org/pkg-python-debian/trunk/
 
 Package: python-debian
 Architecture: all
