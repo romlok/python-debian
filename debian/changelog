@@ -1,4 +1,4 @@
-python-debian (0.1.7) UNRELEASED; urgency=low
+python-debian (0.1.7) unstable; urgency=low
 
   [ John Wright ]
   * debian_bundle/deb822.py, debian_bundle/test_deb822.py
@@ -16,7 +16,7 @@ python-debian (0.1.7) UNRELEASED; urgency=low
     - mention the debfile module in the long description
     - promote Vcs-Bzr to a real field, now that dpkg supports it
 
- -- Stefano Zacchiroli <zack@debian.org>  Mon, 15 Oct 2007 12:40:36 +0200
+ -- John Wright <jsw@debian.org>  Tue, 27 Nov 2007 16:25:33 -0700
 
 python-debian (0.1.6) unstable; urgency=low
 
