@@ -1,3 +1,10 @@
+python-debian (0.1.8) UNRELEASED; urgency=low
+
+  [ Filippo Giunchedi ]
+  * Move tests to a separate subdirectory.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Thu, 29 Nov 2007 18:52:06 +0100
+
 python-debian (0.1.7) unstable; urgency=low
 
   [ John Wright ]
@@ -15,9 +22,6 @@ python-debian (0.1.7) unstable; urgency=low
   * debian/control
     - mention the debfile module in the long description
     - promote Vcs-Bzr to a real field, now that dpkg supports it
-
-  [ Filippo Giunchedi ]
-  * Move tests to a separate subdirectory.
 
  -- John Wright <jsw@debian.org>  Tue, 27 Nov 2007 16:25:33 -0700
 
