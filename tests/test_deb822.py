@@ -22,7 +22,7 @@ import sys
 import unittest
 from StringIO import StringIO
 
-sys.path.append('../debian_bundle/')
+sys.path.insert(0, '../debian_bundle/')
 
 import deb822
 
