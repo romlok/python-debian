@@ -18,9 +18,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import re
-import deb822
+import sys
 import unittest
 from StringIO import StringIO
+
+sys.path.append('../debian_bundle/')
+
+import deb822
 
 # Keep the test suite compatible with python2.3 for now
 try:

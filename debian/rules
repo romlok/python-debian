@@ -15,12 +15,13 @@ build-stamp: setup.py
 
 	# Add here commands to compile the package.
 	python setup.py build
-	# The tests for changelog and debtags need to be run from the same dir as
-	# the files.
-	cd debian_bundle && python test_deb822.py
-	cd debian_bundle && python test_debtags.py
-	cd debian_bundle && python changelog.py
-	cd debian_bundle && python test_debfile.py
+	
+	# run the tests
+	cd tests && \
+		for f in deb822 debfile debtags; do \
+			./test_$$f.py ; \
+		done 
+
 	#python debian_bundle/python_support.py
 	debian_bundle/doc-debtags > README.debtags
 
