@@ -25,13 +25,15 @@ import sys
 import tempfile
 import uu
 
+sys.path.insert(0, '../debian_bundle/')
+
 import arfile 
 import debfile
 
 class TestArFile(unittest.TestCase):
 
     def setUp(self):
-        os.system("ar r test.ar test_debfile.py arfile.py debfile.py >/dev/null 2>&1") 
+        os.system("ar r test.ar test_debfile.py test_changelog test_deb822.py >/dev/null 2>&1") 
         assert os.path.exists("test.ar")
         self.testmembers = [ x.strip()
                 for x in os.popen("ar t test.ar").readlines() ]
