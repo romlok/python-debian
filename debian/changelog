@@ -6,6 +6,13 @@ python-debian (0.1.8) UNRELEASED; urgency=low
   [ Stefano Zacchiroli ]
   * Add examples dir for deb822 with a simple example.
 
+  [ Adeodato Simó ]
+
+  * Sync debian_support.py with the latest version from the secure-testing
+    repository. Note that this removes support for version comparison without
+    apt_pkg. (Our copy was modified in 0.1.2 to *accept* ~ in version strings,
+    but comparison without apt_pkg was already broken by then.)
+
  -- Stefano Zacchiroli <zack@debian.org>  Mon, 24 Dec 2007 12:06:49 +0100
 
 python-debian (0.1.7) unstable; urgency=low
