@@ -175,7 +175,7 @@ class Deb822(Deb822Dict):
             with apt_pkg.) Set this parameter to False to disable using apt_pkg. 
         """
 
-        # TODO Think about still using apt_pkg evein if shared_storage is False,
+        # TODO Think about still using apt_pkg even if shared_storage is False,
         # by somehow instructing the constructor to make copy of the data. (If
         # this is still faster.)
 
