@@ -133,9 +133,9 @@ class PackageFile:
                     contents = "%s\n%s" % (contents, ncontents)
                 else:
                     break
-            pkg.append((name.lower(), contents))
+            pkg.append((name, contents))
         if pkg:
-            yield dict(pkg)
+            yield pkg
 
     def raiseSyntaxError(self, msg, lineno=None):
         if lineno is None:

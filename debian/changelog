@@ -13,6 +13,15 @@ python-debian (0.1.8) UNRELEASED; urgency=low
     apt_pkg. (Our copy was modified in 0.1.2 to *accept* ~ in version strings,
     but comparison without apt_pkg was already broken by then.)
 
+    Also, undo the change introduced for #431087, since we shouldn't be
+    keeping incompatible versions of debian_support.py around, plus the
+    desired functionality in that bug report is best provided by the deb822
+    module. (Closes: #457697, #457854)
+
+  * While rewriting the grep-maintainer example to use deb822.Packages to
+    accomodate the above change, make it cope with stanzas without a
+    maintainer field as well. (Closes: #457855)
+
  -- Stefano Zacchiroli <zack@debian.org>  Mon, 24 Dec 2007 12:06:49 +0100
 
 python-debian (0.1.7) unstable; urgency=low
