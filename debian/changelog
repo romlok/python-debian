@@ -1,4 +1,4 @@
-python-debian (0.1.8) UNRELEASED; urgency=low
+python-debian (0.1.8) unstable; urgency=low
 
   [ Filippo Giunchedi ]
   * Move tests to a separate subdirectory.
@@ -29,7 +29,7 @@ python-debian (0.1.8) UNRELEASED; urgency=low
 
   * Bump Standards-Version to 3.7.3 (no changes needed).
 
- -- Stefano Zacchiroli <zack@debian.org>  Mon, 24 Dec 2007 12:06:49 +0100
+ -- Adeodato Simó <dato@net.com.org.es>  Fri, 28 Dec 2007 19:46:13 +0100
 
 python-debian (0.1.7) unstable; urgency=low
 
