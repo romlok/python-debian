@@ -8,12 +8,11 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-"""Dumb maintainer-based grep for the dpkg status file, just to show the
-parsing API for Packages-like file."""
+"""Dumb maintainer-based grep for the dpkg status file."""
 
 import re
 import sys
-from debian_bundle.debian_support import PackageFile
+from debian_bundle import deb822
 
 try:
     maint_RE = re.compile(sys.argv[1])
@@ -21,8 +20,7 @@ except:
     print "Usage: grep-maintainer REGEXP"
     sys.exit(1)
 
-packages = PackageFile('/var/lib/dpkg/status')
-for pkg in packages:
-    if maint_RE.search(pkg['maintainer']):
+for pkg in deb822.Packages.iter_paragraphs(file('/var/lib/dpkg/status')):
+    if pkg.has_key('Maintainer') and maint_RE.search(pkg['maintainer']):
         print pkg['package']
 

@@ -22,11 +22,8 @@ import re
 import sha
 import types
 
-try:
-    import apt_pkg
-    __have_apt_pkg = True
-except ImportError:
-    __have_apt_pkg = False
+import apt_pkg
+apt_pkg.init()
 
 class ParseError(Exception):
     """An exception which is used to signal a parse failure.
@@ -58,100 +55,30 @@ class ParseError(Exception):
         file.write("%s:%d: %s\n" % (self.filename, self.lineno, self.msg))
         file.flush()
 
-if __have_apt_pkg:
-    class Version:
-        """Version class which uses the original APT comparison algorithm."""
+class Version:
+    """Version class which uses the original APT comparison algorithm."""
 
-        def __init__(self, version):
-            """Creates a new Version object."""
-            assert type(version) == types.StringType, `version`
-            assert version <> ""
-            self.__asString = version
+    def __init__(self, version):
+        """Creates a new Version object."""
+        t = type(version)
+        if t == types.UnicodeType:
+            version = version.encode('UTF-8')
+        else:
+            assert t == types.StringType, `version`
+        assert version <> ""
+        self.__asString = version
 
-        def __str__(self):
-            return self.__asString
+    def __str__(self):
+        return self.__asString
 
-        def __repr__(self):
-            return 'Version(%s)' % `self.__asString`
+    def __repr__(self):
+        return 'Version(%s)' % `self.__asString`
 
-        def __cmp__(self, other):
-            return apt_pkg.VersionCompare(self.__asString, other.__asString)
+    def __cmp__(self, other):
+        return apt_pkg.VersionCompare(self.__asString, other.__asString)
 
 
-    version_compare = apt_pkg.VersionCompare
-    apt_pkg.init()
-
-else:
-    letterValue = [None] * 256
-    def initLetterValue():
-        c = 0
-        for x in range(ord('A'), ord('Z') + 1):
-            letterValue[x] = chr(c)
-            c += 1
-        for x in range(ord('a'), ord('z') + 1):
-            letterValue[x] = chr(c)
-            c += 1
-        for x in "+-.:~":
-            letterValue[ord(x)] = chr(c)
-            c += 1
-    initLetterValue()
-    del initLetterValue
-
-    class Version:
-        """This class implements Debian version numbers."""
-
-        def __init__(self, version):
-            """Creates a new Version object."""
-            assert type(version) == types.StringType, `version`
-            assert version <> ""
-            self.__asString = version
-            self.__parsed = self.__parse(version)
-
-        def __str__(self):
-            return self.__asString
-
-        def __repr__(self):
-            return 'Version(%s)' % `self.__asString`
-
-        def __cmp__(self, other):
-            """Compares two versions.
-
-            This method implements the algorithm in the Debian Policy."""
-            return cmp(self.__parsed, other.__parsed)
-
-        def __parse(self, v, regexp=\
-                    re.compile(r'^(?:(\d+):)?([A-Za-z0-9.+~:-]+?)'
-                               + r'(?:-([A-Za-z0-9.+~]+))?$')):
-            match = regexp.match(v)
-            if match is None:
-                raise ValueError, "invalid Debian version string"
-            (epoch, upstream, debian) = match.groups()
-            if epoch is None:
-                epoch = 0
-            else:
-                epoch = int(epoch)
-            return (epoch, self.__parse_1(upstream), self.__parse_1(debian))
-
-        def __parse_1(self, x, non_digits=re.compile(r'^([^0-9]*)(.*)$'),
-                      digits=re.compile(r'^([0-9]*)(.*)$')):
-            l = []
-            while x is not None and x <> '':
-                (nd, x) = non_digits.match(x).groups()
-                (d, x) = digits.match(x).groups()
-                nd_l = []
-                for ch in nd:
-                    nd_l.append(letterValue[ord(ch)])
-                nd = ''.join(nd_l)
-                if d == '':
-                    d = 0
-                else:
-                    d = int(d)
-                l.append(nd)
-                l.append(d)
-            return l
-
-    def version_compare(a,b):
-        return cmp(Version(a), Version(b))
+version_compare = apt_pkg.VersionCompare
 
 class PackageFile:
     """A Debian package file.
@@ -206,9 +133,9 @@ class PackageFile:
                     contents = "%s\n%s" % (contents, ncontents)
                 else:
                     break
-            pkg.append((name.lower(), contents))
+            pkg.append((name, contents))
         if pkg:
-            yield dict(pkg)
+            yield pkg
 
     def raiseSyntaxError(self, msg, lineno=None):
         if lineno is None:
@@ -233,7 +160,7 @@ class Release(PseudoEnum): pass
 
 def listReleases():
     releases = {}
-    rels = ("potato", "woody", "sarge", "etch", "sid")
+    rels = ("potato", "woody", "sarge", "etch", "lenny", "sid")
     for r in range(len(rels)):
         releases[rels[r]] = Release(rels[r], r)
     Release.releases = releases

@@ -1,0 +1,3 @@
+- Revamp the README files. In particular, note that debian_support.py
+  comes from the secure-testing repository (also in copyright!!), and
+  that for reading Packages files Deb822 should be used instead.
