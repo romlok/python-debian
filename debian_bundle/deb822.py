@@ -263,6 +263,7 @@ class Deb822(Deb822Dict):
             if not value or value[0] == '\n':
                 # Avoid trailing whitespace after "Field:" if it's on its own
                 # line or the value is empty
+                # XXX Uh, really print value if value == '\n'?
                 fd.write('%s:%s\n' % (key, value))
             else:
                 fd.write('%s: %s\n' % (key, value))
@@ -430,18 +431,23 @@ class _multivalued(Deb822):
         else:
             return_string = False
         for key in self.keys():
-            if key not in self._multivalued_fields:
-                # normal behavior
-                fd.write(key + ": " + self[key] + "\n")
+            keyl = key.lower()
+            if keyl not in self._multivalued_fields:
+                value = self[key]
+                if not value or value[0] == '\n':
+                    # XXX Uh, really print value if value == '\n'?
+                    fd.write('%s:%s\n' % (key, value))
+                else:
+                    fd.write('%s: %s\n' % (key, value))
             else:
                 fd.write(key + ":")
                 if isinstance(self[key], dict): # single-line
                     array = [ self[key] ]
                 else: # multi-line
-                    fd.write(" \n")
+                    fd.write("\n")
                     array = self[key]
 
-                order = self._multivalued_fields[key]
+                order = self._multivalued_fields[keyl]
                 for item in array:
                     fd.write(" " + " ".join([item[x] for x in order]))
                     fd.write("\n")

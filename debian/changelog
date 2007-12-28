@@ -22,6 +22,8 @@ python-debian (0.1.8) UNRELEASED; urgency=low
     accomodate the above change, make it cope with stanzas without a
     maintainer field as well. (Closes: #457855)
 
+  * Fix dump() method of deb822._multivalued. (Closes: #457929)
+
   * Small improvements to the exception handling in the grep-maintainer
     example.
 

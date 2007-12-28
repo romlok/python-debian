@@ -145,6 +145,34 @@ CcYAoOLYDF5G1h3oR1iDNyeCI6hRW03S
     ]
 
 
+CHANGES_FILE = '''\
+Format: 1.7
+Date: Fri, 28 Dec 2007 17:08:48 +0100
+Source: bzr-gtk
+Binary: bzr-gtk
+Architecture: source all
+Version: 0.93.0-2
+Distribution: unstable
+Urgency: low
+Maintainer: Debian Bazaar Maintainers <pkg-bazaar-maint@lists.alioth.debian.org>
+Changed-By: Chris Lamb <chris@chris-lamb.co.uk>
+Description:
+ bzr-gtk    - provides graphical interfaces to Bazaar (bzr) version control
+Closes: 440354 456438
+Changes:
+ bzr-gtk (0.93.0-2) unstable; urgency=low
+ .
+   [ Chris Lamb ]
+   * Add patch for unclosed progress window. (Closes: #440354)
+     Patch by Jean-François Fortin Tam <jeff@ecchi.ca>
+   * Fix broken icons in .desktop files (Closes: #456438).
+Files:
+ 0fd797f4138a9d4fdeb8c30597d46bc9 1003 python optional bzr-gtk_0.93.0-2.dsc
+ d9523676ae75c4ced299689456f252f4 3860 python optional bzr-gtk_0.93.0-2.diff.gz
+ 8960459940314b21019dedd5519b47a5 168544 python optional bzr-gtk_0.93.0-2_all.deb
+'''
+
+
 class TestDeb822Dict(unittest.TestCase):
     def make_dict(self):
         d = deb822.Deb822Dict()
@@ -365,29 +393,15 @@ class TestDeb822(unittest.TestCase):
         should be a space after the colon, as with non-multiline fields.
         """
         
-        dsc_string = """Format: 1.0
-Source: python-debian
-Binary: python-debian
-Architecture: all
-Version: 0.1.4
-Maintainer: Debian python-debian Maintainers <pkg-python-debian-maint@lists.alioth.debian.org>
-Uploaders: Adeodato Simó <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>, Reinhard Tartler <siretart@tauware.de>, Stefano Zacchiroli <zack@debian.org>, John Wright <john@movingsucks.org>
-Standards-Version: 3.7.2
-Build-Depends: debhelper (>= 5.0.37.2), python, m4
-Build-Depends-Indep: python-support (>= 0.3)
-Files:
- 065aa27943a4fc9e7020f324fed57b65 68575 python-debian_0.1.4.tar.gz
-Vcs-Bzr: http://bzr.debian.org/pkg-python-debian/trunk/
-"""
-        parsed_dsc = deb822.Deb822(dsc_string.splitlines())
-
         # bad_re: match a line that starts with a "Field:", and ends in
         # whitespace
         bad_re = re.compile(r"^\S+:\s+$")
-        for line in parsed_dsc.dump().splitlines():
-            self.assert_(bad_re.match(line) is None,
-                         "There should not be trailing whitespace after the "
-                         "colon in a multiline field starting with a newline")
+        for cls in deb822.Deb822, deb822.Changes:
+            parsed = cls(CHANGES_FILE.splitlines())
+            for line in parsed.dump().splitlines():
+                self.assert_(bad_re.match(line) is None,
+                            "There should not be trailing whitespace after the "
+                            "colon in a multiline field starting with a newline")
 
         
         control_paragraph = """Package: python-debian
@@ -444,6 +458,11 @@ Description: python modules to work with Debian-related data formats
         self.assert_(isinstance(d_copy, deb822.Deb822))
         expected_dump = "Foo: bar\nBar: baz\n"
         self.assertEqual(d_copy.dump(), expected_dump)
+
+    def test_bug457929_multivalued_dump_works(self):
+        """dump() was not working in multivalued classes, see #457929."""
+        changesobj = deb822.Changes(CHANGES_FILE.splitlines())
+        self.assertEqual(CHANGES_FILE, changesobj.dump())
 
 if __name__ == '__main__':
     unittest.main()
