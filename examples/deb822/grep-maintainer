@@ -16,8 +16,11 @@ from debian_bundle import deb822
 
 try:
     maint_RE = re.compile(sys.argv[1])
-except:
-    print "Usage: grep-maintainer REGEXP"
+except IndexError:
+    print >>sys.stderr, "Usage: grep-maintainer REGEXP"
+    sys.exit(1)
+except re.error, e:
+    print >>sys.stderr, "Error in the regexp: %s" % (e,)
     sys.exit(1)
 
 for pkg in deb822.Packages.iter_paragraphs(file('/var/lib/dpkg/status')):
