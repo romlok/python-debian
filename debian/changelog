@@ -19,7 +19,7 @@ python-debian (0.1.8) UNRELEASED; urgency=low
     module. (Closes: #457697, #457854)
 
   * While rewriting the grep-maintainer example to use deb822.Packages to
-    accomodate the above change, make it cope with stanzas without a
+    accommodate the above change, make it cope with stanzas without a
     maintainer field as well. (Closes: #457855)
 
   * Fix dump() method of deb822._multivalued. (Closes: #457929)
