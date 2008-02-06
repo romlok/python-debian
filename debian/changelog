@@ -1,3 +1,9 @@
+python-debian (0.1.9) unstable; urgency=low
+
+  * Promote python-apt from Suggests to Recommends. (Closes: #462845)
+
+ -- Adeodato Simó <dato@net.com.org.es>  Wed, 06 Feb 2008 15:36:02 +0100
+
 python-debian (0.1.8) unstable; urgency=low
 
   [ Filippo Giunchedi ]

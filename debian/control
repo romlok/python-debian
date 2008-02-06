@@ -11,7 +11,7 @@ Vcs-Bzr: http://bzr.debian.org/pkg-python-debian/trunk/
 Package: python-debian
 Architecture: all
 Depends: ${python:Depends}
-Suggests: python-apt
+Recommends: python-apt
 Provides: python-deb822
 Conflicts: python-deb822
 Replaces: python-deb822
