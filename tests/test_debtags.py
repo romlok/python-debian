@@ -21,7 +21,7 @@ import sys
 import unittest
 
 sys.path.insert(0, '../debian_bundle/')
-import debtags 
+import debtags
 
 class TestDebtags(unittest.TestCase):
     def mkdb(self):

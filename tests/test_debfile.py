@@ -27,7 +27,7 @@ import uu
 
 sys.path.insert(0, '../debian_bundle/')
 
-import arfile 
+import arfile
 import debfile
 
 class TestArFile(unittest.TestCase):
