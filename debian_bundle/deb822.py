@@ -514,28 +514,7 @@ Packages = Deb822
 
 class _CaseInsensitiveString(str):
     """Case insensitive string.
-    
-    Created objects are cached as to not create the same object twice.
     """
-
-    _cache = {}
-
-    def __new__(cls, str_):
-        if isinstance(str_, _CaseInsensitiveString):
-            return str_
-
-        try:
-            lower = str_.lower()
-        except AttributeError:
-            raise TypeError('key must be a string')
-
-        cache = _CaseInsensitiveString._cache
-
-        try:
-            return cache[lower]
-        except KeyError:
-            ret = cache[lower] = str.__new__(cls, str_)
-            return ret
 
     def __init__(self, str_):
         str.__init__(self, str_)

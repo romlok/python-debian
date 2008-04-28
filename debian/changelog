@@ -1,3 +1,12 @@
+python-debian (0.1.10) UNRELEASED; urgency=low
+
+  * debian_bundle/deb822.py, tests/test_deb822.py:
+    - Do not cache _CaseInsensitiveString objects, since it causes case
+      preservation issues under certain circumstances (Closes: #473254)
+    - Add a test case
+
+ -- John Wright <jsw@debian.org>  Wed, 02 Apr 2008 02:17:23 -0600
+
 python-debian (0.1.9) unstable; urgency=low
 
   * Promote python-apt from Suggests to Recommends. (Closes: #462845)

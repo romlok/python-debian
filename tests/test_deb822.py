@@ -464,5 +464,25 @@ Description: python modules to work with Debian-related data formats
         changesobj = deb822.Changes(CHANGES_FILE.splitlines())
         self.assertEqual(CHANGES_FILE, changesobj.dump())
 
+    def test_case_preserved_in_input(self):
+        """The field case in the output from dump() should be the same as the
+        input, even if multiple Deb822 objects have been created using
+        different case conventions.
+
+        This is related to bug 473254 - the fix for this issue is probably the
+        same as the fix for that bug.
+        """
+        input1 = "Foo: bar\nBaz: bang\n"
+        input2 = "foo: baz\nQux: thud\n"
+        d1 = deb822.Deb822(input1.splitlines())
+        d2 = deb822.Deb822(input2.splitlines())
+        self.assertEqual(input1, d1.dump())
+        self.assertEqual(input2, d2.dump())
+
+        d3 = deb822.Deb822()
+        if not d3.has_key('some-test-key'):
+            d3['Some-Test-Key'] = 'some value'
+        self.assertEqual(d3.dump(), "Some-Test-Key: some value\n")
+
 if __name__ == '__main__':
     unittest.main()
