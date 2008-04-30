@@ -1,4 +1,4 @@
-python-debian (0.1.10) UNRELEASED; urgency=low
+python-debian (0.1.10) unstable; urgency=low
 
   * debian_bundle/deb822.py, tests/test_deb822.py:
     - Do not cache _CaseInsensitiveString objects, since it causes case
@@ -13,7 +13,7 @@ python-debian (0.1.10) UNRELEASED; urgency=low
       which behavior to use if given an actual Release file as input, but this
       is not implemented yet.)  (Closes: #473259)
 
- -- John Wright <jsw@debian.org>  Wed, 30 Apr 2008 17:25:12 -0600
+ -- John Wright <jsw@debian.org>  Wed, 30 Apr 2008 17:29:51 -0600
 
 python-debian (0.1.9) unstable; urgency=low
 
