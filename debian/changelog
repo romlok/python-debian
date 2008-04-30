@@ -4,8 +4,16 @@ python-debian (0.1.10) UNRELEASED; urgency=low
     - Do not cache _CaseInsensitiveString objects, since it causes case
       preservation issues under certain circumstances (Closes: #473254)
     - Add a test case
+  * debian_bundle/deb822.py:
+    - Add support for fixed-length subfields in multivalued fields.  I updated
+      the Release and PdiffIndex classes to use this.  The default behavior for
+      Release is that of apt-ftparchive, just because it's simpler.  Changing
+      the behavior to resemble dak requires simply setting the
+      size_field_behavior attribute to 'dak'.  (Ideally, deb822 would detect
+      which behavior to use if given an actual Release file as input, but this
+      is not implemented yet.)  (Closes: #473259)
 
- -- John Wright <jsw@debian.org>  Wed, 02 Apr 2008 02:17:23 -0600
+ -- John Wright <jsw@debian.org>  Wed, 30 Apr 2008 17:25:12 -0600
 
 python-debian (0.1.9) unstable; urgency=low
 
