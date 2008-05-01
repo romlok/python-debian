@@ -1,5 +1,5 @@
 Source: python-debian
-Section: devel
+Section: python
 Priority: optional
 Maintainer: Debian python-debian Maintainers <pkg-python-debian-maint@lists.alioth.debian.org>
 Uploaders: Adeodato Simó <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>, Reinhard Tartler <siretart@tauware.de>, Stefano Zacchiroli <zack@debian.org>, John Wright <jsw@debian.org>
@@ -15,8 +15,8 @@ Recommends: python-apt
 Provides: python-deb822
 Conflicts: python-deb822
 Replaces: python-deb822
-Description: python modules to work with Debian-related data formats
- This package provides python modules that abstract many formats of Debian 
+Description: Python modules to work with Debian-related data formats
+ This package provides Python modules that abstract many formats of Debian 
  related files. Currently handled are:
   * Debtags information (debian_bundle.debtags module)
   * debian/changelog (debian_bundle.changelog module)

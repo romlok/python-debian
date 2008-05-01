@@ -14,8 +14,11 @@ python-debian (0.1.10) unstable; urgency=low
       is not implemented yet.)  (Closes: #473259)
     - Add support for Checksums-{Sha1,Sha256} multivalued fields in Dsc and
       Changes classes
+  * debian/control:
+    - "python" --> "Python" in the Description field
+    - Change the section to "python"
 
- -- John Wright <jsw@debian.org>  Wed, 30 Apr 2008 23:49:15 -0600
+ -- John Wright <jsw@debian.org>  Wed, 30 Apr 2008 23:58:24 -0600
 
 python-debian (0.1.9) unstable; urgency=low
 
