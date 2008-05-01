@@ -12,8 +12,10 @@ python-debian (0.1.10) unstable; urgency=low
       size_field_behavior attribute to 'dak'.  (Ideally, deb822 would detect
       which behavior to use if given an actual Release file as input, but this
       is not implemented yet.)  (Closes: #473259)
+    - Add support for Checksums-{Sha1,Sha256} multivalued fields in Dsc and
+      Changes classes
 
- -- John Wright <jsw@debian.org>  Wed, 30 Apr 2008 17:29:51 -0600
+ -- John Wright <jsw@debian.org>  Wed, 30 Apr 2008 23:49:15 -0600
 
 python-debian (0.1.9) unstable; urgency=low
 

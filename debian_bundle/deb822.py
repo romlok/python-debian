@@ -472,12 +472,16 @@ class _multivalued(Deb822):
 class Dsc(_multivalued):
     _multivalued_fields = {
         "files": [ "md5sum", "size", "name" ],
+        "checksums-sha1": ["sha1", "size", "name"],
+        "checksums-sha256": ["sha256", "size", "name"],
     }
 
 
 class Changes(_multivalued):
     _multivalued_fields = {
         "files": [ "md5sum", "size", "section", "priority", "name" ],
+        "checksums-sha1": ["sha1", "size", "section", "priority", "name"],
+        "checksums-sha256": ["sha256", "size", "section", "priority", "name"],
     }
 
     def get_pool_path(self):
