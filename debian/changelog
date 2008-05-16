@@ -1,3 +1,10 @@
+python-debian (0.1.11) UNRELEASED; urgency=low
+
+  * Allow urgency=HIGH and other words made of capital letters there, see
+    fuse's changelog.
+
+ -- James Westby <jw+debian@jameswestby.net>  Fri, 16 May 2008 13:04:38 +0100
+
 python-debian (0.1.10) unstable; urgency=low
 
   * debian_bundle/deb822.py, tests/test_deb822.py:

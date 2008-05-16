@@ -1,4 +1,4 @@
-gnutls13 (1:1.4.1-1) unstable; urgency=low
+gnutls13 (1:1.4.1-1) unstable; urgency=HIGH
 
   [ James Westby ]
   * New upstream release.

@@ -181,7 +181,7 @@ class ChangeBlock(object):
     return block
 
 topline = re.compile('^([a-z0-9][-a-z0-9.+]+) \(([-0-9a-zA-Z.:~+]+)\) '
-      +'([-+.0-9a-zA-Z ]+); urgency=([a-z]+)')
+      +'([-+.0-9a-zA-Z ]+); urgency=([a-zA-Z]+)')
 blankline = re.compile('^[ \t]*$')
 change = re.compile('^[ ][ ]+.*$')
 endline = re.compile('^ -- (.*)  (\w\w\w, +(\d| \d|\d\d) \w\w\w \d\d\d\d '+
@@ -373,7 +373,7 @@ class ChangelogTests(unittest.TestCase):
     cl = Changelog(c, max_blocks=1)
     cs = str(cl)
     self.assertEqual(cs,
-    """gnutls13 (1:1.4.1-1) unstable; urgency=low
+    """gnutls13 (1:1.4.1-1) unstable; urgency=HIGH
 
   [ James Westby ]
   * New upstream release.
