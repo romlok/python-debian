@@ -21,7 +21,7 @@ Description: Python modules to work with Debian-related data formats
   * Debtags information (debian_bundle.debtags module)
   * debian/changelog (debian_bundle.changelog module)
   * Packages files, pdiffs (debian_bundle.debian_support module)
-  * Control files of single or multple RFC822-style paragraphs, e.g
+  * Control files of single or multiple RFC822-style paragraphs, e.g.
     debian/control, .changes, .dsc, Packages, Sources, Release, etc.
     (debian_bundle.deb822 module)
   * Raw .deb and .ar files, with (read-only) access to contained

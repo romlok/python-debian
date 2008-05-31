@@ -1,9 +1,14 @@
 python-debian (0.1.11) UNRELEASED; urgency=low
 
+  [ James Westby ]
   * Allow urgency=HIGH and other words made of capital letters there, see
     fuse's changelog.
 
- -- James Westby <jw+debian@jameswestby.net>  Fri, 16 May 2008 13:04:38 +0100
+  [ John Wright ]
+  * debian/control:
+    - Fix a typo in the Description field (Closes: #483688)
+
+ -- John Wright <jsw@debian.org>  Fri, 30 May 2008 19:16:40 -0600
 
 python-debian (0.1.10) unstable; urgency=low
 
