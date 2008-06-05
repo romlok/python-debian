@@ -8,6 +8,10 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   * debian/control:
     - Fix a typo in the Description field (Closes: #483688)
 
+  [ Stefano Zacchiroli ]
+  * debfile.py: add has_key (same implementation of __contains__) to better
+    emulate dictionary containers
+
  -- John Wright <jsw@debian.org>  Fri, 30 May 2008 19:16:40 -0600
 
 python-debian (0.1.10) unstable; urgency=low

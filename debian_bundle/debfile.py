@@ -121,6 +121,9 @@ class DebPart(object):
     def __contains__(self, fname):
         return self.has_file(fname)
 
+    def has_key(self, fname):
+        return self.has_file(fname)
+
     def __getitem__(self, fname):
         return self.get_content(fname)
 
