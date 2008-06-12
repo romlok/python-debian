@@ -3,6 +3,8 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   [ James Westby ]
   * Allow urgency=HIGH and other words made of capital letters there, see
     fuse's changelog.
+  * Allow any number of spaces before "urgency" in the header line of a
+    changelog, see lvm2's changelog in Ubuntu.
 
   [ John Wright ]
   * debian/control:
@@ -12,7 +14,7 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   * debfile.py: add has_key (same implementation of __contains__) to better
     emulate dictionary containers
 
- -- John Wright <jsw@debian.org>  Fri, 30 May 2008 19:16:40 -0600
+ -- John Wright <jsw@debian.org>  Thu, 12 Jun 2008 12:16:53 +0100
 
 python-debian (0.1.10) unstable; urgency=low
 
