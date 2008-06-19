@@ -13,6 +13,8 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   [ Stefano Zacchiroli ]
   * debfile.py: add has_key (same implementation of __contains__) to better
     emulate dictionary containers
+  * minor revamp of README pointing to deb822.py for Packages parsing and
+    mentioning debfile.py
 
  -- John Wright <jsw@debian.org>  Thu, 12 Jun 2008 12:16:53 +0100
 
