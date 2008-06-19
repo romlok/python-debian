@@ -507,20 +507,21 @@ class _PkgRelMixin(object):
     To use, subclass _PkgRelMixin from a class with a _relationship_fields
     attribute. It should be a list of field names for which structured access
     is desired; for each of them a method wild be added to the inherited class.
-    The method name will be the lowercase version of field name. The method
-    would return relationships in the same format of the PkgRel' rels property.
+    The method name will be the lowercase version of field name; '-' will be
+    mangled as '_'. The method would return relationships in the same format of
+    the PkgRel' rels property.
 
     See Packages and Sources as examples.
     """
 
     def __init__(self, *args, **kwargs):
         for name in self._relationship_fields:
-            name = name.lower()
             if self.has_key(name):
+                methodname = name.lower().replace('-', '_')
                 method = new.instancemethod(
                         lambda self, name=name: PkgRel.parse_rels(self[name]),
                         self, _PkgRelMixin)
-                setattr(_PkgRelMixin, name, method)
+                setattr(_PkgRelMixin, methodname, method)
 
 class _multivalued(Deb822):
     """A class with (R/W) support for multivalued fields.
