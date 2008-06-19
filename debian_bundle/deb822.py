@@ -28,7 +28,9 @@ try:
 except ImportError:
     _have_apt_pkg = False
 
+import new
 import re
+import sys
 import StringIO
 import UserDict
 
@@ -390,6 +392,135 @@ class Deb822(Deb822Dict):
 
 ###
 
+class PkgRel(object):
+    """Package relationships
+
+    Structured representation of the relationships of a package to another,
+    i.e. of what can appear in a Deb882 field like Depends, Recommends,
+    Suggests, ... (see Debian Policy 7.1).
+    """
+
+    def __init__(self, rels=[]):
+        """Argument is a list of dependencies logically AND-ed together.
+
+        In Deb822 syntax that would be the top-level comma-separated list.
+        """
+        self.__rels = rels
+
+    # XXX *NOT* a real dependency parser, and that is not even a goal here, we
+    # just parse as much as we need to split the various parts composing a
+    # dependency, checking their correctness wrt policy is out of scope
+    __dep_RE = re.compile( \
+            r'^\s*(?P<name>[a-z0-9.+\-]{2,})(\s*\(\s*(?P<relop>[>=<]+)\s*(?P<version>[0-9a-zA-Z:\-+~.]+)\s*\))?(\s*\[(?P<archs>[\s!\w]+)\])?\s*$')
+    __comma_sep_RE = re.compile(r'\s*,\s*')
+    __pipe_sep_RE = re.compile(r'\s*\|\s*')
+    __blank_sep_RE = re.compile(r'\s*')
+
+    @classmethod
+    def parse_rels(cls, raw):
+        """Parse a package relationship string (i.e. the value of a field like
+        Depends, Recommends, Build-Depends ...)
+
+        For a description of return value format see the rels property
+        """
+        def parse_archs(raw):
+            # assumption: no space beween '!' and architecture name
+            archs = []
+            for arch in cls.__blank_sep_RE.split(raw.strip()):
+                if len(arch) and arch[0] == '!':
+                    archs.append((False, arch[1:]))
+                else:
+                    archs.append((True, arch))
+            return archs
+
+        def parse_rel(raw):
+            match = cls.__dep_RE.match(raw)
+            if match:
+                parts = match.groupdict()
+                d = { 'name': parts['name'] }
+                if not (parts['relop'] is None or parts['version'] is None):
+                    d['version'] = (parts['relop'], parts['version'])
+                if not (parts['archs'] is None):
+                    d['arch'] = parse_archs(parts['archs'])
+                return d
+            else:
+                print >> sys.stderr, \
+                        'deb822.py: WARNING: cannot parse package' \
+                        ' relationship "%s", returning it raw' % raw
+                return { 'name': raw }
+
+        tl_deps = cls.__comma_sep_RE.split(raw.strip()) # top-level deps
+        cnf = map(cls.__pipe_sep_RE.split, tl_deps)
+        return map(lambda or_deps: map(parse_rel, or_deps), cnf)
+
+    @property
+    def rels(self):
+        """Get raw package relationships
+
+        Relationships are returned as lists of lists of dictionaries (see below
+        for some examples).
+
+        The semantics is as follows:
+        - the top-level lists corresponds to the comma-separated list of
+          Deb822, their components form a conjuction, i.e. they have to be
+          AND-ed together
+        - the inner lists corresponds to the pipe-separated list of Deb822,
+          their components form a disjunction, i.e. they have to be OR-ed
+          together
+        - member of the inner lists are dictionaries with the following keys:
+          - name:       package (or virtual package) name
+          - version:    a pair <operator, version>. operator is one of "<<",
+                        "<=", "=", ">=", ">>"; version is the given version as
+                        a string.
+                        This key is present only if the relationship is
+                        versioned
+          - arch:       a list of pairs <polarity, architecture>; polarity is a
+                        boolean (false if the architecture is negated with "!",
+                        true otherwise), architecture the Debian archtiecture
+                        name as a string.
+                        This key is present only if the relationship is
+                        architecture specific
+
+        Examples:
+
+          "emacs | emacsen, make, debianutils (>= 1.7)"     becomes
+          [ [ {'name': 'emacs'}, {'name': 'emacsen'} ],
+            [ {'name': 'make'} ],
+            [ {'name': 'debianutils', 'version': ('>=', '1.7')} ] ]
+
+          "tcl8.4-dev, procps [!hurd-i386]"                 becomes
+          [ [ {'name': 'tcl8.4-dev'} ],
+            [ {'name': 'procps', 'arch': (false, 'hurd-i386')} ] ]
+        """
+        return self.__rels
+
+class _PkgRelMixin(object):
+    """Package relationship mixin
+
+    Inheriting from this mixin you can extend a Deb882 object with attributes
+    letting you access inter-package relationship in a structured way, rather
+    than as strings. For example, while you can usually use pkg['depends'] to
+    obtain the Depends string of package pkg, mixing in with this class you
+    gain pkg.depends to access Depends as a Pkgrel instance
+
+    To use, subclass _PkgRelMixin from a class with a _relationship_fields
+    attribute. It should be a list of field names for which structured access
+    is desired; for each of them a method wild be added to the inherited class.
+    The method name will be the lowercase version of field name. The method
+    would return relationships in the same format of the PkgRel' rels property.
+
+    See Packages and Sources as examples.
+    """
+
+    def __init__(self, *args, **kwargs):
+        for name in self._relationship_fields:
+            name = name.lower()
+            if self.has_key(name):
+                method = new.instancemethod(
+                        lambda self, name=name: PkgRel.parse_rels(self[name]),
+                        self, _PkgRelMixin)
+                setattr(_PkgRelMixin, name, method)
+
 class _multivalued(Deb822):
     """A class with (R/W) support for multivalued fields.
     
@@ -573,8 +704,28 @@ class Release(_multivalued):
             lengths = [len(str(item['size'])) for item in self[key]]
             return max(lengths)
 
-Sources = Dsc
-Packages = Deb822
+
+class Sources(Dsc, _PkgRelMixin):
+    """Represent an APT source package list"""
+
+    _relationship_fields = [ 'build-depends', 'build-depends-indep',
+            'build-conflicts', 'build-conflicts-indep' ]
+
+    def __init__(self, *args, **kwargs):
+        Dsc.__init__(self, *args, **kwargs)
+        _PkgRelMixin.__init__(self, *args, **kwargs)
+
+
+class Packages(Deb822, _PkgRelMixin):
+    """Represent an APT binary package list"""
+
+    _relationship_fields = [ 'depends', 'pre-depends', 'recommends',
+            'suggests', 'breaks', 'conflicts', 'provides', 'replaces',
+            'enhances' ]
+
+    def __init__(self, *args, **kwargs):
+        Deb822.__init__(self, *args, **kwargs)
+        _PkgRelMixin.__init__(self, *args, **kwargs)
 
 ###
 
