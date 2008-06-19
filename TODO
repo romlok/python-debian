@@ -3,7 +3,6 @@
   that for reading Packages files Deb822 should be used instead.
 - parsed dependencies support:
   - add tests
-  - add examples
   - change key name to access package name from "name" to "package", that way
     it is more consistent with legacy package names
   - instead of adding top-level methods, add a single top-level property
