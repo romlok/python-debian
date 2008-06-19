@@ -39,16 +39,16 @@ def main():
     print "digraph depgraph {"
     for pkg in deb822.Packages.iter_paragraphs(file(sys.argv[1])):
         name = pkg['package']
-        if pkg.has_key('depends'):
-            for deps in pkg.depends():
-                if len(deps) == 1:
-                    emit_arc(name, deps[0]['name'])
-                else:   # output an OR node
-                    or_node = get_id()
-                    emit_arc(name, or_node)
-                    emit_node(or_node, 'OR')
-                    for dep in deps:
-                        emit_arc(or_node, dep['name'])
+        rels = pkg.relations
+        for deps in rels['depends']:
+            if len(deps) == 1:
+                emit_arc(name, deps[0]['name'])
+            else:   # output an OR node
+                or_node = get_id()
+                emit_arc(name, or_node)
+                emit_node(or_node, 'OR')
+                for dep in deps:
+                    emit_arc(or_node, dep['name'])
     print "}"
 
 if __name__ == '__main__':

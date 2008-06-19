@@ -5,8 +5,3 @@
   - add tests
   - change key name to access package name from "name" to "package", that way
     it is more consistent with legacy package names
-  - instead of adding top-level methods, add a single top-level property
-    returning a dictionary of all possible package relationships
-  - put in the above dictionary all the possible dependencies, no matter if
-    they appear or not in the actual package (at worst they will be empty
-    lists), this will simplify using deb822
