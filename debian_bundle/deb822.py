@@ -6,6 +6,7 @@
 # Copyright (C) 2005-2006  dann frazier <dannf@dannf.org>
 # Copyright (C) 2006       John Wright <john@movingsucks.org>
 # Copyright (C) 2006       Adeodato Simó <dato@net.com.org.es>
+# Copyright (C) 2008       Stefano Zacchiroli <zack@upsilon.cc>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
