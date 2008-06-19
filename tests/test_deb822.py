@@ -484,5 +484,92 @@ Description: python modules to work with Debian-related data formats
             d3['Some-Test-Key'] = 'some value'
         self.assertEqual(d3.dump(), "Some-Test-Key: some value\n")
 
+
+class TestPkgRelations(unittest.TestCase):
+
+    def test_packages(self):
+        pkgs = deb822.Packages.iter_paragraphs(file('test_Packages'))
+        pkg1 = pkgs.next()
+        rel1 = {'breaks': [],
+                'conflicts': [],
+                'depends': [[{'name': 'file', 'version': None}],
+                    [{'name': 'libc6', 'version': None}],
+                    [{'name': 'libpaper1', 'version': None}],
+                    [{'name': 'psutils', 'version': None}]],
+                'enhances': [],
+                'pre-depends': [],
+                'provides': [],
+                'recommends': [[{'name': 'bzip2', 'version': None}],
+                    [{'name': 'lpr', 'version': None},
+                        {'name': 'rlpr', 'version': None},
+                        {'name': 'cupsys-client', 'version': None}],
+                    [{'name': 'wdiff', 'version': None}]],
+                'replaces': [],
+                'suggests': [[{'name': 'emacsen-common', 'version': None}],
+                    [{'name': 'ghostscript', 'version': None}],
+                    [{'name': 'graphicsmagick-imagemagick-compat',
+                        'version': None},
+                        {'name': 'imagemagick', 'version': None}],
+                    [{'name': 'groff', 'version': None}],
+                    [{'name': 'gv', 'version': None}],
+                    [{'name': 'html2ps', 'version': None}],
+                    [{'name': 't1-cyrillic', 'version': None}],
+                    [{'name': 'texlive-base-bin', 'version': None}]]}
+        self.assertEqual(rel1, pkg1.relations)
+        pkg2 = pkgs.next()
+        rel2 = {'breaks': [],
+                'conflicts': [],
+                'depends': [[{'name': 'lrzsz', 'version': None}],
+                    [{'name': 'openssh-client', 'version': None},
+                        {'name': 'telnet', 'version': None},
+                        {'name': 'telnet-ssl', 'version': None}],
+                    [{'name': 'libc6', 'version': None}],
+                    [{'name': 'libncurses5', 'version': None}],
+                    [{'name': 'libreadline5', 'version': None}]],
+                'enhances': [],
+                'pre-depends': [],
+                'provides': [],
+                'recommends': [],
+                'replaces': [],
+                'suggests': []}
+        self.assertEqual(rel2, pkg2.relations)
+
+    def test_sources(self):
+        pkgs = deb822.Sources.iter_paragraphs(file('test_Sources'))
+        pkg1 = pkgs.next()
+        rel1 = {'build-conflicts': [],
+                'build-conflicts-indep': [],
+                'build-depends': [[{'name': 'apache2-src', 'version': None}],
+                    [{'name': 'libaprutil1-dev', 'version': None}],
+                    [{'arch': [(False, 'kfreebsd-i386'),
+                        (False, 'kfreebsd-amd64'),
+                        (False, 'hurd-i386')],
+                        'name': 'libcap-dev',
+                        'version': None}],
+                    [{'name': 'autoconf', 'version': None}],
+                    [{'name': 'debhelper', 'version': None}]],
+                'build-depends-indep': []}
+        self.assertEqual(rel1, pkg1.relations)
+        pkg2 = pkgs.next()
+        rel2 = {'build-conflicts': [],
+                'build-conflicts-indep': [],
+                'build-depends': [[{'name': 'dpkg-dev', 'version': None}],
+                    [{'name': 'autoconf', 'version': None}],
+                    [{'name': 'bash', 'version': None}],
+                    [{'name': 'bison', 'version': None}],
+                    [{'name': 'flex', 'version': None}],
+                    [{'name': 'gettext', 'version': None}],
+                    [{'name': 'texinfo', 'version': None}],
+                    [{'arch': [(True, 'hppa')],
+                        'name': 'expect-tcl8.3',
+                        'version': ('>=', '5.32.2')}],
+                    [{'name': 'dejagnu', 'version': None}],
+                    [{'name': 'dpatch', 'version': None}],
+                    [{'name': 'file', 'version': None}],
+                    [{'name': 'bzip2', 'version': None}],
+                    [{'name': 'lsb-release', 'version': None}]],
+                'build-depends-indep': []}
+        self.assertEqual(rel2, pkg2.relations)
+
 if __name__ == '__main__':
     unittest.main()

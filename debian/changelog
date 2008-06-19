@@ -16,6 +16,7 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   * debian_bundle/deb822.py: add support for "parsed" dependencies and other
     inter-package relationships. See examples/deb822/depgraph for sample usage
   * examples/deb822/ add new example "depgraph"
+  * tests/test_deb822.py: add tests for inter-package relationships
 
  -- John Wright <jsw@debian.org>  Thu, 12 Jun 2008 12:16:53 +0100
 
