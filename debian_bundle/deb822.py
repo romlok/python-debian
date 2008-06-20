@@ -405,7 +405,7 @@ class PkgRelation(object):
     # just parse as much as we need to split the various parts composing a
     # dependency, checking their correctness wrt policy is out of scope
     __dep_RE = re.compile( \
-            r'^\s*(?P<name>[a-z0-9.+\-]{2,})(\s*\(\s*(?P<relop>[>=<]+)\s*(?P<version>[0-9a-zA-Z:\-+~.]+)\s*\))?(\s*\[(?P<archs>[\s!\w\-]+)\])?\s*$')
+            r'^\s*(?P<name>[a-zA-Z0-9.+\-]{2,})(\s*\(\s*(?P<relop>[>=<]+)\s*(?P<version>[0-9a-zA-Z:\-+~.]+)\s*\))?(\s*\[(?P<archs>[\s!\w\-]+)\])?\s*$')
     __comma_sep_RE = re.compile(r'\s*,\s*')
     __pipe_sep_RE = re.compile(r'\s*\|\s*')
     __blank_sep_RE = re.compile(r'\s*')
