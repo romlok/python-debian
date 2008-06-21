@@ -60,3 +60,20 @@ Description: interactive file transfers over ssh
   Homepage: http://zssh.sourceforge.net/
 Tag: hardware::modem, interface::commandline, protocol::ssh, role::program, scope::utility, uitoolkit::ncurses, use::downloading
 
+Package: dummy-package
+Priority: optional
+Section: net
+Installed-Size: 42
+Maintainer: Stefano Zacchiroli <zack@debian.org>
+Architecture: i386
+Version: 1.0
+Depends: dcoprss (>= 4:3.5.9-2), kdenetwork-kfile-plugins (>= 4:3.5.9-2), kdict (>= 4:3.5.9-2), kdnssd (>= 4:3.5.9-2), kget (>= 4:3.5.9-2), knewsticker (>= 4:3.5.9-2), kopete (>= 4:3.5.9-2), kpf (>= 4:3.5.9-2), kppp (>= 4:3.5.9-2), krdc (>= 4:3.5.9-2), krfb (>= 4:3.5.9-2), ksirc (>= 4:3.5.9-2), kwifimanager (>= 4:3.5.9-2), librss1 (>= 4:3.5.9-2)
+Filename: pool/main/d/dummy-package/dummy-package_1.0_i386.deb
+Size: 424242
+MD5sum: 21e4ac1bbdd405873aa969918e78b95c
+SHA1: 22b132fef92822e0bc8b612bbaf06165aa459bfc
+SHA256: 9d0d77df0312ef6487e0b06eb125446e130bd9de80df70ac0180abf7d4e4a0c5
+Description: inexistent dummy package, dep parsing test case
+ inexistent dummy package, dep parsing test case
+Tag: hardware::modem, interface::commandline, protocol::ssh, role::program, scope::utility, uitoolkit::ncurses, use::downloading
+

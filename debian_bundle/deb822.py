@@ -435,7 +435,7 @@ class PkgRelation(object):
                 else:
                     d['version'] = None
                 if parts['archs'] is None:
-                    d['version'] = None
+                    d['arch'] = None
                 else:
                     d['arch'] = parse_archs(parts['archs'])
                 return d
