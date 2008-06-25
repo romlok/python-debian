@@ -16,7 +16,11 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   * minor revamp of README pointing to deb822.py for Packages parsing and
     mentioning debfile.py
 
- -- John Wright <jsw@debian.org>  Thu, 12 Jun 2008 12:16:53 +0100
+  [ John Wright ]
+  * debian_bundle/deb822.py: Checksums-Sha1 and Checksums-Sha256 don't have
+    section or priority subfields (Closes: #487902)
+
+ -- John Wright <jsw@debian.org>  Tue, 24 Jun 2008 22:11:34 -0600
 
 python-debian (0.1.10) unstable; urgency=low
 
