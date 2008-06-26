@@ -172,6 +172,53 @@ Files:
  8960459940314b21019dedd5519b47a5 168544 python optional bzr-gtk_0.93.0-2_all.deb
 '''
 
+CHECKSUM_CHANGES_FILE = '''\
+Format: 1.8
+Date: Wed, 30 Apr 2008 23:58:24 -0600
+Source: python-debian
+Binary: python-debian
+Architecture: source all
+Version: 0.1.10
+Distribution: unstable
+Urgency: low
+Maintainer: Debian python-debian Maintainers <pkg-python-debian-maint@lists.alioth.debian.org>
+Changed-By: John Wright <jsw@debian.org>
+Description:
+ python-debian - Python modules to work with Debian-related data formats
+Closes: 473254 473259
+Changes:
+ python-debian (0.1.10) unstable; urgency=low
+ .
+   * debian_bundle/deb822.py, tests/test_deb822.py:
+     - Do not cache _CaseInsensitiveString objects, since it causes case
+       preservation issues under certain circumstances (Closes: #473254)
+     - Add a test case
+   * debian_bundle/deb822.py:
+     - Add support for fixed-length subfields in multivalued fields.  I updated
+       the Release and PdiffIndex classes to use this.  The default behavior for
+       Release is that of apt-ftparchive, just because it's simpler.  Changing
+       the behavior to resemble dak requires simply setting the
+       size_field_behavior attribute to 'dak'.  (Ideally, deb822 would detect
+       which behavior to use if given an actual Release file as input, but this
+       is not implemented yet.)  (Closes: #473259)
+     - Add support for Checksums-{Sha1,Sha256} multivalued fields in Dsc and
+       Changes classes
+   * debian/control:
+     - "python" --> "Python" in the Description field
+     - Change the section to "python"
+Checksums-Sha1:
+ d12d7c95563397ec37c0d877486367b409d849f5 1117 python-debian_0.1.10.dsc
+ 19efe23f688fb7f2b20f33d563146330064ab1fa 109573 python-debian_0.1.10.tar.gz
+ 22ff71048921a788ad9d90f9579c6667e6b3de3a 44260 python-debian_0.1.10_all.deb
+Checksums-Sha256:
+ aae63dfb18190558af8e71118813dd6a11157c6fd92fdc9b5c3ac370daefe5e1 1117 python-debian_0.1.10.dsc
+ d297c07395ffa0c4a35932b58e9c2be541e8a91a83ce762d82a8474c4fc96139 109573 python-debian_0.1.10.tar.gz
+ 4c73727b6438d9ba60aeb5e314e2d8523f021da508405dc54317ad2b392834ee 44260 python-debian_0.1.10_all.deb
+Files:
+ 469202dfd24d55a932af717c6377ee59 1117 python optional python-debian_0.1.10.dsc
+ 4857552b0156fdd4fa99d21ec131d3d2 109573 python optional python-debian_0.1.10.tar.gz
+ 81864d535c326c082de3763969c18be6 44260 python optional python-debian_0.1.10_all.deb
+'''
 
 class TestDeb822Dict(unittest.TestCase):
     def make_dict(self):
@@ -463,6 +510,11 @@ Description: python modules to work with Debian-related data formats
         """dump() was not working in multivalued classes, see #457929."""
         changesobj = deb822.Changes(CHANGES_FILE.splitlines())
         self.assertEqual(CHANGES_FILE, changesobj.dump())
+
+    def test_bug487902_multivalued_checksums(self):
+        """New multivalued field Checksums was not handled correctly, see #487902."""
+        changesobj = deb822.Changes(CHECKSUM_CHANGES_FILE.splitlines())
+        self.assertEqual(CHECKSUM_CHANGES_FILE, changesobj.dump())
 
     def test_case_preserved_in_input(self):
         """The field case in the output from dump() should be the same as the

@@ -20,7 +20,10 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   * debian_bundle/deb822.py: Checksums-Sha1 and Checksums-Sha256 don't have
     section or priority subfields (Closes: #487902)
 
- -- John Wright <jsw@debian.org>  Tue, 24 Jun 2008 22:11:34 -0600
+  [ Filippo Giunchedi ]
+  * Add test case for changes file with checksums (see #487902)
+
+ -- Filippo Giunchedi <filippo@debian.org>  Thu, 26 Jun 2008 10:06:36 +0200
 
 python-debian (0.1.10) unstable; urgency=low
 
