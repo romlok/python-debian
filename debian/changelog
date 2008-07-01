@@ -9,6 +9,8 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   [ John Wright ]
   * debian/control:
     - Fix a typo in the Description field (Closes: #483688)
+  * debian_bundle/deb822.py: Checksums-Sha1 and Checksums-Sha256 don't have
+    section or priority subfields (Closes: #487902)
 
   [ Stefano Zacchiroli ]
   * debian_bundle/deb822.py: add support for "parsed" dependencies and other
@@ -19,10 +21,6 @@ python-debian (0.1.11) UNRELEASED; urgency=low
     __contains__) to better emulate dictionary containers
   * minor revamp of README pointing to deb822.py for Packages parsing and
     mentioning debfile.py
-
-  [ John Wright ]
-  * debian_bundle/deb822.py: Checksums-Sha1 and Checksums-Sha256 don't have
-    section or priority subfields (Closes: #487902)
 
   [ Filippo Giunchedi ]
   * Add test case for changes file with checksums (see #487902)
