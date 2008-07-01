@@ -164,6 +164,8 @@ class Deb822(Deb822Dict):
             except EOFError:
                 pass
 
+        self.gpg_info = None
+
     def iter_paragraphs(cls, sequence, fields=None, shared_storage=True):
         """Generator that yields a Deb822 object for each paragraph in sequence.
 
@@ -391,6 +393,119 @@ class Deb822(Deb822Dict):
 
     gpg_stripped_paragraph = staticmethod(gpg_stripped_paragraph)
 
+    def get_gpg_info(self):
+        """Return a GpgInfo object with GPG signature information
+
+        This method will raise ValueError if the signature is not available
+        (e.g. the original text cannot be found)"""
+
+        # raw_text is saved (as a string) only for Changes and Dsc (see
+        # __init__ for these) which is small compared to Packages or Sources
+        # which contain no signature
+        if not hasattr(self, 'raw_text'):
+            raise ValueError, "original text cannot be found"
+
+        if self.gpg_info is None:
+            self.gpg_info = GpgInfo.from_sequence(self.raw_text)
+
+        return self.gpg_info
+
+###
+
+# XXX check what happens if input contains more that one signature
+class GpgInfo(dict):
+    """A wrapper around gnupg parsable output obtained via --status-fd
+
+    This class is really a dictionary containing parsed output from gnupg plus
+    some methods to make sense of the data.
+    Keys are keywords and values are arguments suitably splitted.
+    See /usr/share/doc/gnupg/DETAILS.gz"""
+
+    # keys with format "key keyid uid"
+    uidkeys = ('GOODSIG', 'EXPSIG', 'EXPKEYSIG', 'REVKEYSIG', 'BADSIG')
+
+    def valid(self):
+        """Is the signature valid?"""
+        return self.has_key('GOODSIG') or self.has_key('VALIDSIG')
+    
+# XXX implement as a property?
+# XXX handle utf-8 %-encoding
+    def uid(self):
+        """Return the primary ID of the signee key, None is not available"""
+        pass
+
+    @staticmethod
+    def from_output(out, err=None):
+        """Create a new GpgInfo object from gpg(v) --status-fd output (out) and
+        optionally collect stderr as well (err).
+        
+        Both out and err can be lines in newline-terminated sequence or regular strings."""
+
+        n = GpgInfo()
+
+        if isinstance(out, basestring):
+            out = out.split('\n')
+        if isinstance(err, basestring):
+            err = err.split('\n')
+
+        n.out = out
+        n.err = err
+        
+        header = '[GNUPG:] '
+        for l in out:
+            if not l.startswith(header):
+                continue
+
+            l = l[len(header):]
+            l = l.strip('\n')
+
+            # str.partition() would be better, 2.5 only though
+            s = l.find(' ')
+            key = l[:s]
+            if key in GpgInfo.uidkeys:
+                # value is "keyid UID", don't split UID
+                value = l[s+1:].split(' ', 1)
+            else:
+                value = l[s+1:].split(' ')
+
+            n[key] = value
+        return n 
+
+# XXX how to handle sequences of lines? file() returns \n-terminated
+    @staticmethod
+    def from_sequence(sequence, keyrings=['/usr/share/keyrings/debian-keyring.gpg'],
+            executable=["/usr/bin/gpgv"]):
+        """Create a new GpgInfo object from the given sequence.
+
+        Sequence is a sequence of lines or a string
+        executable is a list of args for subprocess.Popen, the first element being the gpg executable"""
+
+        # XXX check for gpg as well and use --verify accordingly?
+        args = executable
+        #args.extend(["--status-fd", "1", "--no-default-keyring"])
+        args.extend(["--status-fd", "1"])
+        import os
+        [args.extend(["--keyring", k]) for k in keyrings if os.path.isfile(k) and os.access(k, os.R_OK)]
+        
+        if "--keyring" not in args:
+            raise IOError, "cannot access none of given keyrings"
+
+        import subprocess
+        p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # XXX what to do with exit code?
+
+        if isinstance(sequence, basestring):
+            (out, err) = p.communicate(sequence)
+        else:
+            (out, err) = p.communicate("\n".join(sequence))
+
+        return GpgInfo.from_output(out, err)
+
+    @staticmethod
+    def from_file(target, *args):
+        """Create a new GpgInfo object from the given file, calls from_sequence(file(target), *args)"""
+        return from_sequence(file(target), *args)
+    
 ###
 
 class PkgRelation(object):
@@ -631,6 +746,15 @@ class Dsc(_multivalued):
         "checksums-sha256": ["sha256", "size", "name"],
     }
 
+    def __init__(self, *args, **kwargs):
+        if args:
+            if isinstance(args[0], basestring):
+                self.raw_text = args[0]
+            else:
+                self.raw_text = "".join(args[0])
+            args = (self.raw_text,) + args[1:]
+
+        _multivalued.__init__(self, *args, **kwargs)
 
 class Changes(_multivalued):
     _multivalued_fields = {
@@ -638,6 +762,16 @@ class Changes(_multivalued):
         "checksums-sha1": ["sha1", "size", "name"],
         "checksums-sha256": ["sha256", "size", "name"],
     }
+
+    def __init__(self, *args, **kwargs):
+        if args:
+            if isinstance(args[0], basestring):
+                self.raw_text = args[0]
+            else:
+                self.raw_text = "\n".join(args[0])
+            args = (self.raw_text,) + args[1:]
+
+        _multivalued.__init__(self, *args, **kwargs)
 
     def get_pool_path(self):
         """Return the path in the pool where the files would be installed"""
