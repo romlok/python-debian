@@ -536,5 +536,103 @@ Description: python modules to work with Debian-related data formats
             d3['Some-Test-Key'] = 'some value'
         self.assertEqual(d3.dump(), "Some-Test-Key: some value\n")
 
+
+class TestPkgRelations(unittest.TestCase):
+
+    def test_packages(self):
+        pkgs = deb822.Packages.iter_paragraphs(file('test_Packages'))
+        pkg1 = pkgs.next()
+        rel1 = {'breaks': [],
+                'conflicts': [],
+                'depends': [[{'name': 'file', 'version': None, 'arch': None}],
+                    [{'name': 'libc6', 'version': ('>=', '2.7-1'), 'arch': None}],
+                    [{'name': 'libpaper1', 'version': None, 'arch': None}],
+                    [{'name': 'psutils', 'version': None, 'arch': None}]],
+                'enhances': [],
+                'pre-depends': [],
+                'provides': [],
+                'recommends': [[{'name': 'bzip2', 'version': None, 'arch': None}],
+                    [{'name': 'lpr', 'version': None, 'arch': None},
+                        {'name': 'rlpr', 'version': None, 'arch': None},
+                        {'name': 'cupsys-client', 'version': None, 'arch': None}],
+                    [{'name': 'wdiff', 'version': None, 'arch': None}]],
+                'replaces': [],
+                'suggests': [[{'name': 'emacsen-common', 'version': None, 'arch': None}],
+                    [{'name': 'ghostscript', 'version': None, 'arch': None}],
+                    [{'name': 'graphicsmagick-imagemagick-compat', 'version': None, 'arch': None},
+                        {'name': 'imagemagick', 'version': None, 'arch': None}],
+                    [{'name': 'groff', 'version': None, 'arch': None}],
+                    [{'name': 'gv', 'version': None, 'arch': None}],
+                    [{'name': 'html2ps', 'version': None, 'arch': None}],
+                    [{'name': 't1-cyrillic', 'version': None, 'arch': None}],
+                    [{'name': 'texlive-base-bin', 'version': None, 'arch': None}]]}
+        self.assertEqual(rel1, pkg1.relations)
+        pkg2 = pkgs.next()
+        rel2 = {'breaks': [],
+                'conflicts': [],
+                'depends': [[{'name': 'lrzsz', 'version': None, 'arch': None}],
+                    [{'name': 'openssh-client', 'version': None, 'arch': None},
+                        {'name': 'telnet', 'version': None, 'arch': None},
+                        {'name': 'telnet-ssl', 'version': None, 'arch': None}],
+                    [{'name': 'libc6', 'version': ('>=', '2.6.1-1'), 'arch': None}],
+                    [{'name': 'libncurses5', 'version': ('>=', '5.6'), 'arch': None}],
+                    [{'name': 'libreadline5', 'version': ('>=', '5.2'), 'arch': None}]],
+                'enhances': [],
+                'pre-depends': [],
+                'provides': [],
+                'recommends': [],
+                'replaces': [],
+                'suggests': []}
+        self.assertEqual(rel2, pkg2.relations)
+        pkg3 = pkgs.next()
+        dep3 = [[{'arch': None, 'name': 'dcoprss', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'kdenetwork-kfile-plugins', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'kdict', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'kdnssd', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'kget', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'knewsticker', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'kopete', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'kpf', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'kppp', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'krdc', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'krfb', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'ksirc', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'kwifimanager', 'version': ('>=', '4:3.5.9-2')}],
+            [{'arch': None, 'name': 'librss1', 'version': ('>=', '4:3.5.9-2')}]]
+        self.assertEqual(dep3, pkg3.relations['depends'])
+
+    def test_sources(self):
+        pkgs = deb822.Sources.iter_paragraphs(file('test_Sources'))
+        pkg1 = pkgs.next()
+        rel1 = {'build-conflicts': [],
+                'build-conflicts-indep': [],
+                'build-depends': [[{'name': 'apache2-src', 'version': ('>=', '2.2.9'), 'arch': None}],
+                    [{'name': 'libaprutil1-dev', 'version': None, 'arch': None}],
+                    [{'arch': [(False, 'kfreebsd-i386'), (False, 'kfreebsd-amd64'), (False, 'hurd-i386')],
+                        'name': 'libcap-dev',
+                        'version': None}],
+                    [{'name': 'autoconf', 'version': None, 'arch': None}],
+                    [{'name': 'debhelper', 'version': ('>>', '5.0.0'), 'arch': None}]],
+                'build-depends-indep': []}
+        self.assertEqual(rel1, pkg1.relations)
+        pkg2 = pkgs.next()
+        rel2 = {'build-conflicts': [],
+                'build-conflicts-indep': [],
+                'build-depends': [[{'name': 'dpkg-dev', 'version': ('>=', '1.13.9'), 'arch': None}],
+                    [{'name': 'autoconf', 'version': ('>=', '2.13'), 'arch': None}],
+                    [{'name': 'bash', 'version': None, 'arch': None}],
+                    [{'name': 'bison', 'version': None, 'arch': None}],
+                    [{'name': 'flex', 'version': None, 'arch': None}],
+                    [{'name': 'gettext', 'version': None, 'arch': None}],
+                    [{'name': 'texinfo', 'version': None, 'arch': None}],
+                    [{'arch': [(True, 'hppa')], 'name': 'expect-tcl8.3', 'version': ('>=', '5.32.2')}],
+                    [{'name': 'dejagnu', 'version': ('>=', '1.4.2-1.1'), 'arch': None}],
+                    [{'name': 'dpatch', 'version': None, 'arch': None}],
+                    [{'name': 'file', 'version': None, 'arch': None}],
+                    [{'name': 'bzip2', 'version': None, 'arch': None}],
+                    [{'name': 'lsb-release', 'version': None, 'arch': None}]],
+                'build-depends-indep': []}
+        self.assertEqual(rel2, pkg2.relations)
+
 if __name__ == '__main__':
     unittest.main()

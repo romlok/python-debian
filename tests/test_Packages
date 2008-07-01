@@ -1,0 +1,79 @@
+Package: a2ps
+Priority: optional
+Section: text
+Installed-Size: 4244
+Maintainer: Masayuki Hatta (mhatta) <mhatta@debian.org>
+Architecture: i386
+Version: 1:4.14-1
+Depends: file, libc6 (>= 2.7-1), libpaper1, psutils
+Recommends: bzip2, lpr | rlpr | cupsys-client, wdiff
+Suggests: emacsen-common, ghostscript, graphicsmagick-imagemagick-compat | imagemagick, groff, gv, html2ps, t1-cyrillic, texlive-base-bin
+Filename: pool/main/a/a2ps/a2ps_4.14-1_i386.deb
+Size: 926602
+MD5sum: ada9c133500447bc22f32419298e2d38
+SHA1: 757d7b81efb518d16dc7792a9c48ed63d338eefe
+SHA256: 2841c4c5bb68c1571615d1d32778b69bd03e95abd65b717a5fcd6f112a6b78fa
+Description: GNU a2ps - 'Anything to PostScript' converter and pretty-printer
+ GNU a2ps converts files into PostScript for printing or viewing. It uses a
+ nice default format, usually two pages on each physical page, borders
+ surrounding pages, headers with useful information (page number, printing
+ date, file name or supplied header), line numbering, symbol substitution
+ as well as pretty printing for a wide range of programming languages.
+ .
+ Historically, a2ps started as a text to PostScript converter, but thanks
+ to powerful delegations it is able to let you use it for any kind of files,
+ ie it can also digest manual pages, dvi files, texinfo, ....
+ .
+ Among the other most noticeable features of a2ps are:
+  - various encodings (all the Latins and others),
+  - various fonts (automatic font down loading),
+  - various medias,
+  - various printer interfaces,
+  - various output styles,
+  - various programming languages,
+  - various helping applications,
+  - and various spoken languages.
+Tag: devel::prettyprint, interface::commandline, role::program, scope::utility, suite::gnu, use::converting, use::printing, works-with::text, works-with-format::postscript
+
+Package: zssh
+Priority: optional
+Section: net
+Installed-Size: 88
+Maintainer: Ben Wong <ben@wongs.net>
+Architecture: i386
+Version: 1.5c.debian.1-3
+Depends: lrzsz, openssh-client | telnet | telnet-ssl, libc6 (>= 2.6.1-1), libncurses5 (>= 5.6), libreadline5 (>= 5.2)
+Filename: pool/main/z/zssh/zssh_1.5c.debian.1-3_i386.deb
+Size: 21864
+MD5sum: 21e4ac1bbdd405873aa969918e78b95c
+SHA1: 22b132fef92822e0bc8b612bbaf06165aa459bfc
+SHA256: 9d0d77df0312ef6487e0b06eb125446e130bd9de80df70ac0180abf7d4e4a0c5
+Description: interactive file transfers over ssh
+ zssh (Zmodem SSH) is a program for interactively transferring files to a
+ remote machine  while using  the secure  shell (ssh).  It is intended to
+ be a convenient  alternative to scp, allowing to  transfer files without
+ having to open another session and re-authenticate oneself.
+ .
+ Files are transferred through the zmodem  protocol,  using the rz and sz
+ commands.
+ .
+  Homepage: http://zssh.sourceforge.net/
+Tag: hardware::modem, interface::commandline, protocol::ssh, role::program, scope::utility, uitoolkit::ncurses, use::downloading
+
+Package: dummy-package
+Priority: optional
+Section: net
+Installed-Size: 42
+Maintainer: Stefano Zacchiroli <zack@debian.org>
+Architecture: i386
+Version: 1.0
+Depends: dcoprss (>= 4:3.5.9-2), kdenetwork-kfile-plugins (>= 4:3.5.9-2), kdict (>= 4:3.5.9-2), kdnssd (>= 4:3.5.9-2), kget (>= 4:3.5.9-2), knewsticker (>= 4:3.5.9-2), kopete (>= 4:3.5.9-2), kpf (>= 4:3.5.9-2), kppp (>= 4:3.5.9-2), krdc (>= 4:3.5.9-2), krfb (>= 4:3.5.9-2), ksirc (>= 4:3.5.9-2), kwifimanager (>= 4:3.5.9-2), librss1 (>= 4:3.5.9-2)
+Filename: pool/main/d/dummy-package/dummy-package_1.0_i386.deb
+Size: 424242
+MD5sum: 21e4ac1bbdd405873aa969918e78b95c
+SHA1: 22b132fef92822e0bc8b612bbaf06165aa459bfc
+SHA256: 9d0d77df0312ef6487e0b06eb125446e130bd9de80df70ac0180abf7d4e4a0c5
+Description: inexistent dummy package, dep parsing test case
+ inexistent dummy package, dep parsing test case
+Tag: hardware::modem, interface::commandline, protocol::ssh, role::program, scope::utility, uitoolkit::ncurses, use::downloading
+

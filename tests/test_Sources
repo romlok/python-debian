@@ -1,0 +1,45 @@
+Package: apache2-mpm-itk
+Binary: apache2-mpm-itk
+Version: 2.2.6-01-3
+Priority: extra
+Section: net
+Maintainer: Steinar H. Gunderson <sesse@debian.org>
+Build-Depends: apache2-src (>= 2.2.9), libaprutil1-dev, libcap-dev [!kfreebsd-i386 !kfreebsd-amd64 !hurd-i386], autoconf, debhelper (>> 5.0.0)
+Architecture: any
+Standards-Version: 3.7.3
+Format: 1.0
+Directory: pool/main/a/apache2-mpm-itk
+Files:
+ 24d02f8ecf0f37164cfcc2fb23bf1013 1135 apache2-mpm-itk_2.2.6-01-3.dsc
+ f8041c58e43dae9814f903919d222c73 33269 apache2-mpm-itk_2.2.6-01.orig.tar.gz
+ 71dcfe1d2349b376c062c964a87cd213 12824 apache2-mpm-itk_2.2.6-01-3.diff.gz
+Checksums-Sha1: 
+ c9ab75c5b2360d1f1ebee513cbf62963023196b9 33269 apache2-mpm-itk_2.2.6-01.orig.tar.gz
+ 12b996db5c4a628388c1402e13bd30aa0db3cec4 12824 apache2-mpm-itk_2.2.6-01-3.diff.gz
+Checksums-Sha256: 
+ e789b7754072fa6a629c55b931411806432102be7a379f750ac6d328df7790c3 33269 apache2-mpm-itk_2.2.6-01.orig.tar.gz
+ db631e44c83f7086b15e701bafcc7e6e1481f957d47b8075092ba80d863f83bb 12824 apache2-mpm-itk_2.2.6-01-3.diff.gz
+
+Package: binutils
+Binary: binutils, binutils-dev, binutils-multiarch, binutils-hppa64, binutils-spu, binutils-doc, binutils-source
+Version: 2.18.1~cvs20080103-6
+Priority: optional
+Section: devel
+Maintainer: James Troup <james@nocrew.org>
+Build-Depends: dpkg-dev (>= 1.13.9), autoconf (>= 2.13), bash, bison, flex, gettext, texinfo, expect-tcl8.3 (>= 5.32.2) [hppa], dejagnu (>= 1.4.2-1.1), dpatch, file, bzip2, lsb-release
+Architecture: any
+Standards-Version: 3.7.3
+Format: 1.0
+Directory: pool/main/b/binutils
+Files:
+ 04c6dfcfa9d7e2057fea9561610b009a 1331 binutils_2.18.1~cvs20080103-6.dsc
+ 23b4c0bdda7c9974489bc9d3aaf7a754 19746003 binutils_2.18.1~cvs20080103.orig.tar.gz
+ b57f7ed234c299f56a6545c4251e509e 64334 binutils_2.18.1~cvs20080103-6.diff.gz
+Uploaders: Matthias Klose <doko@debian.org>
+Checksums-Sha1: 
+ ec4182b10960eb6ce927af37326feaa114a232cc 19746003 binutils_2.18.1~cvs20080103.orig.tar.gz
+ 5589356c2c4cc9a94aeb9ba658c08a4ec3fae11b 64334 binutils_2.18.1~cvs20080103-6.diff.gz
+Checksums-Sha256: 
+ bf2e12578caf3b79be6182bb109b3a0215d8a3b89ae2049773f56f286eeb8ad3 19746003 binutils_2.18.1~cvs20080103.orig.tar.gz
+ 44e346757ce336f6a16879264b6cc4ff4e2b4da517e4b5db6cc7f1d254f302dd 64334 binutils_2.18.1~cvs20080103-6.diff.gz
+

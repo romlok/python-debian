@@ -11,8 +11,12 @@ python-debian (0.1.11) UNRELEASED; urgency=low
     - Fix a typo in the Description field (Closes: #483688)
 
   [ Stefano Zacchiroli ]
-  * debfile.py: add has_key (same implementation of __contains__) to better
-    emulate dictionary containers
+  * debian_bundle/deb822.py: add support for "parsed" dependencies and other
+    inter-package relationships. See examples/deb822/depgraph for sample usage
+  * examples/deb822/ add new example "depgraph"
+  * tests/test_deb822.py: add tests for inter-package relationships
+  * debian_bundle/debfile.py: add has_key (same implementation of
+    __contains__) to better emulate dictionary containers
   * minor revamp of README pointing to deb822.py for Packages parsing and
     mentioning debfile.py
 
