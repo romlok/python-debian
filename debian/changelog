@@ -23,6 +23,8 @@ python-debian (0.1.11) UNRELEASED; urgency=low
     mentioning debfile.py
   * debian/control:
     - fix Vcs-* fields to point to the new git repository (bzr is gone)
+  * bump Standards-Version to 3.8.0, no changes needed though profit of the
+    possibility of wrapping Uploaders in debian/control
 
   [ Filippo Giunchedi ]
   * Add test case for changes file with checksums (see #487902)
