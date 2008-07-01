@@ -21,6 +21,8 @@ python-debian (0.1.11) UNRELEASED; urgency=low
     __contains__) to better emulate dictionary containers
   * minor revamp of README pointing to deb822.py for Packages parsing and
     mentioning debfile.py
+  * debian/control:
+    - fix Vcs-* fields to point to the new git repository (bzr is gone)
 
   [ Filippo Giunchedi ]
   * Add test case for changes file with checksums (see #487902)
