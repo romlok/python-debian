@@ -12,6 +12,7 @@ Copyright:
   changelog.py, setup.py, README.Changelog and the contents of
   examples/changelog/ are
                Copyright (C) 2006-7 James Westby <jw+debian@jameswestby.net>
+               Copyright (C) 2008 Canonical Ltd.
 
   debian_support.py is Copyright (C) 2005 Florian Weimer <fw@deneb.enyo.de>
 

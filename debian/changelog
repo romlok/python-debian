@@ -5,6 +5,13 @@ python-debian (0.1.11) UNRELEASED; urgency=low
     fuse's changelog.
   * Allow any number of spaces before "urgency" in the header line of a
     changelog, see lvm2's changelog in Ubuntu.
+  * Overhaul the parsing code to follow that used by dpkg-parsechangelog.py,
+    making it much more robust.
+    - There is now a "strict" option to turn warnings in to errors. It is
+      on by default.
+  * The file parameter in the changelog can now be a file-like object,
+    to save reading a file to a string first. Thanks to Tilman Koschnick.
+    (Closes: #487797)
 
   [ John Wright ]
   * debian/control:
