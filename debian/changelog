@@ -1,4 +1,4 @@
-python-debian (0.1.11) UNRELEASED; urgency=low
+python-debian (0.1.11) unstable; urgency=low
 
   [ James Westby ]
   * Allow urgency=HIGH and other words made of capital letters there, see
@@ -36,7 +36,7 @@ python-debian (0.1.11) UNRELEASED; urgency=low
   [ Filippo Giunchedi ]
   * Add test case for changes file with checksums (see #487902)
 
- -- Filippo Giunchedi <filippo@debian.org>  Thu, 26 Jun 2008 10:06:36 +0200
+ -- Stefano Zacchiroli <zack@debian.org>  Wed, 06 Aug 2008 23:48:38 -0300
 
 python-debian (0.1.10) unstable; urgency=low
 
