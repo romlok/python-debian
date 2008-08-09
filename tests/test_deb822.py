@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import os
 import re
 import sys
 import unittest
@@ -220,6 +221,20 @@ Files:
  81864d535c326c082de3763969c18be6 44260 python optional python-debian_0.1.10_all.deb
 '''
 
+SIGNED_CHECKSUM_CHANGES_FILE = '''\
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+%s
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIGWQO0UIZh3p4ZWERAug/AJ93DWD9o+1VMgPDjWn/dsmPSgTWGQCeOfZi
+6LAP26zP25GAeTlKwJQ17hs=
+=fwnP
+-----END PGP SIGNATURE-----
+'''
+
 class TestDeb822Dict(unittest.TestCase):
     def make_dict(self):
         d = deb822.Deb822Dict()
@@ -320,6 +335,23 @@ class TestDeb822(unittest.TestCase):
             unparsed_with_gpg = string % UNPARSED_PACKAGE
             deb822_ = deb822.Deb822(unparsed_with_gpg.splitlines())
             self.assertWellParsed(deb822_, PARSED_PACKAGE)
+
+    def test_gpg_info(self):
+        if not os.path.exists('/usr/bin/gpgv'):
+            return
+
+        unparsed_with_gpg = SIGNED_CHECKSUM_CHANGES_FILE % CHECKSUM_CHANGES_FILE
+        deb822_ = deb822.Dsc(unparsed_with_gpg)
+        valid = {'GOODSIG':  ['D14219877A786561', 'John Wright <john.wright@hp.com>'],
+                 'VALIDSIG': ['8FEFE900783CF175827C2F65D14219877A786561', '2008-05-01',
+                              '1209623566', '0', '3', '0', '17', '2', '01',
+                              '8FEFE900783CF175827C2F65D14219877A786561'],
+                 'SIG_ID':   ['mQFnUWWR1Gr6itMV7Bx5L4N60Wo', '2008-05-01', '1209623566']}
+        result = deb822_.get_gpg_info()
+
+        self.assertEqual(len(result.keys()), len(valid.keys()))
+        for k,v in valid.items():
+            self.assertEqual(''.join(v), ''.join(result[k]))
 
     def test_iter_paragraphs_array(self):
         text = (UNPARSED_PACKAGE + '\n\n\n' + UNPARSED_PACKAGE).splitlines()

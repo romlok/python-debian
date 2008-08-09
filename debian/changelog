@@ -1,3 +1,11 @@
+python-debian (0.1.12) UNRELEASED; urgency=low
+
+  [ Filippo Giunchedi ]
+  * Add initial support to deb822 for gpg signature checking (Closes: #485829)
+  * Suggest gpgv for signature checking
+
+ -- John Wright <jsw@debian.org>  Sat, 09 Aug 2008 17:15:34 -0600
+
 python-debian (0.1.11) unstable; urgency=low
 
   [ James Westby ]

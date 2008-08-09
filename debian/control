@@ -18,6 +18,7 @@ Package: python-debian
 Architecture: all
 Depends: ${python:Depends}
 Recommends: python-apt
+Suggests: gpgv
 Provides: python-deb822
 Conflicts: python-deb822
 Replaces: python-deb822
