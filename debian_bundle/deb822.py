@@ -747,12 +747,18 @@ class Dsc(_multivalued):
     }
 
     def __init__(self, *args, **kwargs):
-        if args:
-            if isinstance(args[0], basestring):
-                self.raw_text = args[0]
+        try:
+            sequence = args[0]
+        except IndexError:
+            sequence = kwargs.get("sequence", None)
+
+        if sequence is not None:
+            if isinstance(sequence, basestring):
+                self.raw_text = sequence
             else:
-                self.raw_text = "".join(args[0])
-            args = (self.raw_text,) + args[1:]
+                self.raw_text = "".join(sequence)
+            kwargs["sequence"] = self.raw_text
+            args = args[1:]
 
         _multivalued.__init__(self, *args, **kwargs)
 
