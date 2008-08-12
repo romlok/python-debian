@@ -31,6 +31,7 @@ except ImportError:
 
 import new
 import re
+import string
 import sys
 import StringIO
 import UserDict
@@ -563,6 +564,31 @@ class PkgRelation(object):
         tl_deps = cls.__comma_sep_RE.split(raw.strip()) # top-level deps
         cnf = map(cls.__pipe_sep_RE.split, tl_deps)
         return map(lambda or_deps: map(parse_rel, or_deps), cnf)
+
+    @staticmethod
+    def str(rels):
+        """Format to string structured inter-package relationships
+        
+        Perform the inverse operation of parse_relations, returning a string
+        suitable to be written in a package stanza.
+        """
+        def pp_arch(arch_spec):
+            (excl, arch) = arch_spec
+            if excl:
+                return arch
+            else:
+                return '!' + arch
+
+        def pp_atomic_dep(dep):
+            s = dep['name']
+            if dep.has_key('version') and dep['version'] is not None:
+                s += ' (%s %s)' % dep['version']
+            if dep.has_key('arch') and dep['arch'] is not None:
+                s += ' [%s]' % string.join(map(pp_arch, dep['arch']))
+            return s
+
+        pp_or_dep = lambda deps: string.join(map(pp_atomic_dep, deps), ' | ')
+        return string.join(map(pp_or_dep, rels), ', ')
 
 
 class _lowercase_dict(dict):

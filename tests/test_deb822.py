@@ -633,6 +633,19 @@ class TestPkgRelations(unittest.TestCase):
             [{'arch': None, 'name': 'librss1', 'version': ('>=', '4:3.5.9-2')}]]
         self.assertEqual(dep3, pkg3.relations['depends'])
 
+        bin_rels = ['file, libc6 (>= 2.7-1), libpaper1, psutils']
+        src_rels = ['apache2-src (>= 2.2.9), libaprutil1-dev, ' \
+                'libcap-dev [!kfreebsd-i386 !kfreebsd-amd64 !hurd-i386], ' \
+                'autoconf, debhelper (>> 5.0.0)']
+        for bin_rel in bin_rels:
+            self.assertEqual(bin_rel,
+                    deb822.PkgRelation.str(deb822.PkgRelation.parse_relations(
+                            bin_rel)))
+        for src_rel in src_rels:
+            self.assertEqual(src_rel,
+                    deb822.PkgRelation.str(deb822.PkgRelation.parse_relations( \
+                            src_rel)))
+
     def test_sources(self):
         pkgs = deb822.Sources.iter_paragraphs(file('test_Sources'))
         pkg1 = pkgs.next()
