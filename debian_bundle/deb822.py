@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # vim: fileencoding=utf-8
 #
 # A python interface for various rfc822-like formatted files used by Debian
