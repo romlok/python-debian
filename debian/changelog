@@ -8,7 +8,12 @@ python-debian (0.1.12) UNRELEASED; urgency=low
   * deb822: add support for pretty printing structured inter-package
     relationships (and relevant tests)
 
- -- John Wright <jsw@debian.org>  Sat, 09 Aug 2008 17:15:34 -0600
+  [ John Wright ]
+  * Add a utf-8 encoding header to deb822, to avoid UnicodeDecodeError when
+    there is non-ascii input.  Thanks to Jonny Lamb for the report and the fix.
+    (Closes: #495272)
+
+ -- John Wright <jsw@debian.org>  Fri, 15 Aug 2008 17:49:01 -0300
 
 python-debian (0.1.11) unstable; urgency=low
 
