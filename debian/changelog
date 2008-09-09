@@ -7,7 +7,8 @@ python-debian (0.1.12) UNRELEASED; urgency=low
   [ Stefano Zacchiroli ]
   * deb822: add support for pretty printing structured inter-package
     relationships (and relevant tests)
-  * debfile: add support for .tar.bz2 parts of .deb packages (Closes: #462859)
+  * debfile: add support for .tar.bz2 parts contained in .deb packages, and
+    relative regression test (Closes: #462859)
 
  -- John Wright <jsw@debian.org>  Sat, 09 Aug 2008 17:15:34 -0600
 

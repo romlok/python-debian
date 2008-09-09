@@ -110,8 +110,10 @@ class TestDebFile(unittest.TestCase):
 
         self.debname = 'test.deb'
         self.broken_debname = 'test-broken.deb'
+        self.bz2_debname = 'test-bz2.deb'
         uudecode('test.deb.uu', self.debname)
         uudecode('test-broken.deb.uu', self.broken_debname)
+        uudecode('test-bz2.deb.uu', self.bz2_debname)
 
         self.debname = 'test.deb'
         uu_deb = open('test.deb.uu', 'r')
@@ -124,10 +126,18 @@ class TestDebFile(unittest.TestCase):
     def tearDown(self):
         os.unlink(self.debname)
         os.unlink(self.broken_debname)
+        os.unlink(self.bz2_debname)
 
     def test_missing_members(self):
         self.assertRaises(debfile.DebError,
                 lambda _: debfile.DebFile(self.broken_debname), None)
+
+    def test_tar_bz2(self):
+        bz2_deb = debfile.DebFile(self.bz2_debname)
+        # random test on the data part (which is bzipped), just to check if we
+        # can access its content
+        self.assertEqual(bz2_deb.data.tgz().getnames()[10],
+                './usr/share/locale/bg/')
 
     def test_data_names(self):
         """ test for file list equality """ 
