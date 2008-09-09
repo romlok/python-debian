@@ -1,6 +1,6 @@
 # DebFile: a Python representation of Debian .deb binary packages.
-# Copyright (C) 2007    Stefano Zacchiroli  <zack@debian.org>
-# Copyright (C) 2007    Filippo Giunchedi   <filippo@debian.org>
+# Copyright (C) 2007-2008   Stefano Zacchiroli  <zack@debian.org>
+# Copyright (C) 2007        Filippo Giunchedi   <filippo@debian.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,8 +24,9 @@ from arfile import ArFile, ArError
 from changelog import Changelog
 from deb822 import Deb822
 
-DATA_PART = 'data.tar.gz'
-CTRL_PART = 'control.tar.gz'
+DATA_PART = 'data.tar'      # w/o extension
+CTRL_PART = 'control.tar'
+PART_EXTS = ['gz', 'bz2']   # possible extensions
 INFO_PART = 'debian-binary'
 MAINT_SCRIPTS = ['preinst', 'postinst', 'prerm', 'postrm', 'config']
 
@@ -45,7 +46,8 @@ class DebPart(object):
     A .deb package is considered as made of 2 parts: a 'data' part
     (corresponding to the 'data.tar.gz' archive embedded in a .deb) and a
     'control' part (the 'control.tar.gz' archive). Each of them is represented
-    by an instance of this class.
+    by an instance of this class. Each archive should be a compressed tar
+    archive; supported compression formats are: .tar.gz, .tar.bz2 .
 
     When referring to file members of the underlying .tar.gz archive, file
     names can be specified in one of 3 formats "file", "./file", "/file". In
@@ -61,11 +63,23 @@ class DebPart(object):
 
     def tgz(self):
         """Return a TarFile object corresponding to this part of a .deb
-        package."""
+        package.
+        
+        Despite the name, this method gives access to various kind of
+        compressed tar archives, not only gzipped ones.
+        """
 
         if self.__tgz is None:
-            gz = gzip.GzipFile(fileobj=self.__member, mode='r')
-            self.__tgz = tarfile.TarFile(fileobj=gz, mode='r')
+            name = self.__member.name
+            if name.endswith('.gz'):
+                gz = gzip.GzipFile(fileobj=self.__member, mode='r')
+                self.__tgz = tarfile.TarFile(fileobj=gz, mode='r')
+            elif name.endswith('.bz2'):
+                # Tarfile's __init__ doesn't allow for r:bz2 modes, but the
+                # open() classmethod does ...
+                self.__tgz = tarfile.open(fileobj=self.__member, mode='r:bz2')
+            else:
+                raise DebError("part '%s' has unexpected extension" % name)
         return self.__tgz
 
     @staticmethod
@@ -184,24 +198,40 @@ class DebFile(ArFile):
         - version       debian .deb file format version (not related with the
                         contained package version), 2.0 at the time of writing
                         for all .deb packages in the Debian archive
-        - data          DebPart object corresponding to the data.tar.gz
-                        archive contained in the .deb file
-        - control       DebPart object corresponding to the control.tar.gz
-                        archive contained in the .deb file
+        - data          DebPart object corresponding to the data.tar.gz (or
+                        other compressed tar) archive contained in the .deb
+                        file
+        - control       DebPart object corresponding to the control.tar.gz (or
+                        other compressed tar) archive contained in the .deb
+                        file
     """
 
     def __init__(self, filename=None, mode='r', fileobj=None):
         ArFile.__init__(self, filename, mode, fileobj)
-        required_names = set([INFO_PART, CTRL_PART, DATA_PART])
         actual_names = set(self.getnames())
-        if not (required_names <= actual_names):
-            raise DebError(
-                    "the following required .deb members are missing: " \
-                            + string.join(required_names - actual_names))
+
+        def compressed_part_name(basename):
+            global PART_EXTS
+            candidates = [ '%s.%s' % (basename, ext) for ext in PART_EXTS ]
+            parts = actual_names.intersection(set(candidates))
+            if not parts:
+                raise DebError("missing required part in given .deb" \
+                        " (expected one of: %s)" % candidates)
+            elif len(parts) > 1:
+                raise DebError("too many parts in given .deb" \
+                        " (was looking for only one of: %s)" % candidates)
+            else:   # singleton list
+                return list(parts)[0]
+
+        if not INFO_PART in actual_names:
+            raise DebError("missing required part in given .deb" \
+                    " (expected: '%s')" % INFO_PART)
 
         self.__parts = {}
-        self.__parts[CTRL_PART] = DebControl(self.getmember(CTRL_PART))
-        self.__parts[DATA_PART] = DebData(self.getmember(DATA_PART))
+        self.__parts[CTRL_PART] = DebControl(self.getmember(
+                compressed_part_name(CTRL_PART)))
+        self.__parts[DATA_PART] = DebData(self.getmember(
+                compressed_part_name(DATA_PART)))
         self.__pkgname = None   # updated lazily by __updatePkgName
 
         f = self.getmember(INFO_PART)
