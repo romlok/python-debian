@@ -127,10 +127,12 @@ class Deb822Dict(object, UserDict.DictMixin):
 
     # See the end of the file for the definition of _strI
 
-    def __init__(self, _dict=None, _parsed=None, _fields=None):
+    def __init__(self, _dict=None, _parsed=None, _fields=None,
+                 encoding="utf-8"):
         self.__dict = {}
         self.__keys = OrderedSet()
         self.__parsed = None
+        self.encoding = encoding
 
         if _dict is not None:
             # _dict may be a dict or a list of two-sized tuples
@@ -165,12 +167,17 @@ class Deb822Dict(object, UserDict.DictMixin):
     def __getitem__(self, key):
         key = _strI(key)
         try:
-            return self.__dict[key]
+            value = self.__dict[key]
         except KeyError:
             if self.__parsed is not None and key in self.__keys:
-                return self.__parsed[key]
+                value = self.__parsed[key]
             else:
                 raise
+
+        if isinstance(value, str):
+            # Always return unicode objects instead of strings
+            value = value.decode(self.encoding)
+        return value
 
     def __delitem__(self, key):
         key = _strI(key)
@@ -217,7 +224,8 @@ class Deb822Dict(object, UserDict.DictMixin):
 
 class Deb822(Deb822Dict):
 
-    def __init__(self, sequence=None, fields=None, _parsed=None):
+    def __init__(self, sequence=None, fields=None, _parsed=None,
+                 encoding="utf-8"):
         """Create a new Deb822 instance.
 
         :param sequence: a string, or any any object that returns a line of
@@ -228,6 +236,10 @@ class Deb822(Deb822Dict):
             should be parsed (the rest will be discarded).
 
         :param _parsed: internal parameter.
+
+        :param encoding: When parsing strings, interpret them in this encoding.
+            (All values are given back as unicode objects, so an encoding is
+            necessary in order to properly interpret the strings.)
         """
 
         if hasattr(sequence, 'items'):
@@ -235,7 +247,8 @@ class Deb822(Deb822Dict):
             sequence = None
         else:
             _dict = None
-        Deb822Dict.__init__(self, _dict=_dict, _parsed=_parsed, _fields=fields)
+        Deb822Dict.__init__(self, _dict=_dict, _parsed=_parsed, _fields=fields,
+                            encoding=encoding)
 
         if sequence is not None:
             try:
@@ -246,7 +259,7 @@ class Deb822(Deb822Dict):
         self.gpg_info = None
 
     def iter_paragraphs(cls, sequence, fields=None, use_apt_pkg=True,
-                        shared_storage=False):
+                        shared_storage=False, encoding="utf-8"):
         """Generator that yields a Deb822 object for each paragraph in sequence.
 
         :param sequence: same as in __init__.
@@ -265,12 +278,16 @@ class Deb822(Deb822Dict):
             the speed gained by setting shared_storage=True is marginal.  This
             parameter has no effect if use_apt_pkg is False or apt_pkg is not
             available.
+        :param encoding: Interpret the paragraphs in this encoding.
+            (All values are given back as unicode objects, so an encoding is
+            necessary in order to properly interpret the strings.)
         """
 
         if _have_apt_pkg and use_apt_pkg and isinstance(sequence, file):
             parser = apt_pkg.TagFile(sequence)
             while parser.Step() == 1:
-                x = cls(fields=fields, _parsed=TagFileWrapper(parser))
+                x = cls(fields=fields, _parsed=TagFileWrapper(parser),
+                        encoding=encoding)
                 if len(x) != 0:
                     yield x
 
@@ -283,10 +300,10 @@ class Deb822(Deb822Dict):
 
         else:
             iterable = iter(sequence)
-            x = cls(iterable, fields)
+            x = cls(iterable, fields, encoding=encoding)
             while len(x) != 0:
                 yield x
-                x = cls(iterable, fields)
+                x = cls(iterable, fields, encoding=encoding)
 
     iter_paragraphs = classmethod(iter_paragraphs)
 
@@ -305,6 +322,8 @@ class Deb822(Deb822Dict):
         curkey = None
         content = ""
         for line in self.gpg_stripped_paragraph(sequence):
+            if isinstance(line, str):
+                line = line.decode(self.encoding)
             m = single.match(line)
             if m:
                 if curkey:
@@ -344,6 +363,9 @@ class Deb822(Deb822Dict):
     def __str__(self):
         return self.dump()
 
+    def __unicode__(self):
+        return self.dump()
+
     # __repr__ is handled by Deb822Dict
 
     def get_as_string(self, key):
@@ -355,10 +377,15 @@ class Deb822(Deb822Dict):
         """
         return unicode(self[key])
 
-    def dump(self, fd=None):
+    def dump(self, fd=None, encoding=None):
         """Dump the the contents in the original format
 
-        If fd is None, return a string.
+        If fd is None, return a unicode object.
+
+        If fd is not None, attempt to encode the output to the encoding the
+        object was initialized with, or the value of the encoding argument if
+        it is not None.  This will raise UnicodeEncodeError if the encoding
+        can't support all the characters in the Deb822Dict values.
         """
 
         if fd is None:
@@ -367,15 +394,24 @@ class Deb822(Deb822Dict):
         else:
             return_string = False
 
+        if encoding is None:
+            # Use the encoding we've been using to decode strings with if none
+            # was explicitly specified
+            encoding = self.encoding
+
         for key in self.iterkeys():
             value = self.get_as_string(key)
             if not value or value[0] == '\n':
                 # Avoid trailing whitespace after "Field:" if it's on its own
                 # line or the value is empty
                 # XXX Uh, really print value if value == '\n'?
-                fd.write('%s:%s\n' % (key, value))
+                entry = '%s:%s\n' % (key, value)
             else:
-                fd.write('%s: %s\n' % (key, value))
+                entry = '%s: %s\n' % (key, value)
+            if not return_string:
+                fd.write(entry.encode(encoding))
+            else:
+                fd.write(entry)
         if return_string:
             return fd.getvalue()
 

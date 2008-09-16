@@ -146,7 +146,7 @@ CcYAoOLYDF5G1h3oR1iDNyeCI6hRW03S
     ]
 
 
-CHANGES_FILE = '''\
+CHANGES_FILE = u'''\
 Format: 1.7
 Date: Fri, 28 Dec 2007 17:08:48 +0100
 Source: bzr-gtk
