@@ -401,8 +401,8 @@ class Deb822(Deb822Dict):
         (e.g. the original text cannot be found)"""
 
         # raw_text is saved (as a string) only for Changes and Dsc (see
-        # __init__ for these) which is small compared to Packages or Sources
-        # which contain no signature
+        # _gpg_multivalued.__init__) which is small compared to Packages or
+        # Sources which contain no signature
         if not hasattr(self, 'raw_text'):
             raise ValueError, "original text cannot be found"
 
@@ -765,12 +765,14 @@ class _multivalued(Deb822):
 
 ###
 
-class Dsc(_multivalued):
-    _multivalued_fields = {
-        "files": [ "md5sum", "size", "name" ],
-        "checksums-sha1": ["sha1", "size", "name"],
-        "checksums-sha256": ["sha256", "size", "name"],
-    }
+
+class _gpg_multivalued(_multivalued):
+    """A _multivalued class that can support gpg signed objects
+
+    This class's feature is that it stores the raw text before parsing so that
+    gpg can verify the signature.  Use it just like you would use the
+    _multivalued class.
+    """
 
     def __init__(self, *args, **kwargs):
         try:
@@ -782,28 +784,37 @@ class Dsc(_multivalued):
             if isinstance(sequence, basestring):
                 self.raw_text = sequence
             else:
-                self.raw_text = "".join(sequence)
-            kwargs["sequence"] = self.raw_text
-            args = args[1:]
+                # If this is a sequence of lines without trailing \n's, we'll
+                # need to add them back for raw_text
+                lines = [line for line in sequence]
+                if lines[0].endswith("\n"):
+                    self.raw_text = "".join(lines)
+                else:
+                    self.raw_text = "\n".join(lines)
+
+                try:
+                    args = list(args)
+                    args[0] = lines
+                except IndexError:
+                    kwargs["sequence"] = lines
 
         _multivalued.__init__(self, *args, **kwargs)
 
-class Changes(_multivalued):
+
+class Dsc(_gpg_multivalued):
+    _multivalued_fields = {
+        "files": [ "md5sum", "size", "name" ],
+        "checksums-sha1": ["sha1", "size", "name"],
+        "checksums-sha256": ["sha256", "size", "name"],
+    }
+
+
+class Changes(_gpg_multivalued):
     _multivalued_fields = {
         "files": [ "md5sum", "size", "section", "priority", "name" ],
         "checksums-sha1": ["sha1", "size", "name"],
         "checksums-sha256": ["sha256", "size", "name"],
     }
-
-    def __init__(self, *args, **kwargs):
-        if args:
-            if isinstance(args[0], basestring):
-                self.raw_text = args[0]
-            else:
-                self.raw_text = "\n".join(args[0])
-            args = (self.raw_text,) + args[1:]
-
-        _multivalued.__init__(self, *args, **kwargs)
 
     def get_pool_path(self):
         """Return the path in the pool where the files would be installed"""
