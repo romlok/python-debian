@@ -943,7 +943,7 @@ class _CaseInsensitiveString(str):
         return self.str_lower_hash
 
     def __eq__(self, other):
-        return str.__eq__(self.str_lower, other.lower())
+        return self.str_lower == other.lower()
 
     def lower(self):
         return self.str_lower

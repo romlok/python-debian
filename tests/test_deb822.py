@@ -287,6 +287,10 @@ class TestDeb822Dict(unittest.TestCase):
 
         self.assertEqual(d1, d2)
 
+    def test_unicode_key_access(self):
+        d = self.make_dict()
+        self.assertEqual(1, d[u'testkey'])
+
 
 class TestDeb822(unittest.TestCase):
     def assertWellParsed(self, deb822_, dict_):
