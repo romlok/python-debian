@@ -13,8 +13,11 @@ python-debian (0.1.12) UNRELEASED; urgency=low
 
   [ John Wright ]
   * deb822: allow the use of unicode objects in __getitem__
+  * changelog: fix the "topline" regular expression to match the one in dpkg's
+    Dpkg/Changelog/Debian.pm so that it allows '.' and '+' in the distribution
+    field
 
- -- John Wright <jsw@debian.org>  Mon, 15 Sep 2008 17:40:44 -0600
+ -- John Wright <jsw@debian.org>  Wed, 15 Oct 2008 15:09:31 -0600
 
 python-debian (0.1.11) unstable; urgency=low
 

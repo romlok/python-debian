@@ -213,8 +213,10 @@ class ChangeBlock(object):
             block += line + "\n"
         return block
 
-topline = re.compile('^(\w[-a-z0-9.+]+) \(([^\(\) \t]+)\)((\s+[-0-9a-z]+)+);',
-        re.IGNORECASE)
+topline = re.compile(r'^(\w%(name_chars)s*) \(([^\(\) \t]+)\)'
+                     '((\s+%(name_chars)s+)+)\;'
+                     % {'name_chars': '[-+0-9a-z.]'},
+                     re.IGNORECASE)
 blankline = re.compile('^\s*$')
 change = re.compile('^\s\s+.*$')
 endline = re.compile('^ -- (.*) <(.*)>(  ?)((\w+\,\s*)?\d{1,2}\s+\w+\s+'
@@ -630,6 +632,12 @@ class ChangelogTests(unittest.TestCase):
         self.assertEqual(c.full_version, '1:1.4.1-1')
         self.assertEqual(c.upstream_version, '1.4.1')
         self.assertEqual(c.epoch, '1')
+        self.assertEqual(str(c.version), c.full_version)
+
+    def test_allow_full_stops_in_distribution(self):
+        c = Changelog(open('test_changelog_full_stops'))
+        self.assertEqual(c.debian_version, None)
+        self.assertEqual(c.full_version, '1.2.3')
         self.assertEqual(str(c.version), c.full_version)
 
 class VersionTests(unittest.TestCase):

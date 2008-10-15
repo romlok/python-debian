@@ -1,0 +1,5 @@
+foo (1.2.3) hpde-3.0.x; urgency=low
+
+  * Initial release.
+
+ -- John Wright <john.wright@hp.com>  Wed, 15 Oct 2008 15:06:05 -0600
