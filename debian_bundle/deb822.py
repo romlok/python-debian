@@ -167,28 +167,33 @@ class Deb822(Deb822Dict):
 
         self.gpg_info = None
 
-    def iter_paragraphs(cls, sequence, fields=None, shared_storage=True):
+    def iter_paragraphs(cls, sequence, fields=None, use_apt_pkg=True,
+                        shared_storage=True):
         """Generator that yields a Deb822 object for each paragraph in sequence.
 
         :param sequence: same as in __init__.
 
         :param fields: likewise.
 
-        :param shared_storage: if sequence is a file(), apt_pkg will be used 
-            if available to parse the file, since it's much much faster. On the
-            other hand, yielded objects will share storage, so they can't be
-            kept across iterations. (Also, PGP signatures won't be stripped
-            with apt_pkg.) Set this parameter to False to disable using apt_pkg. 
+        :param use_apt_pkg: if sequence is a file(), apt_pkg will be used 
+            if available to parse the file, since it's much much faster.  Set
+            this parameter to False to disable using apt_pkg.
+        :param shared_storage: if sequence is a file() and use_apt_pkg is True,
+            yielded objects will share storage, so they can't be kept across
+            iterations. (Also, PGP signatures won't be stripped.) Set this
+            parameter to False to make a copy of the parsed data through each
+            iteration.  This parameter has no effect if use_apt_pkg is False or
+            apt_pkg is not available.
         """
 
-        # TODO Think about still using apt_pkg even if shared_storage is False,
-        # by somehow instructing the constructor to make copy of the data. (If
-        # this is still faster.)
-
-        if _have_apt_pkg and shared_storage and isinstance(sequence, file):
+        if _have_apt_pkg and use_apt_pkg and isinstance(sequence, file):
             parser = apt_pkg.ParseTagFile(sequence)
             while parser.Step() == 1:
-                yield cls(fields=fields, _parsed=parser.Section)
+                if shared_storage:
+                    yield cls(fields=fields, _parsed=parser.Section)
+                else:
+                    yield cls(fields=fields, sequence=dict(parser.Section))
+
         else:
             iterable = iter(sequence)
             x = cls(iterable, fields)
@@ -772,6 +777,10 @@ class _gpg_multivalued(_multivalued):
     This class's feature is that it stores the raw text before parsing so that
     gpg can verify the signature.  Use it just like you would use the
     _multivalued class.
+
+    Currently, this class will only store the raw text if you pass it a string
+    as input.  Files and sequences of lines are not supported, until we can
+    figure out a sane way to do it without breaking Deb822.iter_paragraphs.
     """
 
     def __init__(self, *args, **kwargs):
@@ -783,20 +792,30 @@ class _gpg_multivalued(_multivalued):
         if sequence is not None:
             if isinstance(sequence, basestring):
                 self.raw_text = sequence
-            else:
-                # If this is a sequence of lines without trailing \n's, we'll
-                # need to add them back for raw_text
-                lines = [line for line in sequence]
-                if lines[0].endswith("\n"):
-                    self.raw_text = "".join(lines)
-                else:
-                    self.raw_text = "\n".join(lines)
-
-                try:
-                    args = list(args)
-                    args[0] = lines
-                except IndexError:
-                    kwargs["sequence"] = lines
+            # XXX: to support sequences, we need to not gobble up more than one
+            # paragraph at a time, in case the sequence is really something
+            # like a Packages or Sources file.  But it's not as simple as
+            # stopping at blank lines, since GPG signatures have blank lines,
+            # too.  So we just don't support it for now.  Below is code that
+            # would work if we didn't care about that...
+            #elif hasattr(sequence, "items"):
+            #    # sequence is actually a dict(-like) object, so we don't have
+            #    # the raw text.
+            #    pass
+            #else:
+            #    # If this is a sequence of lines without trailing \n's, we'll
+            #    # need to add them back for raw_text
+            #    lines = [line for line in sequence]
+            #    if lines and lines[0].endswith("\n"):
+            #        self.raw_text = "".join(lines)
+            #    else:
+            #        self.raw_text = "\n".join(lines)
+            #
+            #    try:
+            #        args = list(args)
+            #        args[0] = lines
+            #    except IndexError:
+            #        kwargs["sequence"] = lines
 
         _multivalued.__init__(self, *args, **kwargs)
 

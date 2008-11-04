@@ -16,8 +16,12 @@ python-debian (0.1.12) UNRELEASED; urgency=low
   * changelog: fix the "topline" regular expression to match the one in dpkg's
     Dpkg/Changelog/Debian.pm so that it allows '.' and '+' in the distribution
     field
+  * deb822: Add a use_apt_pkg parameter to Deb822.iter_paragraphs.  Now,
+    callers can set use_apt_pkg=True and shared_storage=False in order to take
+    advantage of apt_pkg's speed and still be able to use values across
+    iterations.
 
- -- John Wright <jsw@debian.org>  Wed, 15 Oct 2008 15:09:31 -0600
+ -- John Wright <jsw@debian.org>  Tue, 04 Nov 2008 02:23:34 -0700
 
 python-debian (0.1.11) unstable; urgency=low
 
