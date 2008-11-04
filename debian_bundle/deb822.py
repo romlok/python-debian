@@ -4,7 +4,7 @@
 # (.changes, .dsc, Packages, Sources, etc)
 #
 # Copyright (C) 2005-2006  dann frazier <dannf@dannf.org>
-# Copyright (C) 2006       John Wright <john@movingsucks.org>
+# Copyright (C) 2006-2008  John Wright <john@johnwright.org>
 # Copyright (C) 2006       Adeodato Simó <dato@net.com.org.es>
 # Copyright (C) 2008       Stefano Zacchiroli <zack@upsilon.cc>
 #
@@ -190,9 +190,15 @@ class Deb822(Deb822Dict):
             parser = apt_pkg.ParseTagFile(sequence)
             while parser.Step() == 1:
                 if shared_storage:
-                    yield cls(fields=fields, _parsed=parser.Section)
+                    parsed = parser.Section
                 else:
-                    yield cls(fields=fields, sequence=dict(parser.Section))
+                    # Since parser.Section doesn't have an items method, we
+                    # need to imitate that method here and make a Deb822Dict
+                    # from the result in order to preserve order.
+                    items = [(key, parser.Section[key])
+                             for key in parser.Section.keys()]
+                    parsed = Deb822Dict(items)
+                yield cls(fields=fields, _parsed=parsed)
 
         else:
             iterable = iter(sequence)
@@ -360,8 +366,16 @@ class Deb822(Deb822Dict):
         return merged
     ###
 
-    def gpg_stripped_paragraph(sequence):
+    def split_gpg_and_payload(sequence):
+        """Return a (gpg_pre, payload, gpg_post) tuple
+        
+        Each element of the returned tuple is a list of lines (with trailing
+        whitespace stripped).
+        """
+
+        gpg_pre_lines = []
         lines = []
+        gpg_post_lines = []
         state = 'SAFE'
         gpgre = re.compile(r'^-----(?P<action>BEGIN|END) PGP (?P<what>[^-]+)-----$')
         blank_line = re.compile('^$')
@@ -384,20 +398,40 @@ class Deb822(Deb822Dict):
                     if not blank_line.match(line):
                         lines.append(line)
                     else:
-                        break
-                elif state == 'SIGNED MESSAGE' and blank_line.match(line):
-                    state = 'SAFE'
-            elif m.group('action') == 'BEGIN':
-                state = m.group('what')
-            elif m.group('action') == 'END':
-                state = 'SAFE'
+                        if not gpg_pre_lines:
+                            # There's no gpg signature, so we should stop at
+                            # this blank line
+                            break
+                elif state == 'SIGNED MESSAGE':
+                    if blank_line.match(line):
+                        state = 'SAFE'
+                    else:
+                        gpg_pre_lines.append(line)
+                elif state == 'SIGNATURE':
+                    gpg_post_lines.append(line)
+            else:
+                if m.group('action') == 'BEGIN':
+                    state = m.group('what')
+                elif m.group('action') == 'END':
+                    gpg_post_lines.append(line)
+                    break
+                if not blank_line.match(line):
+                    if not lines:
+                        gpg_pre_lines.append(line)
+                    else:
+                        gpg_post_lines.append(line)
 
         if len(lines):
-            return lines
+            return (gpg_pre_lines, lines, gpg_post_lines)
         else:
             raise EOFError('only blank lines found in input')
 
-    gpg_stripped_paragraph = staticmethod(gpg_stripped_paragraph)
+    split_gpg_and_payload = staticmethod(split_gpg_and_payload)
+
+    def gpg_stripped_paragraph(cls, sequence):
+        return cls.split_gpg_and_payload(sequence)[1]
+
+    gpg_stripped_paragraph = classmethod(gpg_stripped_paragraph)
 
     def get_gpg_info(self):
         """Return a GpgInfo object with GPG signature information
@@ -778,9 +812,8 @@ class _gpg_multivalued(_multivalued):
     gpg can verify the signature.  Use it just like you would use the
     _multivalued class.
 
-    Currently, this class will only store the raw text if you pass it a string
-    as input.  Files and sequences of lines are not supported, until we can
-    figure out a sane way to do it without breaking Deb822.iter_paragraphs.
+    This class only stores raw text if it detects a gpg signature (see
+    Deb822.split_gpg_and_payload for details).
     """
 
     def __init__(self, *args, **kwargs):
@@ -792,30 +825,26 @@ class _gpg_multivalued(_multivalued):
         if sequence is not None:
             if isinstance(sequence, basestring):
                 self.raw_text = sequence
-            # XXX: to support sequences, we need to not gobble up more than one
-            # paragraph at a time, in case the sequence is really something
-            # like a Packages or Sources file.  But it's not as simple as
-            # stopping at blank lines, since GPG signatures have blank lines,
-            # too.  So we just don't support it for now.  Below is code that
-            # would work if we didn't care about that...
-            #elif hasattr(sequence, "items"):
-            #    # sequence is actually a dict(-like) object, so we don't have
-            #    # the raw text.
-            #    pass
-            #else:
-            #    # If this is a sequence of lines without trailing \n's, we'll
-            #    # need to add them back for raw_text
-            #    lines = [line for line in sequence]
-            #    if lines and lines[0].endswith("\n"):
-            #        self.raw_text = "".join(lines)
-            #    else:
-            #        self.raw_text = "\n".join(lines)
-            #
-            #    try:
-            #        args = list(args)
-            #        args[0] = lines
-            #    except IndexError:
-            #        kwargs["sequence"] = lines
+            elif hasattr(sequence, "items"):
+                # sequence is actually a dict(-like) object, so we don't have
+                # the raw text.
+                pass
+            else:
+                gpg_pre_lines, lines, gpg_post_lines = \
+                        self.split_gpg_and_payload(sequence)
+                if gpg_pre_lines and gpg_post_lines:
+                    raw_text = StringIO.StringIO()
+                    raw_text.write("\n".join(gpg_pre_lines))
+                    raw_text.write("\n\n")
+                    raw_text.write("\n".join(lines))
+                    raw_text.write("\n\n")
+                    raw_text.write("\n".join(gpg_post_lines))
+                    self.raw_text = raw_text.getvalue()
+                try:
+                    args = list(args)
+                    args[0] = lines
+                except IndexError:
+                    kwargs["sequence"] = lines
 
         _multivalued.__init__(self, *args, **kwargs)
 

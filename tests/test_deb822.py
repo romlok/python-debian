@@ -345,17 +345,22 @@ class TestDeb822(unittest.TestCase):
             return
 
         unparsed_with_gpg = SIGNED_CHECKSUM_CHANGES_FILE % CHECKSUM_CHANGES_FILE
-        deb822_ = deb822.Dsc(unparsed_with_gpg)
+        deb822_from_str = deb822.Dsc(unparsed_with_gpg)
+        result_from_str = deb822_from_str.get_gpg_info()
+        deb822_from_file = deb822.Dsc(StringIO(unparsed_with_gpg))
+        result_from_file = deb822_from_file.get_gpg_info()
+        deb822_from_lines = deb822.Dsc(unparsed_with_gpg.splitlines())
+        result_from_lines = deb822_from_lines.get_gpg_info()
         valid = {'GOODSIG':  ['D14219877A786561', 'John Wright <john.wright@hp.com>'],
                  'VALIDSIG': ['8FEFE900783CF175827C2F65D14219877A786561', '2008-05-01',
                               '1209623566', '0', '3', '0', '17', '2', '01',
                               '8FEFE900783CF175827C2F65D14219877A786561'],
                  'SIG_ID':   ['mQFnUWWR1Gr6itMV7Bx5L4N60Wo', '2008-05-01', '1209623566']}
-        result = deb822_.get_gpg_info()
 
-        self.assertEqual(len(result.keys()), len(valid.keys()))
-        for k,v in valid.items():
-            self.assertEqual(''.join(v), ''.join(result[k]))
+        for result in result_from_str, result_from_file, result_from_lines:
+            self.assertEqual(len(result.keys()), len(valid.keys()))
+            for k,v in valid.items():
+                self.assertEqual(''.join(v), ''.join(result[k]))
 
     def test_iter_paragraphs_array(self):
         text = (UNPARSED_PACKAGE + '\n\n\n' + UNPARSED_PACKAGE).splitlines()
@@ -374,8 +379,42 @@ class TestDeb822(unittest.TestCase):
             string = string % UNPARSED_PACKAGE
             text = (string + '\n\n\n' + string).splitlines()
 
+            count = 0
             for d in deb822.Deb822.iter_paragraphs(text):
+                count += 1
                 self.assertWellParsed(d, PARSED_PACKAGE)
+            self.assertEqual(count, 2)
+
+    def test_iter_paragraphs_shared_storage(self):
+        """Ensure consistency with the three possible iter_paragraph options"""
+        
+        f = open("test_Packages")
+        packages_content = f.read()
+        f.close()
+
+        combinations = [
+            {"use_apt_pkg": True, "shared_storage": True},
+            {"use_apt_pkg": True, "shared_storage": False},
+            {"use_apt_pkg": False, "shared_storage": False},
+        ]
+
+        for kwargs in combinations:
+            s = StringIO()
+            l = []
+            for p in deb822.Packages.iter_paragraphs(open("test_Packages"),
+                                                     **kwargs):
+                p.dump(s)
+                s.write("\n")
+                l.append(p)
+            self.assertEqual(s.getvalue(), packages_content)
+            if kwargs["shared_storage"] is False:
+                # If shared_storage is False, data should be consistent across
+                # iterations -- i.e. we can use "old" objects
+                s = StringIO()
+                for p in l:
+                    p.dump(s)
+                    s.write("\n")
+                self.assertEqual(s.getvalue(), packages_content)
 
     def test_parser_empty_input(self):
         self.assertEqual({}, deb822.Deb822([]))
