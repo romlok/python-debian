@@ -102,6 +102,9 @@ class Deb822Dict(object, UserDict.DictMixin):
                 return self.__parsed[key]
             else:
                 raise
+
+    def __contains__(self, key):
+        return key in self.__dict
     
     def __delitem__(self, key):
         key = _strI(key)
@@ -168,7 +171,7 @@ class Deb822(Deb822Dict):
         self.gpg_info = None
 
     def iter_paragraphs(cls, sequence, fields=None, use_apt_pkg=True,
-                        shared_storage=True):
+                        shared_storage=False):
         """Generator that yields a Deb822 object for each paragraph in sequence.
 
         :param sequence: same as in __init__.
@@ -178,12 +181,15 @@ class Deb822(Deb822Dict):
         :param use_apt_pkg: if sequence is a file(), apt_pkg will be used 
             if available to parse the file, since it's much much faster.  Set
             this parameter to False to disable using apt_pkg.
-        :param shared_storage: if sequence is a file() and use_apt_pkg is True,
-            yielded objects will share storage, so they can't be kept across
-            iterations. (Also, PGP signatures won't be stripped.) Set this
-            parameter to False to make a copy of the parsed data through each
-            iteration.  This parameter has no effect if use_apt_pkg is False or
-            apt_pkg is not available.
+        :param shared_storage: if sequence is a file(), use_apt_pkg is True,
+            and shared_storage is True, yielded objects will share storage, so
+            they can't be kept across iterations.  (Also, PGP signatures won't
+            be stripped.)  By default, this parameter is False, causing a copy
+            of the parsed data to be made through each iteration.  Except for
+            with raw Deb822 paragraphs (as opposed to _multivalued subclasses),
+            the speed gained by setting shared_storage=True is marginal.  This
+            parameter has no effect if use_apt_pkg is False or apt_pkg is not
+            available.
         """
 
         if _have_apt_pkg and use_apt_pkg and isinstance(sequence, file):
