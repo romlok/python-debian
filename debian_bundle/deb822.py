@@ -36,15 +36,15 @@ import sys
 import StringIO
 import UserDict
 
-class OrderedSet(set):
-    """A set object that preserves order when iterating over it
+class OrderedSet(object):
+    """A set-like object that preserves order when iterating over it
 
     We use this to keep track of keys in Deb822Dict, because it's much faster
     to look up if a key is in a set than in a list.
     """
 
     def __init__(self, iterable=[]):
-        set.__init__(self)
+        self.__set = set()
         self.__order = []
         for item in iterable:
             self.add(item)
@@ -53,17 +53,23 @@ class OrderedSet(set):
         if item not in self:
             # set.add will raise TypeError if something's unhashable, so we
             # don't have to handle that ourselves
-            set.add(self, item)
+            self.__set.add(item)
             self.__order.append(item)
 
     def remove(self, item):
         # set.remove will raise KeyError, so we don't need to handle that
         # ourselves
-        set.remove(self, item)
+        self.__set.remove(item)
         self.__order.remove(item)
 
     def __iter__(self):
+        # Return an iterator of items in the order they were added
         return iter(self.__order)
+
+    def __contains__(self, item):
+        # This is what makes OrderedSet faster than using a list to keep track
+        # of keys.  Lookup in a set is O(1) instead of O(n) for a list.
+        return item in self.__set
 
     ### list-like methods
     append = add
@@ -125,8 +131,7 @@ class Deb822Dict(object, UserDict.DictMixin):
 
     def __setitem__(self, key, value):
         key = _strI(key)
-        if not key in self:
-            self.__keys.append(key)
+        self.__keys.add(key)
         self.__dict[key] = value
         
     def __getitem__(self, key):
@@ -139,14 +144,14 @@ class Deb822Dict(object, UserDict.DictMixin):
             else:
                 raise
 
-    def __contains__(self, key):
-        key = _strI(key)
-        return key in self.__keys
-    
     def __delitem__(self, key):
         key = _strI(key)
         del self.__dict[key]
         self.__keys.remove(key)
+
+    def has_key(self, key):
+        key = _strI(key)
+        return key in self.__keys
     
     def keys(self):
         return [str(key) for key in self.__keys]
