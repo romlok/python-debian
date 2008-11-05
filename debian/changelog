@@ -1,4 +1,4 @@
-python-debian (0.1.12) UNRELEASED; urgency=low
+python-debian (0.1.12) unstable; urgency=low
 
   [ Filippo Giunchedi ]
   * Add initial support to deb822 for gpg signature checking (Closes: #485829)
@@ -17,11 +17,11 @@ python-debian (0.1.12) UNRELEASED; urgency=low
     Dpkg/Changelog/Debian.pm so that it allows '.' and '+' in the distribution
     field
   * deb822: Add a use_apt_pkg parameter to Deb822.iter_paragraphs.  Now,
-    callers can set use_apt_pkg=True and shared_storage=False in order to take
-    advantage of apt_pkg's speed and still be able to use values across
-    iterations.
+    callers can set use_apt_pkg=True and shared_storage=False (now the default)
+    in order to take advantage of apt_pkg's speed and still be able to use
+    values across iterations.  (Closes: #504413)
 
- -- John Wright <jsw@debian.org>  Tue, 04 Nov 2008 02:23:34 -0700
+ -- John Wright <jsw@debian.org>  Wed, 05 Nov 2008 16:03:40 -0700
 
 python-debian (0.1.11) unstable; urgency=low
 
