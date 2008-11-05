@@ -36,6 +36,43 @@ import sys
 import StringIO
 import UserDict
 
+class OrderedSet(set):
+    """A set object that preserves order when iterating over it
+
+    We use this to keep track of keys in Deb822Dict, because it's much faster
+    to look up if a key is in a set than in a list.
+    """
+
+    def __init__(self, iterable=[]):
+        set.__init__(self)
+        self.__order = []
+        for item in iterable:
+            self.add(item)
+
+    def add(self, item):
+        if item not in self:
+            # set.add will raise TypeError if something's unhashable, so we
+            # don't have to handle that ourselves
+            set.add(self, item)
+            self.__order.append(item)
+
+    def remove(self, item):
+        # set.remove will raise KeyError, so we don't need to handle that
+        # ourselves
+        set.remove(self, item)
+        self.__order.remove(item)
+
+    def __iter__(self):
+        return iter(self.__order)
+
+    ### list-like methods
+    append = add
+
+    def extend(self, iterable):
+        for item in iterable:
+            self.add(item)
+    ###
+
 class Deb822Dict(object, UserDict.DictMixin):
     # Subclassing UserDict.DictMixin because we're overriding so much dict
     # functionality that subclassing dict requires overriding many more than
@@ -58,7 +95,7 @@ class Deb822Dict(object, UserDict.DictMixin):
 
     def __init__(self, _dict=None, _parsed=None, _fields=None):
         self.__dict = {}
-        self.__keys = []
+        self.__keys = OrderedSet()
         self.__parsed = None
 
         if _dict is not None:
@@ -83,7 +120,6 @@ class Deb822Dict(object, UserDict.DictMixin):
                 self.__keys.extend([ _strI(k) for k in self.__parsed.keys() ])
             else:
                 self.__keys.extend([ _strI(f) for f in _fields if self.__parsed.has_key(f) ])
-
         
     ### BEGIN DictMixin methods
 
@@ -104,7 +140,8 @@ class Deb822Dict(object, UserDict.DictMixin):
                 raise
 
     def __contains__(self, key):
-        return key in self.__dict
+        key = _strI(key)
+        return key in self.__keys
     
     def __delitem__(self, key):
         key = _strI(key)
@@ -818,7 +855,8 @@ class _gpg_multivalued(_multivalued):
     gpg can verify the signature.  Use it just like you would use the
     _multivalued class.
 
-    This class only stores raw text if it detects a gpg signature (see
+    This class only stores raw text if it is given a raw string, or if it
+    detects a gpg signature when given a file or sequence of lines (see
     Deb822.split_gpg_and_payload for details).
     """
 
@@ -836,8 +874,12 @@ class _gpg_multivalued(_multivalued):
                 # the raw text.
                 pass
             else:
-                gpg_pre_lines, lines, gpg_post_lines = \
-                        self.split_gpg_and_payload(sequence)
+                try:
+                    gpg_pre_lines, lines, gpg_post_lines = \
+                            self.split_gpg_and_payload(sequence)
+                except EOFError:
+                    # Empty input
+                    gpg_pre_lines = lines = gpg_post_lines = []
                 if gpg_pre_lines and gpg_post_lines:
                     raw_text = StringIO.StringIO()
                     raw_text.write("\n".join(gpg_pre_lines))

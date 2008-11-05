@@ -385,36 +385,52 @@ class TestDeb822(unittest.TestCase):
                 self.assertWellParsed(d, PARSED_PACKAGE)
             self.assertEqual(count, 2)
 
-    def test_iter_paragraphs_shared_storage(self):
-        """Ensure consistency with the three possible iter_paragraph options"""
+    def _test_iter_paragraphs(self, file, cls, **kwargs):
+        """Ensure iter_paragraphs consistency"""
         
-        f = open("test_Packages")
+        f = open(file)
         packages_content = f.read()
         f.close()
+        # XXX: The way multivalued fields parsing works, we can't guarantee
+        # that trailing whitespace is reproduced.
+        packages_content = "\n".join([line.rstrip() for line in
+                                      packages_content.splitlines()] + [''])
 
-        combinations = [
-            {"use_apt_pkg": True, "shared_storage": True},
-            {"use_apt_pkg": True, "shared_storage": False},
-            {"use_apt_pkg": False, "shared_storage": False},
-        ]
-
-        for kwargs in combinations:
+        s = StringIO()
+        l = []
+        for p in cls.iter_paragraphs(open(file), **kwargs):
+            p.dump(s)
+            s.write("\n")
+            l.append(p)
+        self.assertEqual(s.getvalue(), packages_content)
+        if kwargs["shared_storage"] is False:
+            # If shared_storage is False, data should be consistent across
+            # iterations -- i.e. we can use "old" objects
             s = StringIO()
-            l = []
-            for p in deb822.Packages.iter_paragraphs(open("test_Packages"),
-                                                     **kwargs):
+            for p in l:
                 p.dump(s)
                 s.write("\n")
-                l.append(p)
             self.assertEqual(s.getvalue(), packages_content)
-            if kwargs["shared_storage"] is False:
-                # If shared_storage is False, data should be consistent across
-                # iterations -- i.e. we can use "old" objects
-                s = StringIO()
-                for p in l:
-                    p.dump(s)
-                    s.write("\n")
-                self.assertEqual(s.getvalue(), packages_content)
+
+    def test_iter_paragraphs_apt_shared_storage_packages(self):
+        self._test_iter_paragraphs("test_Packages", deb822.Packages,
+                                   use_apt_pkg=True, shared_storage=True)
+    def test_iter_paragraphs_apt_no_shared_storage_packages(self):
+        self._test_iter_paragraphs("test_Packages", deb822.Packages,
+                                   use_apt_pkg=True, shared_storage=False)
+    def test_iter_paragraphs_no_apt_no_shared_storage_packages(self):
+        self._test_iter_paragraphs("test_Packages", deb822.Packages,
+                                   use_apt_pkg=False, shared_storage=False)
+
+    def test_iter_paragraphs_apt_shared_storage_sources(self):
+        self._test_iter_paragraphs("test_Sources", deb822.Sources,
+                                   use_apt_pkg=True, shared_storage=True)
+    def test_iter_paragraphs_apt_no_shared_storage_sources(self):
+        self._test_iter_paragraphs("test_Sources", deb822.Sources,
+                                   use_apt_pkg=True, shared_storage=False)
+    def test_iter_paragraphs_no_apt_no_shared_storage_sources(self):
+        self._test_iter_paragraphs("test_Sources", deb822.Sources,
+                                   use_apt_pkg=False, shared_storage=False)
 
     def test_parser_empty_input(self):
         self.assertEqual({}, deb822.Deb822([]))
