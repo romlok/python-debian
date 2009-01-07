@@ -146,8 +146,13 @@ class Deb822Dict(object, UserDict.DictMixin):
 
     def __delitem__(self, key):
         key = _strI(key)
-        del self.__dict[key]
         self.__keys.remove(key)
+        try:
+            del self.__dict[key]
+        except KeyError:
+            # If we got this far, the key was in self.__keys, so it must have
+            # only been in the self.__parsed dict.
+            pass
 
     def has_key(self, key):
         key = _strI(key)

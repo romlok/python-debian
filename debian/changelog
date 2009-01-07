@@ -1,3 +1,10 @@
+python-debian (0.1.13) UNRELEASED; urgency=low
+
+  * deb822: Correctly handle deletion of keys that only exist in a pre-parsed
+    dictionary
+
+ -- John Wright <jsw@debian.org>  Wed, 07 Jan 2009 16:11:31 -0700
+
 python-debian (0.1.12) unstable; urgency=low
 
   [ Filippo Giunchedi ]

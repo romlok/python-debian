@@ -472,14 +472,16 @@ class TestDeb822(unittest.TestCase):
 
     def test__delitem__(self):
         parsed = deb822.Deb822(UNPARSED_PACKAGE.splitlines())
+        deriv = deb822.Deb822(_parsed=parsed)
         dict_ = PARSED_PACKAGE.copy()
 
         for key in ('Package', 'MD5sum', 'Description'):
-            del parsed[key]
             del dict_[key]
+            for d in (parsed, deriv):
+                del d[key]
+                d.keys() # ensure this does not raise error
+                self.assertWellParsed(d, dict_)
 
-            parsed.keys() # ensure this does not raise error
-            self.assertWellParsed(parsed, dict_)
 
     def test_policy_compliant_whitespace(self):
         string = (
