@@ -27,7 +27,7 @@ if len(sys.argv) < 2:
 	sys.exit(1)
 
 full = debtags.DB()
-# Read full database 
+# Read full database
 tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
 full.read(open(sys.argv[1], "r"), lambda x: not tag_filter.match(x))
 

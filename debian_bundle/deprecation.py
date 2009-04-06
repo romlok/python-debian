@@ -3,7 +3,7 @@
 # debian_bundle/deprecation.py
 # Utility module to deprecate features
 #
-# Copyright © Ben Finney <ben+debian@benfinney.id.au>
+# Copyright Â© Ben Finney <ben+debian@benfinney.id.au>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

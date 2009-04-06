@@ -429,7 +429,7 @@ class Deb822(Deb822Dict):
 
     def split_gpg_and_payload(sequence):
         """Return a (gpg_pre, payload, gpg_post) tuple
-        
+
         Each element of the returned tuple is a list of lines (with trailing
         whitespace stripped).
         """
