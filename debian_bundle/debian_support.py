@@ -22,6 +22,7 @@ import re
 import sha
 import types
 
+from deprecation import function_deprecated_by
 import apt_pkg
 apt_pkg.init()
 
@@ -50,10 +51,12 @@ class ParseError(Exception):
                                            self.lineno,
                                            `self.msg`)
 
-    def printOut(self, file):
+    def print_out(self, file):
         """Writes a machine-parsable error message to file."""
         file.write("%s:%d: %s\n" % (self.filename, self.lineno, self.msg))
         file.flush()
+
+    printOut = function_deprecated_by(print_out)
 
 class Version:
     """Version class which uses the original APT comparison algorithm."""
@@ -89,17 +92,17 @@ class PackageFile:
     re_field = re.compile(r'^([A-Za-z][A-Za-z0-9-]+):(?:\s*(.*?))?\s*$')
     re_continuation = re.compile(r'^\s+(?:\.|(\S.*?)\s*)$')
 
-    def __init__(self, name, fileObj=None):
+    def __init__(self, name, file_obj=None):
         """Creates a new package file object.
 
         name - the name of the file the data comes from
-        fileObj - an alternate data source; the default is to open the
+        file_obj - an alternate data source; the default is to open the
                   file with the indicated name.
         """
-        if fileObj is None:
-            fileObj = file(name)
+        if file_obj is None:
+            file_obj = file(name)
         self.name = name
-        self.file = fileObj
+        self.file = file_obj
         self.lineno = 0
 
     def __iter__(self):
@@ -109,7 +112,7 @@ class PackageFile:
         while line:
             if line == '\n':
                 if len(pkg) == 0:
-                    self.raiseSyntaxError('expected package record')
+                    self.raise_syntax_error('expected package record')
                 yield pkg
                 pkg = []
                 line = self.file.readline()
@@ -118,7 +121,7 @@ class PackageFile:
             
             match = self.re_field.match(line)
             if not match:
-                self.raiseSyntaxError("expected package field")
+                self.raise_syntax_error("expected package field")
             (name, contents) = match.groups()
             contents = contents or ''
 
@@ -137,10 +140,12 @@ class PackageFile:
         if pkg:
             yield pkg
 
-    def raiseSyntaxError(self, msg, lineno=None):
+    def raise_syntax_error(self, msg, lineno=None):
         if lineno is None:
             lineno = self.lineno
         raise ParseError(self.name, lineno, msg)
+
+    raiseSyntaxError = function_deprecated_by(raise_syntax_error)
 
 class PseudoEnum:
     """A base class for types which resemble enumeration types."""
@@ -158,27 +163,36 @@ class PseudoEnum:
 
 class Release(PseudoEnum): pass
 
-def listReleases():
+def list_releases():
     releases = {}
     rels = ("potato", "woody", "sarge", "etch", "lenny", "sid")
     for r in range(len(rels)):
         releases[rels[r]] = Release(rels[r], r)
     Release.releases = releases
     return releases
-def internRelease(name, releases=listReleases()):
+
+listReleases = function_deprecated_by(list_releases)
+
+def intern_release(name, releases=list_releases()):
     if releases.has_key(name):
         return releases[name]
     else:
         return None
-del listReleases
 
-def readLinesSHA1(lines):
+internRelease = function_deprecated_by(intern_release)
+
+del listReleases
+del list_releases
+
+def read_lines_sha1(lines):
     m = sha.new()
     for l in lines:
         m.update(l)
     return m.hexdigest()
 
-def patchesFromEdScript(source,
+readLinesSHA1 = function_deprecated_by(read_lines_sha1)
+
+def patches_from_ed_script(source,
                         re_cmd=re.compile(r'^(\d+)(?:,(\d+))?([acd])$')):
     """Converts source to a stream of patches.
 
@@ -229,12 +243,16 @@ def patchesFromEdScript(source,
             lines.append(l)
         yield (first, last, lines)
 
-def patchLines(lines, patches):
+patchesFromEdScript = function_deprecated_by(patches_from_ed_script)
+
+def patch_lines(lines, patches):
     """Applies patches to lines.  Updates lines in place."""
     for (first, last, args) in patches:
         lines[first:last] = args
 
-def replaceFile(lines, local):
+patchLines = function_deprecated_by(patch_lines)
+
+def replace_file(lines, local):
 
     import os.path
 
@@ -250,7 +268,9 @@ def replaceFile(lines, local):
         if os.path.exists(local_new):
             os.unlink(local_new)
 
-def downloadGunzipLines(remote):
+replaceFile = function_deprecated_by(replace_file)
+
+def download_gunzip_lines(remote):
     """Downloads a file from a remote location and gunzips it.
 
     Returns the lines in the file."""
@@ -272,19 +292,23 @@ def downloadGunzipLines(remote):
     finally:
         os.unlink(fname)
     return lines
-        
-def downloadFile(remote, local):
+
+downloadGunzipLines = function_deprecated_by(download_gunzip_lines)
+
+def download_file(remote, local):
     """Copies a gzipped remote file to the local system.
 
     remote - URL, without the .gz suffix
     local - name of the local file
     """
     
-    lines = downloadGunzipLines(remote + '.gz')
-    replaceFile(lines, local)
+    lines = download_gunzip_lines(remote + '.gz')
+    replace_file(lines, local)
     return lines
 
-def updateFile(remote, local, verbose=None):
+downloadFile = function_deprecated_by(download_file)
+
+def update_file(remote, local, verbose=None):
     """Updates the local file by downloading a remote patch.
 
     Returns a list of lines in the local file.
@@ -294,12 +318,12 @@ def updateFile(remote, local, verbose=None):
         local_file = file(local)
     except IOError:
         if verbose:
-            print "updateFile: no local copy, downloading full file"
-        return downloadFile(remote, local)
+            print "update_file: no local copy, downloading full file"
+        return download_file(remote, local)
 
     lines = local_file.readlines()
     local_file.close()
-    local_hash = readLinesSHA1(lines)
+    local_hash = read_lines_sha1(lines)
     patches_to_apply = []
     patch_hashes = {}
     
@@ -315,12 +339,12 @@ def updateFile(remote, local, verbose=None):
         # FIXME: urllib does not raise a proper exception, so we parse
         # the error message.
         if verbose:
-            print "updateFile: could not interpret patch index file"
-        return downloadFile(remote, local)
+            print "update_file: could not interpret patch index file"
+        return download_file(remote, local)
     except IOError:
         if verbose:
-            print "updateFile: could not download patch index file"
-        return downloadFile(remote, local)
+            print "update_file: could not download patch index file"
+        return download_file(remote, local)
 
     for fields in index_fields:
         for (field, value) in fields:
@@ -328,7 +352,7 @@ def updateFile(remote, local, verbose=None):
                 (remote_hash, remote_size) = re_whitespace.split(value)
                 if local_hash == remote_hash:
                     if verbose:
-                        print "updateFile: local file is up-to-date"
+                        print "update_file: local file is up-to-date"
                     return lines
                 continue
 
@@ -356,30 +380,32 @@ def updateFile(remote, local, verbose=None):
                 continue
             
             if verbose:
-                print "updateFile: field %s ignored" % `field`
+                print "update_file: field %s ignored" % `field`
         
     if not patches_to_apply:
         if verbose:
-            print "updateFile: could not find historic entry", local_hash
-        return downloadFile(remote, local)
+            print "update_file: could not find historic entry", local_hash
+        return download_file(remote, local)
 
     for patch_name in patches_to_apply:
-        print "updateFile: downloading patch " + `patch_name`
-        patch_contents = downloadGunzipLines(remote + '.diff/' + patch_name
+        print "update_file: downloading patch " + `patch_name`
+        patch_contents = download_gunzip_lines(remote + '.diff/' + patch_name
                                           + '.gz')
-        if readLinesSHA1(patch_contents ) <> patch_hashes[patch_name]:
+        if read_lines_sha1(patch_contents ) <> patch_hashes[patch_name]:
             raise ValueError, "patch %s was garbled" % `patch_name`
-        patchLines(lines, patchesFromEdScript(patch_contents))
+        patch_lines(lines, patches_from_ed_script(patch_contents))
         
-    new_hash = readLinesSHA1(lines)
+    new_hash = read_lines_sha1(lines)
     if new_hash <> remote_hash:
         raise ValueError, ("patch failed, got %s instead of %s"
                            % (new_hash, remote_hash))
 
-    replaceFile(lines, local)
+    replace_file(lines, local)
     return lines
 
-def mergeAsSets(*args):
+updateFile = function_deprecated_by(update_file)
+
+def merge_as_sets(*args):
     """Create an order set (represented as a list) of the objects in
     the sequences passed as arguments."""
     s = {}
@@ -389,6 +415,8 @@ def mergeAsSets(*args):
     l = s.keys()
     l.sort()
     return l
+
+mergeAsSets = function_deprecated_by(merge_as_sets)
 
 def test():
     # Version
@@ -411,7 +439,7 @@ def test():
     assert Version('1.5~rc1') > Version('1.5~dev0')
 
     # Release
-    assert internRelease('sarge') < internRelease('etch')
+    assert intern_release('sarge') < intern_release('etch')
 
     # PackageFile
     # for p in PackageFile('../../data/packages/sarge/Sources'):
@@ -420,8 +448,8 @@ def test():
     #     assert p[0][0] == 'Package'
 
     # Helper routines
-    assert readLinesSHA1([]) == 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
-    assert readLinesSHA1(['1\n', '23\n']) \
+    assert read_lines_sha1([]) == 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+    assert read_lines_sha1(['1\n', '23\n']) \
            == '14293c9bd646a15dc656eaf8fba95124020dfada'
 
     file_a = map(lambda x: "%d\n" % x, range(1, 18))
@@ -431,11 +459,11 @@ def test():
     patch = ['15a\n', 'A\n', 'B\n', 'C\n', '.\n', '13c\n', '<13>\n', '.\n',
              '9,10d\n', '6d\n', '2,3c\n', '<2>\n', '<3>\n', '.\n', '0a\n',
              '0\n', '.\n']
-    patchLines(file_a, patchesFromEdScript(patch))
+    patch_lines(file_a, patches_from_ed_script(patch))
     assert ''.join(file_b) == ''.join(file_a)
 
-    assert len(mergeAsSets([])) == 0
-    assert ''.join(mergeAsSets("abc", "cb")) == "abc"
+    assert len(merge_as_sets([])) == 0
+    assert ''.join(merge_as_sets("abc", "cb")) == "abc"
 
 if __name__ == "__main__":
     test()

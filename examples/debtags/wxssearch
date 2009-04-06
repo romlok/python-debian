@@ -32,8 +32,8 @@ VERSION="0.1"
 
 class Model(wx.EvtHandler):
     class ModelEvent(wx.PyCommandEvent):
-        def __init__(self, eventType):
-            wx.PyCommandEvent.__init__(self, eventType)
+        def __init__(self, event_type):
+            wx.PyCommandEvent.__init__(self, event_type)
 
     # Create custom events
     wxEVT_CHANGED = wx.NewEventType()
@@ -41,7 +41,7 @@ class Model(wx.EvtHandler):
 
     def __init__(self, fullcoll):
         wx.EvtHandler.__init__(self)
-        self.aptCache = apt.Cache()
+        self.apt_cache = apt.Cache()
 
         self.wanted = set()
         self.unwanted = set()
@@ -55,8 +55,8 @@ class Model(wx.EvtHandler):
 
         self.refilter()
 
-    def tagMatch(self, pkg):
-        tags = self.fullcoll.tagsOfPackage(pkg)
+    def tag_match(self, pkg):
+        tags = self.fullcoll.tags_of_package(pkg)
         if len(self.wanted) > 0 and not self.wanted.issubset(tags):
             return False
         if len(self.unwanted) > 0 and len(tags.intersection(self.unwanted)) > 0:
@@ -68,10 +68,10 @@ class Model(wx.EvtHandler):
         if len(self.wanted) == 0 and len(self.unwanted) == 0:
             self.subcoll = self.fullcoll
         else:
-            self.subcoll = self.fullcoll.filterPackages(self.tagMatch)
+            self.subcoll = self.fullcoll.filter_packages(self.tag_match)
 
         # Compute the most interesting tags by discriminance
-        self.discriminant = sorted(self.subcoll.iterTags(), \
+        self.discriminant = sorted(self.subcoll.iter_tags(), \
                   lambda b, a: cmp(self.subcoll.discriminance(a), self.subcoll.discriminance(b)))
         #print "-----------------------------"
         #for d in self.discriminant:
@@ -81,61 +81,61 @@ class Model(wx.EvtHandler):
         e = Model.ModelEvent(Model.wxEVT_CHANGED)
         self.ProcessEvent(e)
 
-    def addWanted(self, tag):
+    def add_wanted(self, tag):
         self.wanted.add(tag)
         if tag in self.unwanted: self.unwanted.remove(tag)
         if tag in self.ignored: self.ignored.remove(tag)
         self.refilter()
         
-    def addUnwanted(self, tag):
+    def add_unwanted(self, tag):
         self.unwanted.add(tag)
         if tag in self.wanted: self.wanted.remove(tag)
         if tag in self.ignored: self.ignored.remove(tag)
         self.refilter()
 
-    def addIgnored(self, tag):
+    def add_ignored(self, tag):
         self.ignored.add(tag)
         if tag in self.wanted: self.wanted.remove(tag)
         if tag in self.unwanted: self.unwanted.remove(tag)
         self.refilter()
 
-    def removeTagFromFilter(self, tag):
+    def remove_tag_from_filter(self, tag):
         if tag in self.wanted: self.wanted.remove(tag)
         if tag in self.unwanted: self.unwanted.remove(tag)
         if tag in self.ignored: self.ignored.remove(tag)
         self.refilter()
 
-    def setQuery(self, query):
+    def set_query(self, query):
         query = query.split()
 
         def match(pkg):
             for q in query:
                 try:
                     if pkg.name.find(q) == -1 and \
-                       pkg.rawDescription.find(q) == -1:
+                       pkg.raw_description.find(q) == -1:
                         return False
                 except UnicodeDecodeError:
-                    desc = pkg.rawDescription.decode("ascii", "replace")
+                    desc = pkg.raw_description.decode("ascii", "replace")
                     if pkg.name.find(q) == -1 and \
                        desc.find(q) == -1:
                         return False
             return True
 
-        subcoll = self.fullcoll.choosePackages(map(lambda x: x.name, filter(match, self.aptCache)))
+        subcoll = self.fullcoll.choose_packages(map(lambda x: x.name, filter(match, self.apt_cache)))
 
-        relIndex = debtags.relevanceIndexFunction(self.fullcoll, subcoll)
+        rel_index = debtags.relevance_index_function(self.fullcoll, subcoll)
 
         # Get all the tags sorted by increasing relevance
-        self.interesting = sorted(subcoll.iterTags(), lambda b, a: cmp(relIndex(a), relIndex(b)))
+        self.interesting = sorted(subcoll.iter_tags(), lambda b, a: cmp(rel_index(a), rel_index(b)))
 
         # Get the list of the uninteresting tags, sorted by cardinality (the
         # ones that you are less likely to want, and first the ones that will
         # weed out most results)
-        self.uninteresting = set(self.fullcoll.iterTags())
-        self.uninteresting -= set(subcoll.iterTags())
+        self.uninteresting = set(self.fullcoll.iter_tags())
+        self.uninteresting -= set(subcoll.iter_tags())
 
         if len(self.wanted) == 0:
-            self.wanted = set(fullcoll.idealTagset(self.interesting))
+            self.wanted = set(fullcoll.ideal_tagset(self.interesting))
             self.refilter()
 
         # Notify the change
@@ -144,8 +144,8 @@ class Model(wx.EvtHandler):
 
 class TagList(wx.html.HtmlWindow):
     class TagListEvent(wx.PyCommandEvent):
-        def __init__(self, eventType):
-            wx.PyCommandEvent.__init__(self, eventType)
+        def __init__(self, event_type):
+            wx.PyCommandEvent.__init__(self, event_type)
             self.action = None
             self.tag = None
 
@@ -156,18 +156,18 @@ class TagList(wx.html.HtmlWindow):
     def __init__(self, parent, model):
         wx.html.HtmlWindow.__init__(self, parent)
         self.model = model
-        self.model.Bind(Model.EVT_CHANGED, self.modelChanged)
+        self.model.Bind(Model.EVT_CHANGED, self.model_changed)
         self.SetBorders(0)
         self.SetFonts("", "", [4, 6, 8, 10, 11, 12, 13])
 
-    def OnLinkClicked(self, linkInfo):
+    def OnLinkClicked(self, link_info):
         # Notify the change
-        action, tag = linkInfo.GetHref().split(':',1)
+        action, tag = link_info.GetHref().split(':',1)
         e = TagList.TagListEvent(TagList.wxEVT_ACTION)
         e.action, e.tag = action, tag
         self.ProcessEvent(e)
 
-    def modelChanged(self, event):
+    def model_changed(self, event):
         #print "TLMC"
         self.SetPage("<html><body>")
         first = True
@@ -186,14 +186,14 @@ class TagList(wx.html.HtmlWindow):
             for tag in self.model.unwanted:
                 self.AppendToPage("&nbsp;&nbsp;&nbsp;<a href='del:%s'>%s</a><br>" % (tag, tag))
 
-        def filterCandidate(tag):
+        def filter_candidate(tag):
             if self.model.subcoll.card(tag) == 0: return False
             if tag in self.model.wanted: return False
             if tag in self.model.unwanted: return False
             if tag in self.model.ignored: return False
             return True
 
-        interesting = filter(filterCandidate, self.model.interesting)[:7]
+        interesting = filter(filter_candidate, self.model.interesting)[:7]
         if len(interesting):
             if first: first = False;
             else: self.AppendToPage("<br>") 
@@ -201,14 +201,14 @@ class TagList(wx.html.HtmlWindow):
             for tag in interesting:
                 self.AppendToPage("&nbsp;&nbsp;&nbsp;<a href='add:%s'>%s</a> <a href='addnot:%s'>[no]</a> (%d pkgs)<br>" % (tag, tag, tag, self.model.subcoll.card(tag)))
 
-        discr = filter(filterCandidate, self.model.discriminant)[:7]
+        discr = filter(filter_candidate, self.model.discriminant)[:7]
         if len(discr):
             if first: first = False;
             else: self.AppendToPage("<br>") 
             for tag in discr:
                 self.AppendToPage("&nbsp;&nbsp;&nbsp;<a href='add:%s'>%s</a> <a href='addnot:%s'>[no]</a> (%d pkgs)<br>" % (tag, tag, tag, self.model.subcoll.card(tag)))
 
-        unint = filter(filterCandidate,
+        unint = filter(filter_candidate,
                 sorted(self.model.uninteresting, lambda a,b: cmp(self.model.subcoll.card(b), self.model.subcoll.card(a))))[:7]
         if len(unint):
             if first: first = False;
@@ -224,7 +224,7 @@ class Results(wx.ListCtrl):
     def __init__(self, parent, model):
         wx.ListCtrl.__init__(self, parent, style=wx.LC_REPORT|wx.LC_VIRTUAL)
         self.model = model
-        self.model.Bind(Model.EVT_CHANGED, self.modelChanged)
+        self.model.Bind(Model.EVT_CHANGED, self.model_changed)
 
         self.packages = []
 
@@ -236,7 +236,7 @@ class Results(wx.ListCtrl):
 
         self.Bind(wx.EVT_SIZE, self.OnResize)
 
-    def resizeColumns(self):
+    def resize_columns(self):
         """
         Ugly hack to have some decent size for the columns, since the ListCtrl
         appearently won't autosize itself.
@@ -246,23 +246,23 @@ class Results(wx.ListCtrl):
         # -20 to hope to account for the vertical scrollbar, when it's present
         self.SetColumnWidth(1, w * 0.7 - 20)
 
-    def modelChanged(self, event):
-        self.packages = sorted(self.model.subcoll.iterPackages())
+    def model_changed(self, event):
+        self.packages = sorted(self.model.subcoll.iter_packages())
         self.packages.sort()
         self.SetItemCount(len(self.packages))
-        self.resizeColumns()
+        self.resize_columns()
         event.Skip()
 
     def OnResize(self, event):
-        self.resizeColumns()
+        self.resize_columns()
         event.Skip()
 
     def OnGetItemText(self, row, col):
         if col == 0:
             return self.packages[row]
         else:
-            aptpkg = self.model.aptCache[self.packages[row]]
-            return aptpkg.rawDescription.split("\n")[0]
+            aptpkg = self.model.apt_cache[self.packages[row]]
+            return aptpkg.raw_description.split("\n")[0]
 
 
 class SearchWindow(wx.Frame):
@@ -274,65 +274,65 @@ class SearchWindow(wx.Frame):
         wx.Frame.__init__(self, parent, -1, title,
                 style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
 
-        self.statusBar = self.CreateStatusBar()
+        self.status_bar = self.CreateStatusBar()
 
         # Create menu bar
-        self.menuBar = wx.MenuBar()
-        mFile = wx.Menu()
-        mFile.Append(SearchWindow.ACTION_QUIT, "&Quit", "Quit wxdballe")
-        self.menuBar.Append(mFile, "&File")
-        mFile = wx.Menu()
-        mFile.Append(SearchWindow.ACTION_CONTEXT_HELP, "&What is...", "Show context information about interface elements")
-        mFile.Append(SearchWindow.ACTION_ABOUT, "&About...", "Show information about this application")
-        self.menuBar.Append(mFile, "&Help")
-        self.SetMenuBar(self.menuBar)
-        self.Bind(wx.EVT_MENU, self.onAction)
+        self.menu_bar = wx.MenuBar()
+        m_file = wx.Menu()
+        m_file.Append(SearchWindow.ACTION_QUIT, "&Quit", "Quit wxdballe")
+        self.menu_bar.Append(m_file, "&File")
+        m_file = wx.Menu()
+        m_file.Append(SearchWindow.ACTION_CONTEXT_HELP, "&What is...", "Show context information about interface elements")
+        m_file.Append(SearchWindow.ACTION_ABOUT, "&About...", "Show information about this application")
+        self.menu_bar.Append(m_file, "&Help")
+        self.SetMenuBar(self.menu_bar)
+        self.Bind(wx.EVT_MENU, self.on_action)
 
         self.model = model
-        self.model.Bind(Model.EVT_CHANGED, self.modelChanged)
+        self.model.Bind(Model.EVT_CHANGED, self.model_changed)
 
         self.SetSizeHints(500, 500)
 
-        queryPanel = wx.Panel(self, style=wx.SUNKEN_BORDER)
+        query_panel = wx.Panel(self, style=wx.SUNKEN_BORDER)
 
-        queryField = wx.Panel(queryPanel)
-        self.query = wx.TextCtrl(queryField)
+        query_field = wx.Panel(query_panel)
+        self.query = wx.TextCtrl(query_field)
         self.query.SetHelpText("Enter here some keyword about what you are looking for.  They will lead you to a selection of categories that you can use to browse the packages")
-        self.query.Bind(wx.EVT_CHAR, self.queryChanged)
-        # self.query.Bind(wx.EVT_TEXT, self.queryChanged)
-        self.queryButton = wx.Button(queryField, -1, "Go", style=wx.BU_EXACTFIT)
-        self.queryButton.Bind(wx.EVT_BUTTON, self.goButtonPressed)
-        self.queryButton.SetHelpText("Look for keyword corresponding to the text entered in the Search field.")
+        self.query.Bind(wx.EVT_CHAR, self.query_changed)
+        # self.query.Bind(wx.EVT_TEXT, self.query_changed)
+        self.query_button = wx.Button(query_field, -1, "Go", style=wx.BU_EXACTFIT)
+        self.query_button.Bind(wx.EVT_BUTTON, self.go_button_pressed)
+        self.query_button.SetHelpText("Look for keyword corresponding to the text entered in the Search field.")
 
         box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(wx.StaticText(queryField, -1, "Search: "), 0, wx.ALIGN_CENTER_VERTICAL)
+        box.Add(wx.StaticText(query_field, -1, "Search: "), 0, wx.ALIGN_CENTER_VERTICAL)
         box.Add(self.query, 1, wx.EXPAND)
-        box.Add(self.queryButton, 0, wx.ALIGN_CENTER_VERTICAL)
-        queryField.SetSizerAndFit(box)
+        box.Add(self.query_button, 0, wx.ALIGN_CENTER_VERTICAL)
+        query_field.SetSizerAndFit(box)
 
-        self.tagList = TagList(queryPanel, model)
-        self.tagList.Bind(TagList.EVT_ACTION, self.wantedEvent)
-        self.tagList.SetHelpText("Tags used for searching.  Candidate tags are up for selection: click on a tag to say that you want it, and click on 'no' next to it to say that you do not want it.  To remove a tag from the 'wanted' or 'unwanted' list, just click on it")
+        self.tag_list = TagList(query_panel, model)
+        self.tag_list.Bind(TagList.EVT_ACTION, self.wanted_event)
+        self.tag_list.SetHelpText("Tags used for searching.  Candidate tags are up for selection: click on a tag to say that you want it, and click on 'no' next to it to say that you do not want it.  To remove a tag from the 'wanted' or 'unwanted' list, just click on it")
 
         box = wx.BoxSizer(wx.VERTICAL)
-        box.Add(queryField, 0, wx.EXPAND)
-        box.Add(self.tagList, 3, wx.EXPAND)
-        queryPanel.SetSizerAndFit(box)
+        box.Add(query_field, 0, wx.EXPAND)
+        box.Add(self.tag_list, 3, wx.EXPAND)
+        query_panel.SetSizerAndFit(box)
 
         self.results = Results(self, model)
         self.results.SetHelpText("List of packages matching the current selecion of tags")
 
         box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(queryPanel, 2, wx.EXPAND)
+        box.Add(query_panel, 2, wx.EXPAND)
         box.Add(self.results, 3, wx.EXPAND)
         self.SetSizerAndFit(box)
 
-        self.timedUpdater = None
+        self.timed_updater = None
 
-        self.Bind(wx.EVT_CHAR, self.onChar)
+        self.Bind(wx.EVT_CHAR, self.on_char)
         self.query.SetFocus()
 
-    def onAction(self, event):
+    def on_action(self, event):
         id = event.GetId()
         if id == SearchWindow.ACTION_QUIT:
             self.Destroy()
@@ -367,40 +367,40 @@ class SearchWindow(wx.Frame):
             dia = wx.lib.dialogs.ScrolledMessageDialog(self, msg, "About Debtags Smart Search")
             dia.ShowModal() 
         elif id == SearchWindow.ACTION_CONTEXT_HELP:
-            contextHelp = wx.ContextHelp()
-            contextHelp.BeginContextHelp()
+            context_help = wx.ContextHelp()
+            context_help.BeginContextHelp()
 
-    def onChar(self, event):
+    def on_char(self, event):
         c = event.GetKeyCode()
         # Quit on ^Q
         if c == 17:
             self.Destroy()
 
-    def wantedEvent(self, event):
+    def wanted_event(self, event):
         action, tag = event.action, event.tag
 
         if action == 'add':
-            self.model.addWanted(tag)
+            self.model.add_wanted(tag)
         elif action == 'addnot':
-            print "wantedEvent -> addnot"
-            self.model.addUnwanted(tag)
+            print "wanted_event -> addnot"
+            self.model.add_unwanted(tag)
         elif action == 'del':
-            self.model.removeTagFromFilter(tag)
+            self.model.remove_tag_from_filter(tag)
         else:
             print "Unknown action", action
 
-    def goButtonPressed(self, event):
-        self.model.setQuery(self.query.GetValue())
+    def go_button_pressed(self, event):
+        self.model.set_query(self.query.GetValue())
 
-    def queryChanged(self, event):
+    def query_changed(self, event):
         "Delayed update of the filter from the value of the input fields"
         c = event.GetKeyCode()
         if c == 13:
-            self.model.setQuery(self.query.GetValue())
+            self.model.set_query(self.query.GetValue())
         event.Skip()
 
-    def modelChanged(self, event):
-        self.statusBar.SetStatusText("%d packages" % (self.model.subcoll.packageCount()))
+    def model_changed(self, event):
+        self.status_bar.SetStatusText("%d packages" % (self.model.subcoll.package_count()))
         event.Skip()
 
 
@@ -432,8 +432,8 @@ if __name__ == "__main__":
 
     # Read full database 
     fullcoll = debtags.DB()
-    tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
-    fullcoll.read(open(options.tagdb, "r"), lambda x: not tagFilter.match(x))
+    tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
+    fullcoll.read(open(options.tagdb, "r"), lambda x: not tag_filter.match(x))
 
     model = Model(fullcoll)
     sw = SearchWindow(None, model, "Debtags Smart Search")

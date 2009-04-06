@@ -46,9 +46,9 @@ if __name__ == '__main__':
     for n, v in deb.debcontrol().iteritems(): # print DEBIAN/control fields
         if n.lower() == 'description':  # increase indentation of long dsc
             lines = v.split('\n')
-            shortDsc = lines[0]
-            longDsc = string.join(map(lambda l: ' ' + l, lines[1:]), '\n')
-            print ' %s: %s\n%s' % (n, shortDsc, longDsc)
+            short_dsc = lines[0]
+            long_dsc = string.join(map(lambda l: ' ' + l, lines[1:]), '\n')
+            print ' %s: %s\n%s' % (n, short_dsc, long_dsc)
         else:
             print ' %s: %s' % (n, v)
 

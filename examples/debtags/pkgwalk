@@ -42,10 +42,10 @@ if __name__ == '__main__':
 
 	# Read full database 
 	db = debtags.DB()
-	tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
-	db.read(open(options.tagdb, "r"), lambda x: not tagFilter.match(x))
+	tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
+	db.read(open(options.tagdb, "r"), lambda x: not tag_filter.match(x))
 
-	aptCache = apt.Cache()
+	apt_cache = apt.Cache()
 
 	# Maximum number of previous packages to remember 
 	maxlen = 5
@@ -64,7 +64,7 @@ if __name__ == '__main__':
 		# For every tag, find the number of packages in trail that have the tag
 		tagscores = {}
 		for pkg in trail:
-			for tag in db.tagsOfPackage(pkg):
+			for tag in db.tags_of_package(pkg):
 				if tag in tagscores:
 					tagscores[tag] += pkgweight[pkg]
 				else:
@@ -81,14 +81,14 @@ if __name__ == '__main__':
 
 		# Get the list of packages whose tagsets intersect the trail tagset
 		nextpkgs = set()
-		for pkg, tags in db.iterPackagesTags():
+		for pkg, tags in db.iter_packages_tags():
 			if trailtags & tags:
 				nextpkgs.add(pkg)
 
 		# Score every package by the sum of the weight of its tags
 		def pkgscore(pkg):
 			score = 0.0
-			for tag in db.tagsOfPackage(pkg):
+			for tag in db.tags_of_package(pkg):
 				if tag in tagscores:
 					score += tagscores[tag]
 			return score
@@ -97,8 +97,8 @@ if __name__ == '__main__':
 		#display = sorted(nextpkgs - set(trail), key=pkgscore, reverse=True)[:20]
 		display = sorted(nextpkgs, key=pkgscore, reverse=True)[:20]
 		for num, pkg in enumerate(display):
-			aptpkg = aptCache[pkg]
-			desc = aptpkg.rawDescription.split("\n")[0]
+			aptpkg = apt_cache[pkg]
+			desc = aptpkg.raw_description.split("\n")[0]
 			print "%2d) %s - %s" % (num + 1, pkg, desc)
 
 		# Ask the user to choose a new package

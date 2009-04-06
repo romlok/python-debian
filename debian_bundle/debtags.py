@@ -17,7 +17,9 @@
 
 import math, re, cPickle
 
-def parseTags(input):
+from deprecation import function_deprecated_by
+
+def parse_tags(input):
 	lre = re.compile(r"^(.+?)(?::?\s*|:\s+(.+?)\s*)$")
 	for line in input:
 		# Is there a way to remove the last character of a line that does not
@@ -30,19 +32,23 @@ def parseTags(input):
 			tags = set()
 		yield pkgs, tags
 
-def readTagDatabase(input):
+parseTags = function_deprecated_by(parse_tags)
+
+def read_tag_database(input):
 	"Read the tag database, returning a pkg->tags dictionary"
 	db = {}
-	for pkgs, tags in parseTags(input):
+	for pkgs, tags in parse_tags(input):
 		# Create the tag set using the native set
 		for p in pkgs:
 			db[p] = tags.copy()
 	return db;
 
-def readTagDatabaseReversed(input):
+readTagDatabase = function_deprecated_by(read_tag_database)
+
+def read_tag_database_reversed(input):
 	"Read the tag database, returning a tag->pkgs dictionary"
 	db = {}
-	for pkgs, tags in parseTags(input):
+	for pkgs, tags in parse_tags(input):
 		# Create the tag set using the native set
 		for tag in tags:
 			if db.has_key(tag):
@@ -51,16 +57,18 @@ def readTagDatabaseReversed(input):
 				db[tag] = pkgs.copy()
 	return db;
 
-def readTagDatabaseBothWays(input, tagFilter = None):
+readTagDatabaseReversed = function_deprecated_by(read_tag_database_reversed)
+
+def read_tag_database_both_ways(input, tag_filter = None):
 	"Read the tag database, returning a pkg->tags and a tag->pkgs dictionary"
 	db = {}
 	dbr = {}
-	for pkgs, tags in parseTags(input):
+	for pkgs, tags in parse_tags(input):
 		# Create the tag set using the native set
-		if tagFilter == None:
+		if tag_filter == None:
 			tags = set(tags)
 		else:
-			tags = set(filter(tagFilter, tags))
+			tags = set(filter(tag_filter, tags))
 		for pkg in pkgs:
 			db[pkg] = tags.copy()
 		for tag in tags:
@@ -70,6 +78,7 @@ def readTagDatabaseBothWays(input, tagFilter = None):
 				dbr[tag] = pkgs.copy()
 	return db, dbr;
 
+readTagDatabaseBothWays = function_deprecated_by(read_tag_database_both_ways)
 
 def reverse(db):
 	"Reverse a tag database, from package -> tags to tag->packages"
@@ -90,24 +99,24 @@ def output(db):
 		print "%s:" % (pkg), ", ".join(tags)
 
 
-def relevanceIndexFunction(full, sub):
-	#return (float(sub.card(tag)) / float(sub.tagCount())) / \
-	#       (float(full.card(tag)) / float(full.tagCount()))
-	#return sub.card(tag) * full.card(tag) / sub.tagCount()
+def relevance_index_function(full, sub):
+	#return (float(sub.card(tag)) / float(sub.tag_count())) / \
+	#       (float(full.card(tag)) / float(full.tag_count()))
+	#return sub.card(tag) * full.card(tag) / sub.tag_count()
 
 	# New cardinality divided by the old cardinality
 	#return float(sub.card(tag)) / float(full.card(tag))
 
 	## Same as before, but weighted by the relevance the tag had in the
 	## full collection, to downplay the importance of rare tags
-	#return float(sub.card(tag) * full.card(tag)) / float(full.card(tag) * full.tagCount())
+	#return float(sub.card(tag) * full.card(tag)) / float(full.card(tag) * full.tag_count())
 	# Simplified version:
-	#return float(sub.card(tag)) / float(full.tagCount())
+	#return float(sub.card(tag)) / float(full.tag_count())
 	
 	# Weighted by the square root of the relevance, to downplay the very
 	# common tags a bit
-	#return lambda tag: float(sub.card(tag)) / float(full.card(tag)) * math.sqrt(full.card(tag) / float(full.tagCount()))
-	#return lambda tag: float(sub.card(tag)) / float(full.card(tag)) * math.sqrt(full.card(tag) / float(full.packageCount()))
+	#return lambda tag: float(sub.card(tag)) / float(full.card(tag)) * math.sqrt(full.card(tag) / float(full.tag_count()))
+	#return lambda tag: float(sub.card(tag)) / float(full.card(tag)) * math.sqrt(full.card(tag) / float(full.package_count()))
 	# One useless factor removed, and simplified further, thanks to Benjamin Mesing
 	return lambda tag: float(sub.card(tag)**2) / float(full.card(tag))
 
@@ -120,8 +129,9 @@ def relevanceIndexFunction(full, sub):
 	# Same but it tries to downplay the 'how many are out' value in the
 	# case of popular tags, to mitigate the 'there will always be popular
 	# tags left out' cases.  Does not seem to be much of an improvement.
-	#return lambda tag: sub.card(tag) - float(full.card(tag) - sub.card(tag))/(math.sin(float(full.card(tag))*3.1415/full.packageCount())/4 + 0.75)
+	#return lambda tag: sub.card(tag) - float(full.card(tag) - sub.card(tag))/(math.sin(float(full.card(tag))*3.1415/full.package_count())/4 + 0.75)
 
+relevanceIndexFunction = function_deprecated_by(relevance_index_function)
 
 class DB:
 	"""
@@ -132,7 +142,7 @@ class DB:
 		self.db = {}
 		self.rdb = {}
 	
-	def read(self, input, tagFilter = None):
+	def read(self, input, tag_filter=None):
 		"""
 		Read the database from a file.
 
@@ -140,7 +150,7 @@ class DB:
 			# Read the system Debtags database
 			db.read(open("/var/lib/debtags/package-tags", "r"))
 		"""
-		self.db, self.rdb = readTagDatabaseBothWays(input, tagFilter)
+		self.db, self.rdb = read_tag_database_both_ways(input, tag_filter)
 
 	def qwrite(self, file):
 		"Quickly write the data to a pickled file"
@@ -163,8 +173,10 @@ class DB:
 	def dump(self):
 		output(self.db)
 
-	def dumpReverse(self):
+	def dump_reverse(self):
 		output(self.rdb)
+
+	dumpReverse = function_deprecated_by(dump_reverse)
 	
 	def reverse(self):
 		"Return the reverse collection, sharing tagsets with this one"
@@ -173,17 +185,19 @@ class DB:
 		res.rdb = self.db
 		return res
 
-	def facetCollection(self):
+	def facet_collection(self):
 		"""
 		Return a copy of this collection, but replaces the tag names
 		with only their facets.
 		"""
 		fcoll = DB()
 		tofacet = re.compile(r"^([^:]+).+")
-		for pkg, tags in self.iterPackagesTags():
+		for pkg, tags in self.iter_packagesTags():
 			ftags = set([tofacet.sub(r"\1", t) for t in tags])
 			fcoll.insert(pkg, ftags)
 		return fcoll
+
+	facetCollection = function_deprecated_by(facet_collection)
 
 	def copy(self):
 		"""
@@ -195,7 +209,7 @@ class DB:
 		res.rdb = self.rdb.copy()
 		return res
 
-	def reverseCopy(self):
+	def reverse_copy(self):
 		"""
 		Return the reverse collection, with a copy of the tagsets of
 		this one.
@@ -205,33 +219,39 @@ class DB:
 		res.rdb = self.db.copy()
 		return res
 
-	def choosePackages(self, packageIter):
+	reverseCopy = function_deprecated_by(reverse_copy)
+
+	def choose_packages(self, package_iter):
 		"""
-		Return a collection with only the packages in packageIter,
+		Return a collection with only the packages in package_iter,
 		sharing tagsets with this one
 		"""
 		res = DB()
 		db = {}
-		for pkg in packageIter:
+		for pkg in package_iter:
 			if self.db.has_key(pkg): db[pkg] = self.db[pkg]
 		res.db = db
 		res.rdb = reverse(db)
 		return res
 
-	def choosePackagesCopy(self, packageIter):
+	choosePackages = function_deprecated_by(choose_packages)
+
+	def choose_packages_copy(self, package_iter):
 		"""
-		Return a collection with only the packages in packageIter,
+		Return a collection with only the packages in package_iter,
 		with a copy of the tagsets of this one
 		"""
 		res = DB()
 		db = {}
-		for pkg in packageIter:
+		for pkg in package_iter:
 			db[pkg] = self.db[pkg]
 		res.db = db
 		res.rdb = reverse(db)
 		return res
 
-	def filterPackages(self, packageFilter):
+	choosePackagesCopy = function_deprecated_by(choose_packages_copy)
+
+	def filter_packages(self, package_filter):
 		"""
 		Return a collection with only those packages that match a
 		filter, sharing tagsets with this one.  The filter will match
@@ -239,13 +259,15 @@ class DB:
 		"""
 		res = DB()
 		db = {}
-		for pkg in filter(packageFilter, self.db.iterkeys()):
+		for pkg in filter(package_filter, self.db.iterkeys()):
 			db[pkg] = self.db[pkg]
 		res.db = db
 		res.rdb = reverse(db)
 		return res
 
-	def filterPackagesCopy(self, filter):
+	filterPackages = function_deprecated_by(filter_packages)
+
+	def filter_packages_copy(self, filter):
 		"""
 		Return a collection with only those packages that match a
 		filter, with a copy of the tagsets of this one.  The filter
@@ -259,7 +281,9 @@ class DB:
 		res.rdb = reverse(db)
 		return res
 
-	def filterPackagesTags(self, packageTagFilter):
+	filterPackagesCopy = function_deprecated_by(filter_packages_copy)
+
+	def filter_packages_tags(self, package_tag_filter):
 		"""
 		Return a collection with only those packages that match a
 		filter, sharing tagsets with this one.  The filter will match
@@ -267,13 +291,15 @@ class DB:
 		"""
 		res = DB()
 		db = {}
-		for pkg, tags in filter(packageTagFilter, self.db.iteritems()):
+		for pkg, tags in filter(package_tag_filter, self.db.iteritems()):
 			db[pkg] = self.db[pkg]
 		res.db = db
 		res.rdb = reverse(db)
 		return res
 
-	def filterPackagesTagsCopy(self, packageTagFilter):
+	filterPackagesTags = function_deprecated_by(filter_packages_tags)
+
+	def filter_packages_tags_copy(self, package_tag_filter):
 		"""
 		Return a collection with only those packages that match a
 		filter, with a copy of the tagsets of this one.  The filter
@@ -281,13 +307,15 @@ class DB:
 		"""
 		res = DB()
 		db = {}
-		for pkg, tags in filter(packageTagFilter, self.db.iteritems()):
+		for pkg, tags in filter(package_tag_filter, self.db.iteritems()):
 			db[pkg] = self.db[pkg].copy()
 		res.db = db
 		res.rdb = reverse(db)
 		return res
 
-	def filterTags(self, tagFilter):
+	filterPackagesTagsCopy = function_deprecated_by(filter_packages_tags_copy)
+
+	def filter_tags(self, tag_filter):
 		"""
 		Return a collection with only those tags that match a
 		filter, sharing package sets with this one.  The filter will match
@@ -295,13 +323,15 @@ class DB:
 		"""
 		res = DB()
 		rdb = {}
-		for tag in filter(tagFilter, self.rdb.iterkeys()):
+		for tag in filter(tag_filter, self.rdb.iterkeys()):
 			rdb[tag] = self.rdb[tag]
 		res.rdb = rdb
 		res.db = reverse(rdb)
 		return res
 
-	def filterTagsCopy(self, tagFilter):
+	filterTags = function_deprecated_by(filter_tags)
+
+	def filter_tags_copy(self, tag_filter):
 		"""
 		Return a collection with only those tags that match a
 		filter, with a copy of the package sets of this one.  The
@@ -309,47 +339,61 @@ class DB:
 		"""
 		res = DB()
 		rdb = {}
-		for tag in filter(tagFilter, self.rdb.iterkeys()):
+		for tag in filter(tag_filter, self.rdb.iterkeys()):
 			rdb[tag] = self.rdb[tag].copy()
 		res.rdb = rdb
 		res.db = reverse(rdb)
 		return res
 
-	def hasPackage(self, pkg):
+	filterTagsCopy = function_deprecated_by(filter_tags_copy)
+
+	def has_package(self, pkg):
 		"""Check if the collection contains the given package"""
 		return self.db.has_key(pkg)
 
-	def hasTag(self, tag):
+	hasPackage = function_deprecated_by(has_package)
+
+	def has_tag(self, tag):
 		"""Check if the collection contains packages tagged with tag"""
 		return self.rdb.has_key(tag)
 
-	def tagsOfPackage(self, pkg):
+	hasTag = function_deprecated_by(has_tag)
+
+	def tags_of_package(self, pkg):
 		"""Return the tag set of a package"""
 		return self.db.has_key(pkg) and self.db[pkg] or set()
 
-	def packagesOfTag(self, tag):
+	tagsOfPackage = function_deprecated_by(tags_of_package)
+
+	def packages_of_tag(self, tag):
 		"""Return the package set of a tag"""
 		return self.rdb.has_key(tag) and self.rdb[tag] or set()
 
-	def tagsOfPackages(self, pkgs):
+	packagesOfTag = function_deprecated_by(packages_of_tag)
+
+	def tags_of_packages(self, pkgs):
 		"""Return the set of tags that have all the packages in pkgs"""
 		res = None
 		for p in pkgs:
 			if res == None:
-				res = set(self.tagsOfPackage(p))
+				res = set(self.tags_of_package(p))
 			else:
-				res &= self.tagsOfPackage(p)
+				res &= self.tags_of_package(p)
 		return res
 
-	def packagesOfTags(self, tags):
+	tagsOfPackages = function_deprecated_by(tags_of_packages)
+
+	def packages_of_tags(self, tags):
 		"""Return the set of packages that have all the tags in tags"""
 		res = None
 		for t in tags:
 			if res == None:
-				res = set(self.packagesOfTag(t))
+				res = set(self.packages_of_tag(t))
 			else:
-				res &= self.packagesOfTag(t)
+				res &= self.packages_of_tag(t)
 		return res
+
+	packagesOfTags = function_deprecated_by(packages_of_tags)
 
 	def card(self, tag):
 		"""
@@ -367,34 +411,46 @@ class DB:
 		tag.
 		"""
 		n = self.card(tag)
-		tot = self.packageCount()
+		tot = self.package_count()
 		return min(n, tot - n)
 
-	def iterPackages(self):
+	def iter_packages(self):
 		"""Iterate over the packages"""
 		return self.db.iterkeys()
 
-	def iterTags(self):
+	iterPackages = function_deprecated_by(iter_packages)
+
+	def iter_tags(self):
 		"""Iterate over the tags"""
 		return self.rdb.iterkeys()
 
-	def iterPackagesTags(self):
+	iterTags = function_deprecated_by(iter_tags)
+
+	def iter_packages_tags(self):
 		"""Iterate over 2-tuples of (pkg, tags)"""
 		return self.db.iteritems()
 
-	def iterTagsPackages(self):
+	iterPackagesTags = function_deprecated_by(iter_packages_tags)
+
+	def iter_tags_packages(self):
 		"""Iterate over 2-tuples of (tag, pkgs)"""
 		return self.rdb.iteritems()
 
-	def packageCount(self):
+	iterTagsPackages = function_deprecated_by(iter_tags_packages)
+
+	def package_count(self):
 		"""Return the number of packages"""
 		return len(self.db)
 
-	def tagCount(self):
+	packageCount = function_deprecated_by(package_count)
+
+	def tag_count(self):
 		"""Return the number of tags"""
 		return len(self.rdb)
 
-	def idealTagset(self, tags):
+	tagCount = function_deprecated_by(tag_count)
+
+	def ideal_tagset(self, tags):
 		"""
 		Return an ideal selection of the top tags in a list of tags.
 
@@ -416,7 +472,7 @@ class DB:
 		tagset = set()
 		min_score = 3
 		for i in range(len(tags)):
-			pkgs = self.packagesOfTags(tags[:i+1])
+			pkgs = self.packages_of_tags(tags[:i+1])
 			card = len(pkgs)
 			if card == 0: break;
 			score = score_fun(card)
@@ -430,6 +486,8 @@ class DB:
 		else:
 			return tagset
 
+	idealTagset = function_deprecated_by(ideal_tagset)
+
 	def correlations(self):
 		"""
 		Generate the list of correlation as a tuple (hastag, hasalsotag, score).
@@ -437,11 +495,11 @@ class DB:
 		Every touple will indicate that the tag 'hastag' tends to also
 		have 'hasalsotag' with a score of 'score'.
 		"""
-		for pivot in self.iterTags():
-			with_ = self.filterPackagesTags(lambda pt: pivot in pt[1])
-			without = self.filterPackagesTags(lambda pt: pivot not in pt[1])
-			for tag in with_.iterTags():
+		for pivot in self.iter_tags():
+			with_ = self.filter_packages_tags(lambda pt: pivot in pt[1])
+			without = self.filter_packages_tags(lambda pt: pivot not in pt[1])
+			for tag in with_.iter_tags():
 				if tag == pivot: continue
-				has = float(with_.card(tag)) / float(with_.packageCount())
-				hasnt = float(without.card(tag)) / float(without.packageCount())
+				has = float(with_.card(tag)) / float(with_.package_count())
+				hasnt = float(without.card(tag)) / float(without.package_count())
 				yield pivot, tag, has - hasnt

@@ -44,10 +44,10 @@ class ArFile(object):
         self.__fileobj = fileobj
         
         if mode == "r":
-            self.__indexArchive()
+            self.__index_archive()
         pass    # TODO write support
 
-    def __indexArchive(self):
+    def __index_archive(self):
         if self.__fname:
             fp = open(self.__fname, "rb")
         elif self.__fileobj:

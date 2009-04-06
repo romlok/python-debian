@@ -28,8 +28,8 @@ if len(sys.argv) < 2:
 
 full = debtags.DB()
 # Read full database 
-tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
-full.read(open(sys.argv[1], "r"), lambda x: not tagFilter.match(x))
+tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
+full.read(open(sys.argv[1], "r"), lambda x: not tag_filter.match(x))
 
 # Read the package list and create the subcollection
 input = len(sys.argv) > 2 and open(sys.argv[2],"r") or sys.stdin
@@ -39,12 +39,12 @@ for pkg in input:
 	pkg, none = pkg.rstrip("\n").split(' - ', 1)
 	pkgs.add(pkg)
 
-sub = full.choosePackages(pkgs)
+sub = full.choose_packages(pkgs)
 
-relIndex = debtags.relevanceIndexFunction(full, sub)
+rel_index = debtags.relevance_index_function(full, sub)
 
 # Get all the tags sorted by increasing relevance
-tags = sorted(sub.iterTags(), lambda a, b: cmp(relIndex(a), relIndex(b)))
+tags = sorted(sub.iter_tags(), lambda a, b: cmp(rel_index(a), rel_index(b)))
 
 ## And finally print them
 for tag in tags:

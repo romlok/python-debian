@@ -25,10 +25,10 @@ input = sys.stdin
 if len(sys.argv) > 1:
 	input = open(sys.argv[1],"r")
 
-#db = readTagDatabase(input)
+#db = read_tag_database(input)
 #db = reverse(db)
-db = debtags.readTagDatabaseReversed(input)
-#dummy, db = debtags.readTagDatabaseBothWays(input)
+db = debtags.read_tag_database_reversed(input)
+#dummy, db = debtags.read_tag_database_both_ways(input)
 
 for pkg, tags in db.items():
 	# Using % here seems awkward to me, but if I use calls to

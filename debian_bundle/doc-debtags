@@ -60,10 +60,10 @@ debtags.DB provides various iteration methods to iterate the collection either
 in a package-centered or in a tag-centered way:
 """
 
-document(debtags.DB.iterPackages)
-document(debtags.DB.iterPackagesTags)
-document(debtags.DB.iterTags)
-document(debtags.DB.iterTagsPackages)
+document(debtags.DB.iter_packages)
+document(debtags.DB.iter_packages_tags)
+document(debtags.DB.iter_tags)
+document(debtags.DB.iter_tags_packages)
 
 
 print """Sample usage
@@ -76,9 +76,9 @@ search::
     
     db = debtags.DB()
     db.read(open("/var/lib/debtags/package-tags", "r"))
-    print db.packageCount(), "packages in the database"
+    print db.package_count(), "packages in the database"
     print "Image editors:"
-    for pkg in db.packagesOfTags(set(("use::editing", "works-with::image:raster"))):
+    for pkg in db.packages_of_tags(set(("use::editing", "works-with::image:raster"))):
     	print " *", pkg
 
 This example computes the set of tags that belong to all the packages in a
@@ -88,11 +88,11 @@ list, then shows all the other packages that have those tags:
 
     db = debtags.DB()
     db.read(open("/var/lib/debtags/package-tags", "r"))
-    tags = db.tagsOfPackages(("gimp", "krita"))
+    tags = db.tags_of_packages(("gimp", "krita"))
     print "Common tags:"
     for tag in tags:
 	print " *", tag
     print "Packages similar to gimp and krita:"
-    for pkg in db.packagesOfTags(tags):
+    for pkg in db.packages_of_tags(tags):
 	print " *", pkg
 """

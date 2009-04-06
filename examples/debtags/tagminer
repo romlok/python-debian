@@ -121,8 +121,8 @@ if __name__ == '__main__':
 
     # Read full database 
     fullcoll = debtags.DB()
-    tagFilter = re.compile(r"^special::.+$|^.+::TODO$")
-    fullcoll.read(open(options.tagdb, "r"), lambda x: not tagFilter.match(x))
+    tag_filter = re.compile(r"^special::.+$|^.+::TODO$")
+    fullcoll.read(open(options.tagdb, "r"), lambda x: not tag_filter.match(x))
 
     type = mimetype(args[0])
     #print >>sys.stderr, "Mime type:", type
@@ -136,23 +136,23 @@ if __name__ == '__main__':
         print >>sys.stderr, "Unhandled mime type:", type
     else:
         if options.action != None:
-            aptCache = apt.Cache()
+            apt_cache = apt.Cache()
             query = found.copy()
             query.add("role::program")
             query.add("use::"+options.action)
             print "Debtags query:", " && ".join(query)
-            subcoll = fullcoll.filterPackagesTags(lambda pt: query.issubset(pt[1]))
-            for i in subcoll.iterPackages():
-                aptpkg = aptCache[i]
-                desc = aptpkg.rawDescription.split("\n")[0]
+            subcoll = fullcoll.filter_packages_tags(lambda pt: query.issubset(pt[1]))
+            for i in subcoll.iter_packages():
+                aptpkg = apt_cache[i]
+                desc = aptpkg.raw_description.split("\n")[0]
                 print i, "-", desc
         else:
             print "Debtags query:", " && ".join(found)
 
             query = found.copy()
             query.add("role::program")
-            subcoll = fullcoll.filterPackagesTags(lambda pt: query.issubset(pt[1]))
-            uses = map(lambda x:x[5:], filter(lambda x:x.startswith("use::"), subcoll.iterTags()))
+            subcoll = fullcoll.filter_packages_tags(lambda pt: query.issubset(pt[1]))
+            uses = map(lambda x:x[5:], filter(lambda x:x.startswith("use::"), subcoll.iter_tags()))
             print "Available actions:", ", ".join(uses)
 
 # vim:set ts=4 sw=4:
