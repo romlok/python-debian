@@ -11,6 +11,8 @@ python-debian (0.1.13) unstable; urgency=low
   * Switch from "sha" module to "hashlib": fix a deprecation warning of
     Python 2.6. As a consequence, update pyversions to require a minimum
     of Python 2.5, which is available also in stable now. (Closes: #518427)
+  * debian_support.PackageFile: allow for stanza separators made of tabs
+    and spaces in addition to newlines (Closes: #501927)
 
  -- Stefano Zacchiroli <zack@debian.org>  Tue, 07 Apr 2009 10:21:04 +0200
 

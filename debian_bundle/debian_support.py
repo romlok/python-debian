@@ -110,7 +110,7 @@ class PackageFile:
         self.lineno += 1
         pkg = []
         while line:
-            if line == '\n':
+            if line.strip(' \t') == '\n':
                 if len(pkg) == 0:
                     self.raise_syntax_error('expected package record')
                 yield pkg
