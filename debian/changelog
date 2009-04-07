@@ -1,4 +1,4 @@
-python-debian (0.1.13) UNRELEASED; urgency=low
+python-debian (0.1.13) unstable; urgency=low
 
   [ John Wright ]
   * deb822: Correctly handle deletion of keys that only exist in a pre-parsed
@@ -9,7 +9,7 @@ python-debian (0.1.13) UNRELEASED; urgency=low
     (and deprecation warnings) for all old names. Thanks to Ben Finney for
     the patch. (Closes: #489722)
 
- -- John Wright <jsw@debian.org>  Wed, 07 Jan 2009 16:11:31 -0700
+ -- Stefano Zacchiroli <zack@debian.org>  Tue, 07 Apr 2009 10:21:04 +0200
 
 python-debian (0.1.12) unstable; urgency=low
 
