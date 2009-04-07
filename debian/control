@@ -10,7 +10,7 @@ Uploaders: Adeodato Simó <dato@net.com.org.es>,
  John Wright <jsw@debian.org>
 Build-Depends: debhelper (>= 5.0.37.2), python
 Build-Depends-Indep: python-support (>= 0.3)
-Standards-Version: 3.8.0
+Standards-Version: 3.8.1
 Vcs-Browser: http://git.debian.org/?p=pkg-python-debian/python-debian.git
 Vcs-Git: git://git.debian.org/git/pkg-python-debian/python-debian.git
 
