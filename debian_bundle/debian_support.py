@@ -19,7 +19,7 @@
 
 import os
 import re
-import sha
+import hashlib
 import types
 
 from deprecation import function_deprecated_by
@@ -185,7 +185,7 @@ del listReleases
 del list_releases
 
 def read_lines_sha1(lines):
-    m = sha.new()
+    m = hashlib.sha1()
     for l in lines:
         m.update(l)
     return m.hexdigest()
