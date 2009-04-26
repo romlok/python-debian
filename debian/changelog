@@ -1,3 +1,10 @@
+python-debian (0.1.14) UNRELEASED; urgency=low
+
+  * examples/deb822/: add new example render-dctrl, to render packages in
+    a dctrl-tools pipeline (using Markdown as long description syntax)
+
+ -- Stefano Zacchiroli <zack@debian.org>  Sun, 26 Apr 2009 18:08:50 +0200
+
 python-debian (0.1.13) unstable; urgency=low
 
   [ John Wright ]
