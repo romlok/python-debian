@@ -115,6 +115,8 @@ def render_longdesc(lines):
                 curpara, inlist, listindent = [l], False, 0
             else:
                 curpara.append(l)
+    if curpara:
+        store_para()
 
     for p in paragraphs:	# render paragraphs
         print markdown(p)
