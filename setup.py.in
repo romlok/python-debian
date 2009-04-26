@@ -16,12 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='python-debian',
       version='__CHANGELOG_VERSION__',
       description='Debian package related modules',
-      url='http://packages.qa.debian.org/p/python-debian.html',
+      url='http://packages.debian.org/sid/python-debian',
       packages=['debian_bundle'],
       py_modules=['deb822'],
+      maintainer='Debian python-debian Maintainers',
+      maintainer_email='pkg-python-debian-maint@lists.alioth.debian.org',
      )

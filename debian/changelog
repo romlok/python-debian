@@ -1,5 +1,7 @@
 python-debian (0.1.14) UNRELEASED; urgency=low
 
+  * setup.py.in: switch to setuptools, which are able to generate eggs;
+    add matching build-dep on python-setuptools (Closes: #525694)
   * examples/deb822/: add new example render-dctrl, to render packages in
     a dctrl-tools pipeline (using Markdown as long description syntax)
 
