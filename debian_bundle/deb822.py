@@ -1048,10 +1048,11 @@ class _CaseInsensitiveString(str):
     """Case insensitive string.
     """
 
-    def __init__(self, str_):
-        str.__init__(self, str_)
-        self.str_lower = str_.lower()
-        self.str_lower_hash = hash(self.str_lower)
+    def __new__(cls, str_):
+        s = str.__new__(cls, str_)
+        s.str_lower = str_.lower()
+        s.str_lower_hash = hash(s.str_lower)
+        return s
 
     def __hash__(self):
         return self.str_lower_hash
