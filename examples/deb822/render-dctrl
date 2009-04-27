@@ -98,23 +98,31 @@ def render_longdesc(lines):
     curpara, paragraphs = [], []
     inlist, listindent = False, 0
     store_para = lambda: paragraphs.append(string.join(curpara, '\n') + '\n')
+    add_indent = lambda n, s: string.expandtabs('\t', n) + s
 
     for l in lines:	# recognize Markdown paragraphs
         if l.rstrip() == '.':	# RULE 1: split paragraphs at Debian's "."
             store_para()            
             curpara, inlist, listindent = [], False, 0
         else:
-            m = mdwn_list_line.match(l)
-            if not inlist and m and curpara:
-                # RULE 2: handle list item *not* at paragraph beginning
-                store_para()	# => start a new paragraph
-                curpara, inlist, listindent = [l], True, get_indent(l)
-            elif inlist and get_indent(l) <= listindent:
-                # RULE 3: leave list when indentation decreases
-                store_para()	# => start a new paragraph
-                curpara, inlist, listindent = [l], False, 0
-            else:
-                curpara.append(l)
+            if inlist:	# currently in a list
+                if get_indent(l) <= listindent:	# RULE 3: leave list on underflow
+                    store_para()
+                    curpara, inlinst, linstindent = [l], False, 0
+                else:	# the list goes on ...
+                    curpara.append(l)
+            else:	# currently not in a list
+                if mdwn_list_line.match(l):	# new list start
+                    if curpara:	# RULE 2: handle list item *not* at para start
+                        store_para()
+                    curpara, inlist, listindent = [l], True, get_indent(l)
+                elif get_indent(l) >= 1:	# RULE 4: hande non-list verbatim
+                    if curpara and get_indent(curpara[-1]) < 4:
+                        store_para()
+                        curpara = []
+                    curpara.append(add_indent(3, l))
+                else:
+                    curpara.append(l)
     if curpara:
         store_para()
 
