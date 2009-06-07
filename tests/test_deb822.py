@@ -719,7 +719,8 @@ class TestPkgRelations(unittest.TestCase):
                         'version': None}],
                     [{'name': 'autoconf', 'version': None, 'arch': None}],
                     [{'name': 'debhelper', 'version': ('>>', '5.0.0'), 'arch': None}]],
-                'build-depends-indep': []}
+                'build-depends-indep': [],
+                'binary': [[{'name': 'apache2-mpm-itk', 'version': None, 'arch': None}]]}
         self.assertEqual(rel1, pkg1.relations)
         pkg2 = pkgs.next()
         rel2 = {'build-conflicts': [],
@@ -737,7 +738,14 @@ class TestPkgRelations(unittest.TestCase):
                     [{'name': 'file', 'version': None, 'arch': None}],
                     [{'name': 'bzip2', 'version': None, 'arch': None}],
                     [{'name': 'lsb-release', 'version': None, 'arch': None}]],
-                'build-depends-indep': []}
+                'build-depends-indep': [],
+                'binary': [[{'name': 'binutils', 'version': None, 'arch': None}],
+                    [{'name': 'binutils-dev', 'version': None, 'arch': None}],
+                    [{'name': 'binutils-multiarch', 'version': None, 'arch': None}],
+                    [{'name': 'binutils-hppa64', 'version': None, 'arch': None}],
+                    [{'name': 'binutils-spu', 'version': None, 'arch': None}],
+                    [{'name': 'binutils-doc', 'version': None, 'arch': None}],
+                    [{'name': 'binutils-source', 'version': None, 'arch': None}]]}
         self.assertEqual(rel2, pkg2.relations)
 
 if __name__ == '__main__':

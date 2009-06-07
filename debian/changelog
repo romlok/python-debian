@@ -1,5 +1,6 @@
 python-debian (0.1.14) UNRELEASED; urgency=low
 
+  [ Stefano Zacchiroli ]
   * setup.py.in: switch to setuptools, which are able to generate eggs;
     add matching build-dep on python-setuptools (Closes: #525694)
   * examples/deb822/: add new example render-dctrl, to render packages in
@@ -8,7 +9,10 @@ python-debian (0.1.14) UNRELEASED; urgency=low
     former approach is deprecated with python 2.6.
     Thanks to Loïc Minier for the patch. (Closes: #524061)
 
- -- Stefano Zacchiroli <zack@debian.org>  Sun, 26 Apr 2009 18:08:50 +0200
+  [ Filippo Giunchedi ]
+  * deb822: parse also Binary as PkgRelation, thus add .binary attribute
+
+ -- Filippo Giunchedi <filippo@debian.org>  Sun, 07 Jun 2009 22:00:21 +0200
 
 python-debian (0.1.13) unstable; urgency=low
 

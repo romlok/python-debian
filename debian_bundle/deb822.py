@@ -1024,7 +1024,7 @@ class Sources(Dsc, _PkgRelationMixin):
     """Represent an APT source package list"""
 
     _relationship_fields = [ 'build-depends', 'build-depends-indep',
-            'build-conflicts', 'build-conflicts-indep' ]
+            'build-conflicts', 'build-conflicts-indep', 'binary' ]
 
     def __init__(self, *args, **kwargs):
         Dsc.__init__(self, *args, **kwargs)
