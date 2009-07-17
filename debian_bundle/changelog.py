@@ -293,6 +293,11 @@ class Changelog(object):
         state = first_heading
         old_state = None
         if isinstance(file, basestring):
+            # Make sure the changelog file is not empty.
+            if file is None or len(file.strip()) == 0:
+                self._parse_error('Empty changelog file.', strict)
+                return
+
             if file[-1] != '\n':
                 file += '\n'
             file = file.split('\n')[:-1]

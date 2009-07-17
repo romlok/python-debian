@@ -12,6 +12,10 @@ python-debian (0.1.14) UNRELEASED; urgency=low
   [ Filippo Giunchedi ]
   * deb822: parse also Binary as PkgRelation, thus add .binary attribute
 
+  [ Muharem Hrnjadovic ]
+  * fixed changelog parser exception raised when dealing with empty
+    changelog files (LP: #400589).
+
  -- Filippo Giunchedi <filippo@debian.org>  Sun, 07 Jun 2009 22:00:21 +0200
 
 python-debian (0.1.13) unstable; urgency=low
