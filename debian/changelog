@@ -6,6 +6,8 @@ python-debian (0.1.15) UNRELEASED; urgency=low
     previous implementation added extra newlines when given a file
     object as input, rather than the result of str.splitlines().
     (Closes: #539316)
+  * deb822: Faster non-shared storage by keeping a TagFile object
+    around for each Deb822 object yielded
 
  -- John Wright <jsw@debian.org>  Thu, 30 Jul 2009 01:03:49 +0200
 
