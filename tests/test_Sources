@@ -43,3 +43,22 @@ Checksums-Sha256:
  bf2e12578caf3b79be6182bb109b3a0215d8a3b89ae2049773f56f286eeb8ad3 19746003 binutils_2.18.1~cvs20080103.orig.tar.gz
  44e346757ce336f6a16879264b6cc4ff4e2b4da517e4b5db6cc7f1d254f302dd 64334 binutils_2.18.1~cvs20080103-6.diff.gz
 
+Package: debian-archive-keyring
+Binary: debian-archive-keyring, debian-archive-keyring-udeb
+Version: 2009.01.31
+Priority: important
+Section: misc
+Maintainer: Debian Release Team <packages@release.debian.org>
+Architecture: all
+Standards-Version: 3.7.3
+Format: 1.0
+Directory: pool/main/d/debian-archive-keyring
+Files:
+ 2675031b2286ca8dfc085e2a9c9d38ed 838 debian-archive-keyring_2009.01.31.dsc
+ 5365c07ddcf639544933552e31a571ee 13627 debian-archive-keyring_2009.01.31.tar.gz
+Uploaders: Luk Claes <luk@debian.org>
+Checksums-Sha1: 
+ dd987a5ee85d8c4fc3e115f60a6a021e78c626dd 13627 debian-archive-keyring_2009.01.31.tar.gz
+Checksums-Sha256: 
+ 9bdfe720407f5c134842eeaa8cfc9932be33150a5a3c041426216a90cce9e32d 13627 debian-archive-keyring_2009.01.31.tar.gz
+

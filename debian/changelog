@@ -1,3 +1,10 @@
+python-debian (0.1.15) UNRELEASED; urgency=low
+
+  * deb822: Don't ignore leading newlines on field data with apt_pkg
+    (Closes: #466753)
+
+ -- John Wright <jsw@debian.org>  Thu, 30 Jul 2009 01:03:49 +0200
+
 python-debian (0.1.14) unstable; urgency=low
 
   [ Stefano Zacchiroli ]

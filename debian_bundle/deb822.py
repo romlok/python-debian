@@ -37,6 +37,33 @@ import sys
 import StringIO
 import UserDict
 
+class TagFileWrapper(object, UserDict.DictMixin):
+    """Wrap a TagFile object, using its Section.FindRaw method instead of Find
+
+    This allows us to pick which whitespace to strip off the beginning and end
+    of the data, so we don't lose leading newlines.
+    """
+
+    def __init__(self, parser):
+        self.__parser = parser
+
+    def keys(self):
+        return self.__parser.Section.keys()
+
+    def __getitem__(self, key):
+        s = self.__parser.Section.FindRaw(key)
+
+        if s is None:
+            raise KeyError(key)
+
+        # Get just the stuff after the first ':'
+        # Could use s.partition if we only supported python >= 2.5
+        data = s[s.find(':')+1:]
+
+        # Get rid of spaces and tabs after the ':', but not newlines, and strip
+        # off any newline at the end of the data.
+        return data.lstrip(' \t').rstrip('\n')
+
 class OrderedSet(object):
     """A set-like object that preserves order when iterating over it
 
@@ -243,15 +270,9 @@ class Deb822(Deb822Dict):
         if _have_apt_pkg and use_apt_pkg and isinstance(sequence, file):
             parser = apt_pkg.ParseTagFile(sequence)
             while parser.Step() == 1:
-                if shared_storage:
-                    parsed = parser.Section
-                else:
-                    # Since parser.Section doesn't have an items method, we
-                    # need to imitate that method here and make a Deb822Dict
-                    # from the result in order to preserve order.
-                    items = [(key, parser.Section[key])
-                             for key in parser.Section.keys()]
-                    parsed = Deb822Dict(items)
+                parsed = TagFileWrapper(parser)
+                if not shared_storage:
+                    parsed = Deb822Dict(parsed)
                 yield cls(fields=fields, _parsed=parsed)
 
         else:
