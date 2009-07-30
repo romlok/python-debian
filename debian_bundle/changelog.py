@@ -298,10 +298,12 @@ class Changelog(object):
                 self._parse_error('Empty changelog file.', strict)
                 return
 
-            if file[-1] != '\n':
-                file += '\n'
-            file = file.split('\n')[:-1]
+            file = file.splitlines()
         for line in file:
+            # Support both lists of lines without the trailing newline and
+            # those with trailing newlines (e.g. when given a file object
+            # directly)
+            line = line.rstrip('\n')
             if state == first_heading or state == next_heading_or_eof:
                 top_match = topline.match(line)
                 blank_match = blankline.match(line)
@@ -644,6 +646,17 @@ class ChangelogTests(unittest.TestCase):
         self.assertEqual(c.debian_version, None)
         self.assertEqual(c.full_version, '1.2.3')
         self.assertEqual(str(c.version), c.full_version)
+
+    def test_str_consistent(self):
+        # The parsing of the changelog (including the string representation)
+        # should be consistent whether we give a single string, a list of
+        # lines, or a file object to the Changelog initializer
+        cl_data = open('test_changelog').read()
+        c1 = Changelog(open('test_changelog'))
+        c2 = Changelog(cl_data)
+        c3 = Changelog(cl_data.splitlines())
+        for c in (c1, c2, c3):
+            self.assertEqual(str(c), cl_data)
 
 class VersionTests(unittest.TestCase):
 
