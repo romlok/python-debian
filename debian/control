@@ -18,10 +18,9 @@ Package: python-debian
 Architecture: all
 Depends: ${python:Depends}
 Recommends: python-apt
-Conflicts: python-apt (< 0.7.11.1)
 Suggests: gpgv
 Provides: python-deb822
-Conflicts: python-deb822
+Conflicts: python-deb822, python-apt (< 0.7.11.1)
 Replaces: python-deb822
 Description: Python modules to work with Debian-related data formats
  This package provides Python modules that abstract many formats of Debian 
