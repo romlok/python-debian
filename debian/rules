@@ -17,10 +17,10 @@ build-stamp: setup.py
 	python setup.py build
 	
 	# run the tests
-	cd tests && \
-		for f in deb822 debfile debtags; do \
-			./test_$$f.py ; \
-		done 
+	cd tests && ./test_deb822.py
+	cd tests && ./test_debfile.py
+	cd tests && ./test_debtags.py
+	cd tests && python ../debian_bundle/changelog.py
 
 	#python debian_bundle/python_support.py
 	debian_bundle/doc-debtags > README.debtags
