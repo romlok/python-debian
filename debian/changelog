@@ -16,8 +16,9 @@ python-debian (0.1.15) UNRELEASED; urgency=low
 
   [ Filippo Giunchedi ]
   * changelog: add iterator over changelog blocks (Closes: #539334)
+  * changelog: split tests into tests/test_changelog.py for consistency
 
- -- Filippo Giunchedi <filippo@debian.org>  Sun, 09 Aug 2009 12:35:00 +0100
+ -- Filippo Giunchedi <filippo@debian.org>  Sun, 09 Aug 2009 13:01:16 +0100
 
 python-debian (0.1.14) unstable; urgency=low
 

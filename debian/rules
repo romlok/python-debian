@@ -20,7 +20,7 @@ build-stamp: setup.py
 	cd tests && ./test_deb822.py
 	cd tests && ./test_debfile.py
 	cd tests && ./test_debtags.py
-	cd tests && python ../debian_bundle/changelog.py
+	cd tests && ./test_changelog.py
 
 	#python debian_bundle/python_support.py
 	debian_bundle/doc-debtags > README.debtags
