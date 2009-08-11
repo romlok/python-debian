@@ -497,6 +497,9 @@ class Changelog(object):
     def __iter__(self):
         return iter(self._blocks)
 
+    def __len__(self):
+        return len(self._blocks)
+
     def set_distributions(self, distributions):
         self._blocks[0].distributions = distributions
     distributions = property(lambda self: self._blocks[0].distributions,

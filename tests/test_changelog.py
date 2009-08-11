@@ -163,6 +163,10 @@ class ChangelogTests(unittest.TestCase):
         c = changelog.Changelog(open('test_changelog'))
         self.assertEqual(map(str, c._blocks), map(str, c))
 
+    def test_len(self):
+        c = changelog.Changelog(open('test_changelog'))
+        self.assertEqual(len(c._blocks), len(c))
+
 class VersionTests(unittest.TestCase):
 
     def _test_version(self, full_version, epoch, upstream, debian):
