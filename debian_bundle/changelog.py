@@ -495,6 +495,9 @@ class Changelog(object):
             cl += str(block)
         return cl
 
+    def __iter__(self):
+        return iter(self._blocks)
+
     def set_distributions(self, distributions):
         self._blocks[0].distributions = distributions
     distributions = property(lambda self: self._blocks[0].distributions,
@@ -657,6 +660,10 @@ class ChangelogTests(unittest.TestCase):
         c3 = Changelog(cl_data.splitlines())
         for c in (c1, c2, c3):
             self.assertEqual(str(c), cl_data)
+
+    def test_block_iterator(self):
+        c = Changelog(open('test_changelog'))
+        self.assertEqual(map(str, c._blocks), map(str, c))
 
 class VersionTests(unittest.TestCase):
 

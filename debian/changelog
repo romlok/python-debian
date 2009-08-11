@@ -14,7 +14,10 @@ python-debian (0.1.15) UNRELEASED; urgency=low
   * make debian_support.Version hashable, patch from Piotr Ożarowski
     (Closes: #543223)
 
- -- John Wright <jsw@debian.org>  Thu, 30 Jul 2009 01:03:49 +0200
+  [ Filippo Giunchedi ]
+  * changelog: add iterator over changelog blocks (Closes: #539334)
+
+ -- Filippo Giunchedi <filippo@debian.org>  Sun, 09 Aug 2009 12:35:00 +0100
 
 python-debian (0.1.14) unstable; urgency=low
 
