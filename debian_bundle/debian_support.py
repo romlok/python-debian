@@ -78,7 +78,10 @@ class Version:
         return 'Version(%s)' % `self.__asString`
 
     def __cmp__(self, other):
-        return apt_pkg.VersionCompare(self.__asString, other.__asString)
+        return apt_pkg.VersionCompare(str(self), str(other))
+
+    def __hash__(self):
+        return hash(str(self))
 
 
 version_compare = apt_pkg.VersionCompare

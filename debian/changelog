@@ -1,5 +1,6 @@
 python-debian (0.1.15) UNRELEASED; urgency=low
 
+  [ John Wright ]
   * deb822: Don't ignore leading newlines on field data with apt_pkg
     (Closes: #466753)
   * changelog: Consistently parse different types of inputs.  The
@@ -8,6 +9,10 @@ python-debian (0.1.15) UNRELEASED; urgency=low
     (Closes: #539316)
   * deb822: Faster non-shared storage by keeping a TagFile object
     around for each Deb822 object yielded
+
+  [ Stefano Zacchiroli ]
+  * make debian_support.Version hashable, patch from Piotr Ożarowski
+    (Closes: #543223)
 
  -- John Wright <jsw@debian.org>  Thu, 30 Jul 2009 01:03:49 +0200
 
