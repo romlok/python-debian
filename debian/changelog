@@ -18,6 +18,10 @@ python-debian (0.1.15) UNRELEASED; urgency=low
   * changelog: add iterator over changelog blocks (Closes: #539334)
   * changelog: split tests into tests/test_changelog.py for consistency
 
+  [ John Wright ]
+  * deb822: Use the apt_pkg.TagFile class instead of apt_pkg.ParseTagFile()
+    (Closes: #552190)
+
  -- Filippo Giunchedi <filippo@debian.org>  Sun, 09 Aug 2009 13:01:16 +0100
 
 python-debian (0.1.14) unstable; urgency=low

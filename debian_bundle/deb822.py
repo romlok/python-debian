@@ -268,7 +268,7 @@ class Deb822(Deb822Dict):
         """
 
         if _have_apt_pkg and use_apt_pkg and isinstance(sequence, file):
-            parser = apt_pkg.ParseTagFile(sequence)
+            parser = apt_pkg.TagFile(sequence)
             while parser.Step() == 1:
                 x = cls(fields=fields, _parsed=TagFileWrapper(parser))
                 if len(x) != 0:
@@ -278,7 +278,7 @@ class Deb822(Deb822Dict):
                     # Make a new parser, starting it right before the next
                     # section
                     offset = parser.Offset() - 1
-                    parser = apt_pkg.ParseTagFile(sequence)
+                    parser = apt_pkg.TagFile(sequence)
                     parser.Jump(offset)
 
         else:
