@@ -351,16 +351,28 @@ class TestDeb822(unittest.TestCase):
         result_from_file = deb822_from_file.get_gpg_info()
         deb822_from_lines = deb822.Dsc(unparsed_with_gpg.splitlines())
         result_from_lines = deb822_from_lines.get_gpg_info()
-        valid = {'GOODSIG':  ['D14219877A786561', 'John Wright <john.wright@hp.com>'],
-                 'VALIDSIG': ['8FEFE900783CF175827C2F65D14219877A786561', '2008-05-01',
-                              '1209623566', '0', '3', '0', '17', '2', '01',
-                              '8FEFE900783CF175827C2F65D14219877A786561'],
-                 'SIG_ID':   ['mQFnUWWR1Gr6itMV7Bx5L4N60Wo', '2008-05-01', '1209623566']}
 
+        # The signature id algorithm changed in gnupg 1.4.10
+        valid_old = {
+         'GOODSIG':  ['D14219877A786561', 'John Wright <john.wright@hp.com>'],
+         'VALIDSIG': ['8FEFE900783CF175827C2F65D14219877A786561', '2008-05-01',
+                      '1209623566', '0', '3', '0', '17', '2', '01',
+                      '8FEFE900783CF175827C2F65D14219877A786561'],
+         'SIG_ID':   ['mQFnUWWR1Gr6itMV7Bx5L4N60Wo', '2008-05-01',
+                      '1209623566'],
+        }
+        valid_new = {
+         'GOODSIG':  ['D14219877A786561', 'John Wright <john.wright@hp.com>'],
+         'VALIDSIG': ['8FEFE900783CF175827C2F65D14219877A786561', '2008-05-01',
+                      '1209623566', '0', '3', '0', '17', '2', '01',
+                      '8FEFE900783CF175827C2F65D14219877A786561'],
+         'SIG_ID':   ['j3UjSpdky92fcQISbm8W5PlwC/g', '2008-05-01',
+                      '1209623566'],
+        }
+
+        valid = (sorted(valid_old.items()), sorted(valid_new.items()))
         for result in result_from_str, result_from_file, result_from_lines:
-            self.assertEqual(len(result.keys()), len(valid.keys()))
-            for k,v in valid.items():
-                self.assertEqual(''.join(v), ''.join(result[k]))
+            self.assert_(sorted(result.items()) in valid)
 
     def test_iter_paragraphs_array(self):
         text = (UNPARSED_PACKAGE + '\n\n\n' + UNPARSED_PACKAGE).splitlines()

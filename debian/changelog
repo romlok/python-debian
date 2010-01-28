@@ -21,6 +21,7 @@ python-debian (0.1.15) UNRELEASED; urgency=low
   [ John Wright ]
   * deb822: Use the apt_pkg.TagFile class instead of apt_pkg.ParseTagFile()
     (Closes: #552190)
+  * test_deb822.py: Update to support new gpg "SIG_ID" algorithm
 
  -- Filippo Giunchedi <filippo@debian.org>  Sun, 09 Aug 2009 13:01:16 +0100
 
