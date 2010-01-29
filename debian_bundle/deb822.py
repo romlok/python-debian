@@ -346,6 +346,15 @@ class Deb822(Deb822Dict):
 
     # __repr__ is handled by Deb822Dict
 
+    def get_as_string(self, key):
+        """Return the self[key] as a string (or unicode)
+
+        The default implementation just returns unicode(self[key]); however,
+        this can be overridden in subclasses (e.g. _multivalued) that can take
+        special values.
+        """
+        return unicode(self[key])
+
     def dump(self, fd=None):
         """Dump the the contents in the original format
 
@@ -357,7 +366,9 @@ class Deb822(Deb822Dict):
             return_string = True
         else:
             return_string = False
-        for key, value in self.iteritems():
+
+        for key in self.iterkeys():
+            value = self.get_as_string(key)
             if not value or value[0] == '\n':
                 # Avoid trailing whitespace after "Field:" if it's on its own
                 # line or the value is empty
@@ -842,53 +853,35 @@ class _multivalued(Deb822):
             for line in filter(None, contents.splitlines()):
                 updater_method(Deb822Dict(zip(fields, line.split())))
 
-    def dump(self, fd=None):
-        """Dump the contents in the original format
-
-        If fd is None, return a string.
-        """
-        
-        if fd is None:
+    def get_as_string(self, key):
+        keyl = key.lower()
+        if keyl in self._multivalued_fields:
             fd = StringIO.StringIO()
-            return_string = True
+            if hasattr(self[key], 'keys'): # single-line
+                array = [ self[key] ]
+            else: # multi-line
+                fd.write("\n")
+                array = self[key]
+
+            order = self._multivalued_fields[keyl]
+            try:
+                field_lengths = self._fixed_field_lengths
+            except AttributeError:
+                field_lengths = {}
+            for item in array:
+                for x in order:
+                    raw_value = str(item[x])
+                    try:
+                        length = field_lengths[keyl][x]
+                    except KeyError:
+                        value = raw_value
+                    else:
+                        value = (length - len(raw_value)) * " " + raw_value
+                    fd.write(" %s" % value)
+                fd.write("\n")
+            return fd.getvalue().rstrip("\n")
         else:
-            return_string = False
-        for key in self.keys():
-            keyl = key.lower()
-            if keyl not in self._multivalued_fields:
-                value = self[key]
-                if not value or value[0] == '\n':
-                    # XXX Uh, really print value if value == '\n'?
-                    fd.write('%s:%s\n' % (key, value))
-                else:
-                    fd.write('%s: %s\n' % (key, value))
-            else:
-                fd.write(key + ":")
-                if hasattr(self[key], 'keys'): # single-line
-                    array = [ self[key] ]
-                else: # multi-line
-                    fd.write("\n")
-                    array = self[key]
-
-                order = self._multivalued_fields[keyl]
-                try:
-                    field_lengths = self._fixed_field_lengths
-                except AttributeError:
-                    field_lengths = {}
-                for item in array:
-                    for x in order:
-                        raw_value = str(item[x])
-                        try:
-                            length = field_lengths[keyl][x]
-                        except KeyError:
-                            value = raw_value
-                        else:
-                            value = (length - len(raw_value)) * " " + raw_value
-                        fd.write(" %s" % value)
-                    fd.write("\n")
-        if return_string:
-            return fd.getvalue()
-
+            return Deb822.get_as_string(self, key)
 
 ###
 
