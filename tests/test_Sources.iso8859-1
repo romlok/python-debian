@@ -77,7 +77,7 @@ Directory: pool/main/p/python-debian
 Files:
  b153648eaf2fbf2b20e07986f3f8fc37 1224 python-debian_0.1.14.dsc
  9d05b7813dbbdb4fd8d41f4a2825de57 176558 python-debian_0.1.14.tar.gz
-Uploaders: Adeodato SimÃ³ <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>, Reinhard Tartler <siretart@tauware.de>, Stefano Zacchiroli <zack@debian.org>, John Wright <jsw@debian.org>
+Uploaders: Adeodato Simó <dato@net.com.org.es>, Enrico Zini <enrico@debian.org>, James Westby <jw+debian@jameswestby.net>, Reinhard Tartler <siretart@tauware.de>, Stefano Zacchiroli <zack@debian.org>, John Wright <jsw@debian.org>
 Vcs-Browser: http://git.debian.org/?p=pkg-python-debian/python-debian.git
 Vcs-Git: git://git.debian.org/git/pkg-python-debian/python-debian.git
 Checksums-Sha1: 

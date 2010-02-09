@@ -641,6 +641,68 @@ Description: python modules to work with Debian-related data formats
             d3['Some-Test-Key'] = 'some value'
         self.assertEqual(d3.dump(), "Some-Test-Key: some value\n")
 
+    def test_unicode_values(self):
+        """Deb822 objects should contain only unicode values
+
+        (Technically, they are allowed to contain any type of object, but when
+        parsed from files, and when only string-type objects are added, the
+        resulting object should have only unicode values.)
+        """
+
+        objects = []
+        objects.append(deb822.Deb822(UNPARSED_PACKAGE))
+        objects.append(deb822.Deb822(CHANGES_FILE))
+        objects.extend(deb822.Deb822.iter_paragraphs(file('test_Packages')))
+        objects.extend(deb822.Packages.iter_paragraphs(file('test_Packages')))
+        objects.extend(deb822.Deb822.iter_paragraphs(file('test_Sources')))
+        objects.extend(deb822.Deb822.iter_paragraphs(
+                         file('test_Sources.iso8859-1'), encoding="iso8859-1"))
+        for d in objects:
+            for value in d.values():
+                self.assert_(isinstance(value, unicode))
+
+        # The same should be true for Sources and Changes except for their
+        # _multivalued fields
+        multi = []
+        multi.append(deb822.Changes(CHANGES_FILE))
+        multi.append(deb822.Changes(SIGNED_CHECKSUM_CHANGES_FILE
+                                    % CHECKSUM_CHANGES_FILE))
+        multi.extend(deb822.Sources.iter_paragraphs(file('test_Sources')))
+        for d in multi:
+            for key, value in d.items():
+                if key.lower() not in d.__class__._multivalued_fields:
+                    self.assert_(isinstance(value, unicode))
+
+    def test_encoding_integrity(self):
+        utf8 = list(deb822.Deb822.iter_paragraphs(file('test_Sources')))
+        latin1 = list(deb822.Deb822.iter_paragraphs(
+                                                file('test_Sources.iso8859-1'),
+                                                encoding='iso8859-1'))
+
+        # dump() with no fd returns a unicode object - both should be identical
+        self.assertEqual(len(utf8), len(latin1))
+        for i in range(len(utf8)):
+            self.assertEqual(utf8[i].dump(), latin1[i].dump())
+
+        # XXX: The way multiline fields parsing works, we can't guarantee
+        # that trailing whitespace is reproduced.
+        utf8_contents = "\n".join([line.rstrip() for line in
+                                   file('test_Sources')] + [''])
+        latin1_contents = "\n".join([line.rstrip() for line in
+                                     file('test_Sources.iso8859-1')] + [''])
+
+        utf8_to_latin1 = StringIO()
+        for d in utf8:
+            d.dump(fd=utf8_to_latin1, encoding='iso8859-1')
+            utf8_to_latin1.write("\n")
+
+        latin1_to_utf8 = StringIO()
+        for d in latin1:
+            d.dump(fd=latin1_to_utf8, encoding='utf-8')
+            latin1_to_utf8.write("\n")
+
+        self.assertEqual(utf8_contents, latin1_to_utf8.getvalue())
+        self.assertEqual(latin1_contents, utf8_to_latin1.getvalue())
 
 class TestPkgRelations(unittest.TestCase):
 
