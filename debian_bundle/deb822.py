@@ -37,21 +37,21 @@ import sys
 import StringIO
 import UserDict
 
-class TagFileWrapper(object, UserDict.DictMixin):
-    """Wrap a TagFile object, using its Section.FindRaw method instead of Find
+class TagSectionWrapper(object, UserDict.DictMixin):
+    """Wrap a TagSection object, using its find_raw method to get field values
 
     This allows us to pick which whitespace to strip off the beginning and end
     of the data, so we don't lose leading newlines.
     """
 
-    def __init__(self, parser):
-        self.__parser = parser
+    def __init__(self, section):
+        self.__section = section
 
     def keys(self):
-        return self.__parser.Section.keys()
+        return self.__section.keys()
 
     def __getitem__(self, key):
-        s = self.__parser.Section.FindRaw(key)
+        s = self.__section.find_raw(key)
 
         if s is None:
             raise KeyError(key)
@@ -269,15 +269,8 @@ class Deb822(Deb822Dict):
         :param use_apt_pkg: if sequence is a file(), apt_pkg will be used 
             if available to parse the file, since it's much much faster.  Set
             this parameter to False to disable using apt_pkg.
-        :param shared_storage: if sequence is a file(), use_apt_pkg is True,
-            and shared_storage is True, yielded objects will share storage, so
-            they can't be kept across iterations.  (Also, PGP signatures won't
-            be stripped.)  By default, this parameter is False, causing a copy
-            of the parsed data to be made through each iteration.  Except for
-            with raw Deb822 paragraphs (as opposed to _multivalued subclasses),
-            the speed gained by setting shared_storage=True is marginal.  This
-            parameter has no effect if use_apt_pkg is False or apt_pkg is not
-            available.
+        :param shared_storage: not used, here for historical reasons.  Deb822
+            objects never use shared storage anymore.
         :param encoding: Interpret the paragraphs in this encoding.
             (All values are given back as unicode objects, so an encoding is
             necessary in order to properly interpret the strings.)
@@ -285,18 +278,9 @@ class Deb822(Deb822Dict):
 
         if _have_apt_pkg and use_apt_pkg and isinstance(sequence, file):
             parser = apt_pkg.TagFile(sequence)
-            while parser.Step() == 1:
-                x = cls(fields=fields, _parsed=TagFileWrapper(parser),
-                        encoding=encoding)
-                if len(x) != 0:
-                    yield x
-
-                if not shared_storage:
-                    # Make a new parser, starting it right before the next
-                    # section
-                    offset = parser.Offset() - 1
-                    parser = apt_pkg.TagFile(sequence)
-                    parser.Jump(offset)
+            for section in parser:
+                yield cls(fields=fields, _parsed=TagSectionWrapper(section),
+                          encoding=encoding)
 
         else:
             iterable = iter(sequence)
