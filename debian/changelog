@@ -31,8 +31,10 @@ python-debian (0.1.15) UNRELEASED; urgency=low
   * Use the apt_pkg.TagFile iterator interface instead of hacking its
     offset.  As of python-apt version 0.7.94, that interface doesn't use
     shared storage. (Closes: #571470)
+  * debian_support: Add a native python Version class, based on Raphael
+    Hertzog's DpkgVersion class in the PTS (Closes: #562257, #573009)
 
- -- Filippo Giunchedi <filippo@debian.org>  Sun, 09 Aug 2009 13:01:16 +0100
+ -- John Wright <jsw@debian.org>  Sat, 13 Mar 2010 21:53:18 -0700
 
 python-debian (0.1.14) unstable; urgency=low
 

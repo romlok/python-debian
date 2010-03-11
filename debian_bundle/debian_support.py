@@ -1,5 +1,6 @@
 # debian_support.py -- Python module for Debian metadata
 # Copyright (C) 2005 Florian Weimer <fw@deneb.enyo.de>
+# Copyright (C) 2010 John Wright <jsw@debian.org>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,8 +24,13 @@ import hashlib
 import types
 
 from deprecation import function_deprecated_by
-import apt_pkg
-apt_pkg.init()
+
+try:
+    import apt_pkg
+    apt_pkg.init()
+    __have_apt_pkg = True
+except ImportError:
+    __have_apt_pkg = False
 
 class ParseError(Exception):
     """An exception which is used to signal a parse failure.
@@ -58,33 +64,152 @@ class ParseError(Exception):
 
     printOut = function_deprecated_by(print_out)
 
-class Version:
-    """Version class which uses the original APT comparison algorithm."""
+class BaseVersion(object):
+    """Base class for classes representing Debian versions
+
+    It doesn't implement any comparison, but it does check for valid versions
+    according to Section 5.6.12 in the Debian Policy Manual.  Since splitting
+    the version into epoch, upstream_version, and debian_revision components is
+    pretty much free with the validation, it sets those fields as properties of
+    the object.  A missing epoch or debian_revision results in the respective
+    property set to "0".  These properties are immutable.
+
+    It also implements __str__, just returning the raw version given to the
+    initializer.
+    """
+
+    re_valid_version = re.compile(
+            r"^((?P<epoch>\d+):)?"
+             "(?P<upstream_version>[A-Za-z0-9.+:~-]+?)"
+             "(-(?P<debian_revision>[A-Za-z0-9+.~]+))?$")
 
     def __init__(self, version):
-        """Creates a new Version object."""
-        t = type(version)
-        if t == types.UnicodeType:
-            version = version.encode('UTF-8')
-        else:
-            assert t == types.StringType, `version`
-        assert version <> ""
-        self.__asString = version
+        if not isinstance(version, (str, unicode)):
+            raise ValueError, "version must be a string or unicode object"
+
+        m = self.re_valid_version.match(version)
+        if not m:
+            raise ValueError("Invalid version string %r" % version)
+
+        self.__raw_version = version
+        self.__epoch = m.group("epoch")
+        self.__upstream_version = m.group("upstream_version")
+        self.__debian_revision = m.group("debian_revision")
+
+    epoch = property(lambda self: self.__epoch or "0")
+    upstream_version = property(lambda self: self.__upstream_version)
+    debian_revision = property(lambda self: self.__debian_revision or "0")
 
     def __str__(self):
-        return self.__asString
+        return self.__raw_version
 
     def __repr__(self):
-        return 'Version(%s)' % `self.__asString`
+        return "%s('%s')" % (self.__class__.__name__, self)
 
     def __cmp__(self, other):
-        return apt_pkg.VersionCompare(str(self), str(other))
+        raise NotImplementedError
 
     def __hash__(self):
         return hash(str(self))
 
+class AptPkgVersion(BaseVersion):
+    """Represents a Debian package version, using apt_pkg.VersionCompare"""
 
-version_compare = apt_pkg.VersionCompare
+    def __cmp__(self, other):
+        return apt_pkg.VersionCompare(str(self), str(other))
+
+# NativeVersion based on the DpkgVersion class by Raphael Hertzog in
+# svn://svn.debian.org/qa/trunk/pts/www/bin/common.py r2361
+class NativeVersion(BaseVersion):
+    """Represents a Debian package version, with native Python comparison"""
+
+    re_all_digits_or_not = re.compile("\d+|\D+")
+    re_digits = re.compile("\d+")
+    re_digit = re.compile("\d")
+    re_alpha = re.compile("[A-Za-z]")
+
+    def __cmp__(self, other):
+        # Convert other into an instance of BaseVersion if it's not already.
+        # (All we need is epoch, upstream_version, and debian_revision
+        # attributes, which BaseVersion gives us.) Requires other's string
+        # representation to be the raw version.
+        if not isinstance(other, BaseVersion):
+            try:
+                other = BaseVersion(str(other))
+            except ValueError, e:
+                raise ValueError("Couldn't convert %r to BaseVersion: %s"
+                                 % (other, e))
+
+        res = cmp(int(self.epoch), int(other.epoch))
+        if res != 0:
+            return res
+        res = self._version_cmp_part(self.upstream_version,
+                                     other.upstream_version)
+        if res != 0:
+            return res
+        return self._version_cmp_part(self.debian_revision,
+                                      other.debian_revision)
+
+    @classmethod
+    def _order(cls, x):
+        """Return an integer value for character x"""
+        if x == '~':
+            return -1
+        elif cls.re_digit.match(x):
+            return int(x) + 1
+        elif cls.re_alpha.match(x):
+            return ord(x)
+        else:
+            return ord(x) + 256
+
+    @classmethod
+    def _version_cmp_string(cls, va, vb):
+        la = [cls._order(x) for x in va]
+        lb = [cls._order(x) for x in vb]
+        while la or lb:
+            a = 0
+            b = 0
+            if la:
+                a = la.pop(0)
+            if lb:
+                b = lb.pop(0)
+            res = cmp(a, b)
+            if res != 0:
+                return res
+        return 0
+
+    @classmethod
+    def _version_cmp_part(cls, va, vb):
+        la = cls.re_all_digits_or_not.findall(va)
+        lb = cls.re_all_digits_or_not.findall(vb)
+        while la or lb:
+            a = "0"
+            b = "0"
+            if la:
+                a = la.pop(0)
+            if lb:
+                b = lb.pop(0)
+            if cls.re_digits.match(a) and cls.re_digits.match(b):
+                a = int(a)
+                b = int(b)
+                res = cmp(a, b)
+                if res != 0:
+                    return res
+            else:
+                res = cls._version_cmp_string(a, b)
+                if res != 0:
+                    return res
+        return 0
+
+if __have_apt_pkg:
+    class Version(AptPkgVersion):
+        pass
+else:
+    class Version(NativeVersion):
+        pass
+
+def version_compare(a, b):
+    return cmp(Version(a), Version(b))
 
 class PackageFile:
     """A Debian package file.
@@ -423,23 +548,32 @@ mergeAsSets = function_deprecated_by(merge_as_sets)
 
 def test():
     # Version
-    assert Version('0') < Version('a')
-    assert Version('1.0') < Version('1.1')
-    assert Version('1.2') < Version('1.11')
-    assert Version('1.0-0.1') < Version('1.1')
-    assert Version('1.0-0.1') < Version('1.0-1')
-    assert Version('1.0-0.1') == Version('1.0-0.1')
-    assert Version('1.0-0.1') < Version('1.0-1')
-    assert Version('1.0final-5sarge1') > Version('1.0final-5') \
-           > Version('1.0a7-2')
-    assert Version('0.9.2-5') < Version('0.9.2+cvs.1.0.dev.2004.07.28-1.5')
-    assert Version('1:500') < Version('1:5000')
-    assert Version('100:500') > Version('11:5000')
-    assert Version('1.0.4-2') > Version('1.0pre7-2')
-    assert Version('1.5~rc1') < Version('1.5')
-    assert Version('1.5~rc1') < Version('1.5+b1')
-    assert Version('1.5~rc1') < Version('1.5~rc2')
-    assert Version('1.5~rc1') > Version('1.5~dev0')
+    for (cls1, cls2) in [(AptPkgVersion, AptPkgVersion),
+                         (AptPkgVersion, NativeVersion),
+                         (NativeVersion, AptPkgVersion),
+                         (NativeVersion, NativeVersion),
+                         (str, AptPkgVersion), (AptPkgVersion, str),
+                         (str, NativeVersion), (NativeVersion, str)]:
+        assert cls1('0') < cls2('a')
+        assert cls1('1.0') < cls2('1.1')
+        assert cls1('1.2') < cls2('1.11')
+        assert cls1('1.0-0.1') < cls2('1.1')
+        assert cls1('1.0-0.1') < cls2('1.0-1')
+        assert cls1('1.0') == cls2('1.0')
+        assert cls1('1.0-0.1') == cls2('1.0-0.1')
+        assert cls1('1:1.0-0.1') == cls2('1:1.0-0.1')
+        assert cls1('1:1.0') == cls2('1:1.0')
+        assert cls1('1.0-0.1') < cls2('1.0-1')
+        assert cls1('1.0final-5sarge1') > cls2('1.0final-5') \
+               > cls2('1.0a7-2')
+        assert cls1('0.9.2-5') < cls2('0.9.2+cvs.1.0.dev.2004.07.28-1.5')
+        assert cls1('1:500') < cls2('1:5000')
+        assert cls1('100:500') > cls2('11:5000')
+        assert cls1('1.0.4-2') > cls2('1.0pre7-2')
+        assert cls1('1.5~rc1') < cls2('1.5')
+        assert cls1('1.5~rc1') < cls2('1.5+b1')
+        assert cls1('1.5~rc1') < cls2('1.5~rc2')
+        assert cls1('1.5~rc1') > cls2('1.5~dev0')
 
     # Release
     assert intern_release('sarge') < intern_release('etch')
