@@ -16,9 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import gzip
-import string
 import tarfile
-import zlib
 
 from arfile import ArFile, ArError
 from changelog import Changelog

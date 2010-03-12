@@ -34,6 +34,9 @@ python-debian (0.1.15) UNRELEASED; urgency=low
   * debian_support: Add a native python Version class, based on Raphael
     Hertzog's DpkgVersion class in the PTS (Closes: #562257, #573009)
 
+  [ Jelmer Vernooij ]
+  * Remove unused imports in the debfile and debtags modules
+
  -- John Wright <jsw@debian.org>  Sat, 13 Mar 2010 21:53:18 -0700
 
 python-debian (0.1.14) unstable; urgency=low
