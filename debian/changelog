@@ -1,3 +1,13 @@
+python-debian (0.1.16) UNRELEASED; urgency=low
+
+  * debian_support: Be more careful in case apt_pkg is not available
+    - If apt_pkg is not available, AptPkgVersion now raises
+      NotImplementedError on any initialization attempt
+    - test_debian_support.py now doesn't try to test AptPkgVersion if
+      apt_pkg is not availble
+
+ -- John Wright <jsw@debian.org>  Sun, 14 Mar 2010 05:31:54 -0600
+
 python-debian (0.1.15) unstable; urgency=low
 
   [ John Wright ]

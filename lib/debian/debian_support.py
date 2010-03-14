@@ -28,9 +28,9 @@ from deprecation import function_deprecated_by
 try:
     import apt_pkg
     apt_pkg.init()
-    __have_apt_pkg = True
+    _have_apt_pkg = True
 except ImportError:
-    __have_apt_pkg = False
+    _have_apt_pkg = False
 
 class ParseError(Exception):
     """An exception which is used to signal a parse failure.
@@ -161,6 +161,12 @@ class BaseVersion(object):
 class AptPkgVersion(BaseVersion):
     """Represents a Debian package version, using apt_pkg.VersionCompare"""
 
+    def __init__(self, version):
+        if not _have_apt_pkg:
+            raise NotImplementedError("apt_pkg not available; install the "
+                                      "python-apt package")
+        super(AptPkgVersion, self).__init__(version)
+
     def __cmp__(self, other):
         return apt_pkg.VersionCompare(str(self), str(other))
 
@@ -247,7 +253,7 @@ class NativeVersion(BaseVersion):
                     return res
         return 0
 
-if __have_apt_pkg:
+if _have_apt_pkg:
     class Version(AptPkgVersion):
         pass
 else:

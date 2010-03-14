@@ -23,6 +23,7 @@ import unittest
 
 sys.path.insert(0, '../lib/debian/')
 
+import debian_support
 from debian_support import *
 
 
@@ -30,7 +31,12 @@ class VersionTests(unittest.TestCase):
     """Tests for AptPkgVersion and NativeVersion classes in debian_support"""
 
     def _test_version(self, full_version, epoch, upstream, debian):
-        for cls in (AptPkgVersion, NativeVersion):
+        if debian_support._have_apt_pkg:
+            test_classes = [AptPkgVersion, NativeVersion]
+        else:
+            test_classes = [NativeVersion]
+
+        for cls in test_classes:
             v = cls(full_version)
             self.assertEqual(v.full_version, full_version,
                              "%s: full_version broken" % cls)
@@ -68,7 +74,12 @@ class VersionTests(unittest.TestCase):
         self._test_version('2:1.0.4~rc2-1', '2', '1.0.4~rc2', '1')
 
     def test_version_updating(self):
-        for cls in (AptPkgVersion, NativeVersion):
+        if debian_support._have_apt_pkg:
+            test_classes = [AptPkgVersion, NativeVersion]
+        else:
+            test_classes = [NativeVersion]
+
+        for cls in test_classes:
             v = cls('1:1.4.1-1')
 
             v.debian_version = '2'
@@ -112,12 +123,22 @@ class VersionTests(unittest.TestCase):
         This is does the real work for test_comparisons.
         """
 
-        for (cls1, cls2) in [(AptPkgVersion, AptPkgVersion),
-                             (AptPkgVersion, NativeVersion),
-                             (NativeVersion, AptPkgVersion),
-                             (NativeVersion, NativeVersion),
-                             (str, AptPkgVersion), (AptPkgVersion, str),
-                             (str, NativeVersion), (NativeVersion, str)]:
+        if debian_support._have_apt_pkg:
+            test_class_tuples = [
+                (AptPkgVersion, AptPkgVersion),
+                (AptPkgVersion, NativeVersion),
+                (NativeVersion, AptPkgVersion),
+                (NativeVersion, NativeVersion),
+                (str, AptPkgVersion), (AptPkgVersion, str),
+                (str, NativeVersion), (NativeVersion, str),
+            ]
+        else:
+            test_class_tuples = [
+                 (NativeVersion, NativeVersion),
+                 (str, NativeVersion), (NativeVersion, str),
+            ]
+
+        for (cls1, cls2) in test_class_tuples:
             v1 = cls1(v1_str)
             v2 = cls2(v2_str)
             truth_fn = self._get_truth_fn(cmp_oper)
