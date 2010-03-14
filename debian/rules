@@ -21,8 +21,8 @@ build-stamp: setup.py
 	cd tests && ./test_debfile.py
 	cd tests && ./test_debtags.py
 	cd tests && ./test_changelog.py
+	cd tests && ./test_debian_support.py
 
-	python lib/debian/debian_support.py
 	lib/debian/doc-debtags > README.debtags
 
 	touch $@

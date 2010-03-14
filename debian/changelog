@@ -41,6 +41,8 @@ python-debian (0.1.15) UNRELEASED; urgency=low
   * changelog: Use debian_support.Version directly
   * Deprecate the 'debian_bundle' package in favor of a new 'debian'
     package (Closes: #570210)
+  * debian_support: split tests into tests/test_debian_support.py for
+    consistency
 
  -- John Wright <jsw@debian.org>  Sat, 13 Mar 2010 21:53:18 -0700
 
