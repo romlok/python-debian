@@ -1,4 +1,4 @@
-python-debian (0.1.15) UNRELEASED; urgency=low
+python-debian (0.1.15) unstable; urgency=low
 
   [ John Wright ]
   * deb822: Don't ignore leading newlines on field data with apt_pkg
@@ -46,7 +46,7 @@ python-debian (0.1.15) UNRELEASED; urgency=low
   * Convert to "3.0 (native)" source format and update Standards-Version
     to 3.8.4 (no changes necessary)
 
- -- John Wright <jsw@debian.org>  Sat, 13 Mar 2010 21:53:18 -0700
+ -- John Wright <jsw@debian.org>  Sun, 14 Mar 2010 05:04:50 -0600
 
 python-debian (0.1.14) unstable; urgency=low
 
