@@ -43,6 +43,8 @@ python-debian (0.1.15) UNRELEASED; urgency=low
     package (Closes: #570210)
   * debian_support: split tests into tests/test_debian_support.py for
     consistency
+  * Convert to "3.0 (native)" source format and update Standards-Version
+    to 3.8.4 (no changes necessary)
 
  -- John Wright <jsw@debian.org>  Sat, 13 Mar 2010 21:53:18 -0700
 
