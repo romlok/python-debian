@@ -25,7 +25,7 @@ import sys
 import tempfile
 import uu
 
-sys.path.insert(0, '../debian_bundle/')
+sys.path.insert(0, '../lib/debian/')
 
 import arfile
 import debfile

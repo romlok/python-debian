@@ -20,7 +20,7 @@
 import sys
 import unittest
 
-sys.path.insert(0, '../debian_bundle/')
+sys.path.insert(0, '../lib/debian/')
 import debtags
 
 class TestDebtags(unittest.TestCase):
