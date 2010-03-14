@@ -34,9 +34,11 @@ clean: setup.py
 
 	# Add here commands to clean up after the build process.
 	python setup.py clean
+	rm -rf lib/python_debian.egg-info
 	rm -rf build/
 	rm -f README.debtags
 	rm -f setup.py
+	find lib/debian -type f -name '*.pyc' -exec rm {} \;
 
 	dh_clean
 
