@@ -71,8 +71,10 @@ class BaseVersion(object):
     according to Section 5.6.12 in the Debian Policy Manual.  Since splitting
     the version into epoch, upstream_version, and debian_revision components is
     pretty much free with the validation, it sets those fields as properties of
-    the object.  A missing epoch or debian_revision results in the respective
-    property set to "0".  These properties are immutable.
+    the object, and sets the raw version to the full_version property.  A
+    missing epoch or debian_revision results in the respective property set to
+    None.  Setting any of the properties results in the full_version being
+    recomputed and the rest of the properties set from that.
 
     It also implements __str__, just returning the raw version given to the
     initializer.
@@ -82,26 +84,70 @@ class BaseVersion(object):
             r"^((?P<epoch>\d+):)?"
              "(?P<upstream_version>[A-Za-z0-9.+:~-]+?)"
              "(-(?P<debian_revision>[A-Za-z0-9+.~]+))?$")
+    magic_attrs = ('full_version', 'epoch', 'upstream_version',
+                   'debian_revision', 'debian_version')
 
     def __init__(self, version):
-        if not isinstance(version, (str, unicode)):
-            raise ValueError, "version must be a string or unicode object"
+        self.full_version = version
 
+    def _set_full_version(self, version):
         m = self.re_valid_version.match(version)
         if not m:
             raise ValueError("Invalid version string %r" % version)
 
-        self.__raw_version = version
+        self.__full_version = version
         self.__epoch = m.group("epoch")
         self.__upstream_version = m.group("upstream_version")
         self.__debian_revision = m.group("debian_revision")
 
-    epoch = property(lambda self: self.__epoch or "0")
-    upstream_version = property(lambda self: self.__upstream_version)
-    debian_revision = property(lambda self: self.__debian_revision or "0")
+    def __setattr__(self, attr, value):
+        if attr not in self.magic_attrs:
+            super(BaseVersion, self).__setattr__(attr, value)
+            return
+
+        # For compatibility with the old changelog.Version class
+        if attr == "debian_version":
+            attr = "debian_revision"
+
+        if attr == "full_version":
+            self._set_full_version(str(value))
+        else:
+            if value is not None:
+                value = str(value)
+            private = "_BaseVersion__%s" % attr
+            old_value = getattr(self, private)
+            setattr(self, private, value)
+            try:
+                self._update_full_version()
+            except ValueError:
+                # Don't leave it in an invalid state
+                setattr(self, private, old_value)
+                self._update_full_version()
+                raise ValueError("Setting %s to %r results in invalid version"
+                                 % (attr, value))
+
+    def __getattr__(self, attr):
+        if attr not in self.magic_attrs:
+            return super(BaseVersion, self).__getattribute__(attr)
+
+        # For compatibility with the old changelog.Version class
+        if attr == "debian_version":
+            attr = "debian_revision"
+
+        private = "_BaseVersion__%s" % attr
+        return getattr(self, private)
+
+    def _update_full_version(self):
+        version = ""
+        if self.__epoch is not None:
+            version += self.__epoch + ":"
+        version += self.__upstream_version
+        if self.__debian_revision:
+            version += "-" + self.__debian_revision
+        self.full_version = version
 
     def __str__(self):
-        return self.__raw_version
+        return self.full_version
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self)
@@ -140,15 +186,15 @@ class NativeVersion(BaseVersion):
                 raise ValueError("Couldn't convert %r to BaseVersion: %s"
                                  % (other, e))
 
-        res = cmp(int(self.epoch), int(other.epoch))
+        res = cmp(int(self.epoch or "0"), int(other.epoch or "0"))
         if res != 0:
             return res
         res = self._version_cmp_part(self.upstream_version,
                                      other.upstream_version)
         if res != 0:
             return res
-        return self._version_cmp_part(self.debian_revision,
-                                      other.debian_revision)
+        return self._version_cmp_part(self.debian_revision or "0",
+                                      other.debian_revision or "0")
 
     @classmethod
     def _order(cls, x):

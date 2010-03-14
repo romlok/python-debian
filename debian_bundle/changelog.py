@@ -53,67 +53,9 @@ class VersionError(StandardError):
     def __str__(self):
         return "Could not parse version: "+self._version
 
-class Version(debian_support.Version, object):
+class Version(debian_support.Version):
     """Represents a version of a Debian package."""
-    # Subclassing debian_support.Version for its rich comparison
-
-    def __init__(self, version):
-        version = str(version)
-        debian_support.Version.__init__(self, version)
-
-        self.full_version = version
-
-    def __setattr__(self, attr, value):
-      """Update all the attributes, given a particular piece of the version
-  
-      Allowable values for attr, hopefully self-explanatory:
-        full_version
-        epoch
-        upstream_version
-        debian_version
-
-      Any attribute starting with __ is given to object's __setattr__ method.
-      """
-
-      attrs = ('full_version', 'epoch', 'upstream_version', 'debian_version')
-
-      if attr.startswith('_Version__'):
-          object.__setattr__(self, attr, value)
-          return
-      elif attr not in attrs:
-          raise AttributeError("Cannot assign to attribute " + attr)
-
-      if attr == 'full_version':
-          version = value
-          p = re.compile(r'^(?:(?P<epoch>\d+):)?'
-                         + r'(?P<upstream_version>[A-Za-z0-9.+:~-]+?)'
-                         + r'(?:-(?P<debian_version>[A-Za-z0-9.~+]+))?$')
-          m = p.match(version)
-          if m is None:
-              raise VersionError(version)
-          for key, value in m.groupdict().items():
-              object.__setattr__(self, key, value)
-          self.__asString = version
-    
-      else:
-          # Construct a full version from what was given and pass it back here
-          d = {}
-          for a in attrs[1:]:
-              if a == attr:
-                  d[a] = value
-              else:
-                  d[a] = getattr(self, a)
-
-          version = ""
-          if d['epoch'] and d['epoch'] != '0':
-              version += d['epoch'] + ":"
-          version += d['upstream_version']
-          if d['debian_version']:
-              version += '-' + d['debian_version']
-
-          self.full_version = version
-
-    full_version = property(lambda self: self.__asString)
+    # debian_support.Version now has all the functionality we need
 
 class ChangeBlock(object):
     """Holds all the information about one block from the changelog."""
@@ -465,7 +407,8 @@ class Changelog(object):
     ### For convenience, let's expose some of the version properties
     full_version = property(lambda self: self.version.full_version)
     epoch = property(lambda self: self.version.epoch)
-    debian_version = property(lambda self: self.version.debian_version)
+    debian_version = property(lambda self: self.version.debian_revision)
+    debian_revision = property(lambda self: self.version.debian_revision)
     upstream_version = property(lambda self: self.version.upstream_version)
 
     def get_package(self):

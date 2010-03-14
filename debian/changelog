@@ -37,6 +37,9 @@ python-debian (0.1.15) UNRELEASED; urgency=low
   [ Jelmer Vernooij ]
   * Remove unused imports in the debfile and debtags modules
 
+  [ John Wright ]
+  * changelog: Use debian_support.Version directly
+
  -- John Wright <jsw@debian.org>  Sat, 13 Mar 2010 21:53:18 -0700
 
 python-debian (0.1.14) unstable; urgency=low
