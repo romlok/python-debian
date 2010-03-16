@@ -1,4 +1,4 @@
-python-debian (0.1.16) UNRELEASED; urgency=low
+python-debian (0.1.16) unstable; urgency=low
 
   * debian_support: Be more careful in case apt_pkg is not available
     - If apt_pkg is not available, AptPkgVersion now raises
@@ -10,9 +10,9 @@ python-debian (0.1.16) UNRELEASED; urgency=low
   * Use the warnings system to report deprecation warnings
     (Closes: #573945)
   * Change examples and control file to refer to debian instead of
-    deban_bundle
+    debian_bundle
 
- -- John Wright <jsw@debian.org>  Sun, 14 Mar 2010 05:31:54 -0600
+ -- John Wright <jsw@debian.org>  Mon, 15 Mar 2010 20:02:17 -0600
 
 python-debian (0.1.15) unstable; urgency=low
 
