@@ -9,6 +9,8 @@ python-debian (0.1.16) UNRELEASED; urgency=low
     available (Closes: #573934)
   * Use the warnings system to report deprecation warnings
     (Closes: #573945)
+  * Change examples and control file to refer to debian instead of
+    deban_bundle
 
  -- John Wright <jsw@debian.org>  Sun, 14 Mar 2010 05:31:54 -0600
 

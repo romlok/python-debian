@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- vim: fileencoding=utf-8 :
 #
-# debian_bundle/deprecation.py
+# debian/deprecation.py
 # Utility module to deprecate features
 #
 # Copyright © Ben Finney <ben+debian@benfinney.id.au>

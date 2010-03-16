@@ -12,7 +12,7 @@
 
 import re
 import sys
-from debian_bundle import deb822
+from debian import deb822
 
 try:
     maint_RE = re.compile(sys.argv[1])

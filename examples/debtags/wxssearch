@@ -24,7 +24,7 @@ import wx.lib.dialogs
 import sys
 import re
 import subprocess
-from debian_bundle import debtags
+from debian import debtags
 import apt
 from optparse import OptionParser
 

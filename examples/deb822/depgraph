@@ -17,7 +17,7 @@ graphviz graph suitable to be processed by dot (for an unstable/main Packages
 file, generating the final graph will take a while ...)."""
 
 import sys
-from debian_bundle import deb822
+from debian import deb822
 
 __fresh_id = 0
 

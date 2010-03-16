@@ -19,7 +19,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys
-from debian_bundle import debtags
+from debian import debtags
 
 input = sys.stdin
 if len(sys.argv) > 1:

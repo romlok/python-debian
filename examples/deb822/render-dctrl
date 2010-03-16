@@ -24,7 +24,7 @@ Warning: beware of #525525 and thus avoid using "-s Description" alone."""
 import re
 import string
 import sys
-from debian_bundle import deb822
+from debian import deb822
 from markdown import markdown
 from optparse import OptionParser
 

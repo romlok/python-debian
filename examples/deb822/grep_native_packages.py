@@ -10,7 +10,7 @@
 
 import sys
 
-from debian_bundle import deb822
+from debian import deb822
 
 for fname in sys.argv[1:]:
     f = file(fname)

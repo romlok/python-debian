@@ -20,7 +20,7 @@
 
 import sys
 import re
-from debian_bundle import debtags
+from debian import debtags
 
 if len(sys.argv) < 2:
 	print sys.stderr, "Usage: %s tagdb [packagelist]" % (sys.argv[0])

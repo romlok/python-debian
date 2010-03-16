@@ -17,7 +17,7 @@ import stat
 import string
 import sys
 
-from debian_bundle import debfile
+from debian import debfile
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

@@ -1,5 +1,5 @@
-README for debian_bundle.changelog
-----------------------------------
+README for debian.changelog
+---------------------------
 
 The aim of this module is to provide programmatic access to Debian changelogs
 to query and manipulate them.

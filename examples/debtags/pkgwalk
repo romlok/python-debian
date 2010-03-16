@@ -12,7 +12,7 @@
 import sys
 
 # Requires python-extractor, python-magic and python-debtags
-from debian_bundle import debtags
+from debian import debtags
 import re
 from optparse import OptionParser
 import apt
