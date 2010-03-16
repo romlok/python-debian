@@ -647,7 +647,7 @@ class GpgInfo(dict):
         [args.extend(["--keyring", k]) for k in keyrings if os.path.isfile(k) and os.access(k, os.R_OK)]
         
         if "--keyring" not in args:
-            raise IOError, "cannot access none of given keyrings"
+            raise IOError, "cannot access any of the given keyrings"
 
         import subprocess
         p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

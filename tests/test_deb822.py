@@ -341,7 +341,8 @@ class TestDeb822(unittest.TestCase):
             self.assertWellParsed(deb822_, PARSED_PACKAGE)
 
     def test_gpg_info(self):
-        if not os.path.exists('/usr/bin/gpgv'):
+        if not (os.path.exists('/usr/bin/gpgv') and
+                os.path.exists('/usr/share/keyrings/debian-keyring.gpg')):
             return
 
         unparsed_with_gpg = SIGNED_CHECKSUM_CHANGES_FILE % CHECKSUM_CHANGES_FILE
