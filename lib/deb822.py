@@ -1,6 +1,6 @@
-import sys
-print >> sys.stderr, "WARNING:",    \
-        "the 'deb822' top-level module is *DEPRECATED*,",   \
-        "please use 'debian.deb822'"
+import warnings
+
+warnings.warn("please use 'debian.deb822' instead", DeprecationWarning,
+              stacklevel=2)
 
 from debian.deb822 import *

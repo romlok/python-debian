@@ -7,6 +7,8 @@ python-debian (0.1.16) UNRELEASED; urgency=low
       apt_pkg is not availble
   * test_deb822.py: Don't test gpg info if debian-keyring is not
     available (Closes: #573934)
+  * Use the warnings system to report deprecation warnings
+    (Closes: #573945)
 
  -- John Wright <jsw@debian.org>  Sun, 14 Mar 2010 05:31:54 -0600
 

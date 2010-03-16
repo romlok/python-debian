@@ -1,8 +1,8 @@
 import os
-import sys
+import warnings
 
-sys.stderr.write("WARNING: the 'debian_bundle' package is *DEPRECATED*; "
-                 "use the 'debian' package\n")
+warnings.warn("please use 'debian' instead of 'debian_bundle'",
+              DeprecationWarning, stacklevel=2)
 
 # Support "from debian_bundle import foo"
 parent_dir = os.path.dirname(__path__[0])
