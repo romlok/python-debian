@@ -4,7 +4,7 @@ python-debian (0.1.16) unstable; urgency=low
     - If apt_pkg is not available, AptPkgVersion now raises
       NotImplementedError on any initialization attempt
     - test_debian_support.py now doesn't try to test AptPkgVersion if
-      apt_pkg is not availble
+      apt_pkg is not available
   * test_deb822.py: Don't test gpg info if debian-keyring is not
     available (Closes: #573934)
   * Use the warnings system to report deprecation warnings
