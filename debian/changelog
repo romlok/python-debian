@@ -1,3 +1,10 @@
+python-debian (0.1.17) UNRELEASED; urgency=low
+
+  [ James Westby ]
+  * Use os.path.normpath to hide python version differences
+
+ -- John Wright <jsw@debian.org>  Fri, 25 Jun 2010 11:20:22 -0600
+
 python-debian (0.1.16) unstable; urgency=low
 
   * debian_support: Be more careful in case apt_pkg is not available

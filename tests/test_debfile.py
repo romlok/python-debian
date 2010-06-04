@@ -136,18 +136,17 @@ class TestDebFile(unittest.TestCase):
         bz2_deb = debfile.DebFile(self.bz2_debname)
         # random test on the data part (which is bzipped), just to check if we
         # can access its content
-        self.assertEqual(bz2_deb.data.tgz().getnames()[10],
+        self.assertEqual(os.path.normpath(bz2_deb.data.tgz().getnames()[10]),
                 './usr/share/locale/bg/')
 
     def test_data_names(self):
         """ test for file list equality """ 
-        strip_dot_slash = lambda s: re.sub(r'^\./', '', s)
         tgz = self.d.data.tgz()
-        dpkg_names = map(strip_dot_slash,
+        dpkg_names = map(os.path.normpath,
                 [ x.strip() for x in
                     os.popen("dpkg-deb --fsys-tarfile %s | tar t" %
                         self.debname).readlines() ])
-        debfile_names = map(strip_dot_slash, tgz.getnames())
+        debfile_names = map(os.path.normpath, tgz.getnames())
         
         # skip the root
         self.assertEqual(debfile_names[1:], dpkg_names[1:])
