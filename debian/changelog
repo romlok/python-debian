@@ -5,6 +5,10 @@ python-debian (0.1.17) UNRELEASED; urgency=low
 
   [ John Wright ]
   * test_deb822.py: Make test_gpg_info more robust (Closes: #582878)
+  * deb822: Use chardet to try to detect character encodings as necessary
+    - This is only used when the specified encoding doesn't work.  It's mainly
+      useful for files containing multiple deb822 paragraphs with mixed
+      encodings, like etch's Sources file. (Closes: #586021)
 
  -- John Wright <jsw@debian.org>  Fri, 25 Jun 2010 11:20:22 -0600
 

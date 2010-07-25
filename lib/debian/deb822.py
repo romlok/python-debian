@@ -4,7 +4,7 @@
 # (.changes, .dsc, Packages, Sources, etc)
 #
 # Copyright (C) 2005-2006  dann frazier <dannf@dannf.org>
-# Copyright (C) 2006-2008  John Wright <john@johnwright.org>
+# Copyright (C) 2006-2010  John Wright <john@johnwright.org>
 # Copyright (C) 2006       Adeodato Simó <dato@net.com.org.es>
 # Copyright (C) 2008       Stefano Zacchiroli <zack@upsilon.cc>
 #
@@ -30,10 +30,13 @@ try:
 except ImportError:
     _have_apt_pkg = False
 
+import chardet
 import new
 import re
 import string
 import sys
+import warnings
+
 import StringIO
 import UserDict
 
@@ -176,7 +179,25 @@ class Deb822Dict(object, UserDict.DictMixin):
 
         if isinstance(value, str):
             # Always return unicode objects instead of strings
-            value = value.decode(self.encoding)
+            try:
+                value = value.decode(self.encoding)
+            except UnicodeDecodeError, e:
+                # Evidently, the value wasn't encoded with the encoding the
+                # user specified.  Try detecting it.
+                warnings.warn('decoding from %s failed; attempting to detect '
+                              'the true encoding' % self.encoding,
+                              UnicodeWarning)
+                result = chardet.detect(value)
+                try:
+                    value = value.decode(result['encoding'])
+                except UnicodeDecodeError:
+                    raise e
+                else:
+                    # Assume the rest of the paragraph is in this encoding as
+                    # well (there's no sense in repeating this exercise for
+                    # every field).
+                    self.encoding = result['encoding']
+
         return value
 
     def __delitem__(self, key):
@@ -306,33 +327,29 @@ class Deb822(Deb822Dict):
         curkey = None
         content = ""
         for line in self.gpg_stripped_paragraph(sequence):
-            if isinstance(line, str):
-                line = line.decode(self.encoding)
             m = single.match(line)
             if m:
                 if curkey:
-                    self[curkey] += content
+                    self[curkey] = content
 
                 if not wanted_field(m.group('key')):
                     curkey = None
                     continue
 
                 curkey = m.group('key')
-                self[curkey] = m.group('data')
-                content = ""
+                content = m.group('data')
                 continue
 
             m = multi.match(line)
             if m:
                 if curkey:
-                    self[curkey] += content
+                    self[curkey] = content
 
                 if not wanted_field(m.group('key')):
                     curkey = None
                     continue
 
                 curkey = m.group('key')
-                self[curkey] = ""
                 content = ""
                 continue
 
@@ -342,7 +359,7 @@ class Deb822(Deb822Dict):
                 continue
 
         if curkey:
-            self[curkey] += content
+            self[curkey] = content
 
     def __str__(self):
         return self.dump()

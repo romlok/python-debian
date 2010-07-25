@@ -1,0 +1,34 @@
+Package: amarok
+Binary: amarok, amarok-engines, amarok-xine
+Version: 1.4.4-4etch1
+Priority: optional
+Section: kde
+Maintainer: Adeodato SimÃ³ <dato@net.com.org.es>
+Build-Depends: cdbs, debhelper (>= 5), quilt, bzip2, automake1.9, libtool, kdelibs4-dev, kdemultimedia-dev, kdebase-dev, libxine-dev, libtag1-dev (>> 1.4), libsqlite3-dev, libtunepimp3-dev, libmysqlclient15-dev, libpq-dev, xmms-dev, libvisual-0.4-dev, libsdl1.2-dev, libifp-dev, libusb-dev, libgpod-dev, libnjb-dev, ruby, ruby1.8-dev, dpkg-dev (>= 1.13.19)
+Architecture: any
+Standards-Version: 3.7.2
+Format: 1.0
+Directory: pool/main/a/amarok
+Files:
+ f8e80af55fbd8386e6b13b0b12d798f4 986 amarok_1.4.4-4etch1.dsc
+ 0adbbd8373da2198b80e509618a2dab9 17628566 amarok_1.4.4.orig.tar.gz
+ c29b0538c033ededacc6d31339d17700 42402 amarok_1.4.4-4etch1.diff.gz
+Uploaders: Ana Beatriz Guerrero Lopez <ana@debian.org>
+
+Package: texinfo
+Binary: texinfo, info
+Version: 4.8.dfsg.1-4
+Priority: important
+Section: doc
+Maintainer: Norbert Preining <preining@debian.org>
+Build-Depends: debhelper (>= 5), dpatch, libncurses5-dev | libncurses-dev, gettext
+Architecture: any
+Standards-Version: 3.7.2
+Format: 1.0
+Directory: pool/main/t/texinfo
+Files:
+ 2c233d2bf6627eac32deb9bb87726ea1 680 texinfo_4.8.dfsg.1-4.dsc
+ 614273ac8568a25926aae374cd9a6683 1926534 texinfo_4.8.dfsg.1.orig.tar.gz
+ e01520524bc114d90a2a1e5eefe71b50 101211 texinfo_4.8.dfsg.1-4.diff.gz
+Uploaders: Frank Küster <frank@debian.org>
+

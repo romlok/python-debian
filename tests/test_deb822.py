@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import unittest
+import warnings
 from StringIO import StringIO
 
 sys.path.insert(0, '../lib/debian/')
@@ -701,6 +702,29 @@ Description: python modules to work with Debian-related data formats
 
         self.assertEqual(utf8_contents, latin1_to_utf8.getvalue())
         self.assertEqual(latin1_contents, utf8_to_latin1.getvalue())
+
+    def test_mixed_encodings(self):
+        """Test that we can handle a simple case of mixed encodings
+
+        In general, this isn't guaranteed to work.  It uses the chardet
+        package, which tries to determine heuristically the encoding of the
+        text given to it.  But as far as I've seen, it's reliable for mixed
+        latin1 and utf-8 in maintainer names in old Sources files...
+        """
+
+        # Avoid spitting out the encoding warning during testing.
+        warnings.filterwarnings(action='ignore', category=UnicodeWarning)
+
+        filename = 'test_Sources.mixed_encoding'
+        for paragraphs in [deb822.Sources.iter_paragraphs(file(filename)),
+                           deb822.Sources.iter_paragraphs(file(filename),
+                                                          use_apt_pkg=False)]:
+            p1 = paragraphs.next()
+            self.assertEqual(p1['maintainer'],
+                             u'Adeodato Simó <dato@net.com.org.es>')
+            p2 = paragraphs.next()
+            self.assertEqual(p2['uploaders'],
+                             u'Frank Küster <frank@debian.org>')
 
 class TestPkgRelations(unittest.TestCase):
 
