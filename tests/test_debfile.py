@@ -137,7 +137,7 @@ class TestDebFile(unittest.TestCase):
         # random test on the data part (which is bzipped), just to check if we
         # can access its content
         self.assertEqual(os.path.normpath(bz2_deb.data.tgz().getnames()[10]),
-                './usr/share/locale/bg/')
+                         os.path.normpath('./usr/share/locale/bg/'))
 
     def test_data_names(self):
         """ test for file list equality """ 
