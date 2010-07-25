@@ -1,4 +1,4 @@
-python-debian (0.1.17) UNRELEASED; urgency=low
+python-debian (0.1.17) unstable; urgency=low
 
   [ James Westby ]
   * Use os.path.normpath to hide python version differences
@@ -10,7 +10,7 @@ python-debian (0.1.17) UNRELEASED; urgency=low
       useful for files containing multiple deb822 paragraphs with mixed
       encodings, like etch's Sources file. (Closes: #586021)
 
- -- John Wright <jsw@debian.org>  Fri, 25 Jun 2010 11:20:22 -0600
+ -- John Wright <jsw@debian.org>  Sun, 25 Jul 2010 02:07:11 -0700
 
 python-debian (0.1.16) unstable; urgency=low
 
