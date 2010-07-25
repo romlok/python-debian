@@ -353,16 +353,7 @@ class TestDeb822(unittest.TestCase):
         deb822_from_lines = deb822.Dsc(unparsed_with_gpg.splitlines())
         result_from_lines = deb822_from_lines.get_gpg_info()
 
-        # The signature id algorithm changed in gnupg 1.4.10
-        valid_old = {
-         'GOODSIG':  ['D14219877A786561', 'John Wright <john.wright@hp.com>'],
-         'VALIDSIG': ['8FEFE900783CF175827C2F65D14219877A786561', '2008-05-01',
-                      '1209623566', '0', '3', '0', '17', '2', '01',
-                      '8FEFE900783CF175827C2F65D14219877A786561'],
-         'SIG_ID':   ['mQFnUWWR1Gr6itMV7Bx5L4N60Wo', '2008-05-01',
-                      '1209623566'],
-        }
-        valid_new = {
+        valid = {
          'GOODSIG':  ['D14219877A786561', 'John Wright <john.wright@hp.com>'],
          'VALIDSIG': ['8FEFE900783CF175827C2F65D14219877A786561', '2008-05-01',
                       '1209623566', '0', '3', '0', '17', '2', '01',
@@ -371,9 +362,15 @@ class TestDeb822(unittest.TestCase):
                       '1209623566'],
         }
 
-        valid = (sorted(valid_old.items()), sorted(valid_new.items()))
         for result in result_from_str, result_from_file, result_from_lines:
-            self.assert_(sorted(result.items()) in valid)
+            # The second part of the GOODSIG field could change if the primary
+            # uid changes, so avoid checking that.  Also, the first part of the
+            # SIG_ID field has undergone at least one algorithm changein gpg,
+            # so don't bother testing that either.
+            self.assertEqual(set(result.keys()), set(valid.keys()))
+            self.assertEqual(result['GOODSIG'][0], valid['GOODSIG'][0])
+            self.assertEqual(result['VALIDSIG'], valid['VALIDSIG'])
+            self.assertEqual(result['SIG_ID'][1:], valid['SIG_ID'][1:])
 
     def test_iter_paragraphs_array(self):
         text = (UNPARSED_PACKAGE + '\n\n\n' + UNPARSED_PACKAGE).splitlines()
