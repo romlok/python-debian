@@ -26,8 +26,10 @@ from deprecation import function_deprecated_by
 
 try:
     import apt_pkg
+    # This module uses apt_pkg only for its TagFile interface.
+    apt_pkg.TagFile
     _have_apt_pkg = True
-except ImportError:
+except (ImportError, AttributeError):
     _have_apt_pkg = False
 
 import chardet

@@ -20,10 +20,10 @@ Depends: ${python:Depends}, ${misc:Depends}, python-chardet
 Recommends: python-apt
 Suggests: gpgv
 Provides: python-deb822
-Conflicts: python-deb822, python-apt (<< 0.7.94~)
+Conflicts: python-deb822
 Replaces: python-deb822
 Description: Python modules to work with Debian-related data formats
- This package provides Python modules that abstract many formats of Debian 
+ This package provides Python modules that abstract many formats of Debian
  related files. Currently handled are:
   * Debtags information (debian.debtags module)
   * debian/changelog (debian.changelog module)
