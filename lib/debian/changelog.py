@@ -23,7 +23,10 @@
 
 """This module implements facilities to deal with Debian changelogs."""
 
+import os
+import pwd
 import re
+import socket
 import warnings
 
 import debian_support
@@ -470,3 +473,77 @@ class Changelog(object):
 
     def write_to_open_file(self, file):
         file.write(self.__str__())
+
+
+def get_maintainer():
+    """Get the maintainer information in the same manner as dch.
+
+    This function gets the information about the current user for
+    the maintainer field using environment variables of gecos
+    informations as approriate.
+
+    It uses the same methods as dch to get the information, namely
+    DEBEMAIL, DEBFULLNAME, EMAIL, NAME, /etc/mailname and gecos.
+
+    :returns: a tuple of the full name, email pair as strings.
+        Either of the pair may be None if that value couldn't
+        be determined.
+    """
+    env = os.environ
+    regex = re.compile(r"^(.*)\s+<(.*)>$")
+
+    # Split email and name
+    if 'DEBEMAIL' in env:
+        match_obj = regex.match(env['DEBEMAIL'])
+        if match_obj:
+            if not 'DEBFULLNAME' in env:
+                env['DEBFULLNAME'] = match_obj.group(1)
+            env['DEBEMAIL'] = match_obj.group(2)
+    if 'DEBEMAIL' not in env or 'DEBFULLNAME' not in env:
+        if 'EMAIL' in env:
+            match_obj = regex.match(env['EMAIL'])
+            if match_obj:
+                if not 'DEBFULLNAME' in env:
+                    env['DEBFULLNAME'] = match_obj.group(1)
+                env['EMAIL'] = match_obj.group(2)
+
+    # Get maintainer's name
+    if 'DEBFULLNAME' in env:
+        maintainer = env['DEBFULLNAME']
+    elif 'NAME' in env:
+        maintainer = env['NAME']
+    else:
+        # Use password database if no data in environment variables
+        try:
+            maintainer = re.sub(r',.*', '', pwd.getpwuid(os.getuid()).pw_gecos)
+        except (KeyError, AttributeError):
+            maintainer = None
+
+    # Get maintainer's mail address
+    if 'DEBEMAIL' in env:
+        email = env['DEBEMAIL']
+    elif 'EMAIL' in env:
+        email = env['EMAIL']
+    else:
+        addr = None
+        if os.path.exists('/etc/mailname'):
+            f = open('/etc/mailname')
+            try:
+                addr = f.readline().strip()
+            finally:
+                f.close()
+        if not addr:
+            addr = socket.getfqdn()
+        if addr:
+            user = pwd.getpwuid(os.getuid()).pw_name
+            if not user:
+                addr = None
+            else:
+                addr = "%s@%s" % (user, addr)
+
+        if addr:
+            email = addr
+        else:
+            email = None
+
+    return (maintainer, email)
