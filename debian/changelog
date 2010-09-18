@@ -5,6 +5,7 @@ python-debian (0.1.21) UNRELEASED; urgency=low
 
   [ John Wright ]
   * Allow ':' as the first character of a value. (Closes: #597249)
+  * Avoid dumping unparseable data. (Closes: #597120)
 
  -- John Wright <jsw@debian.org>  Sat, 02 Jul 2011 23:20:27 -0700
 

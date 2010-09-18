@@ -408,8 +408,9 @@ class Deb822(Deb822Dict):
             value = self.get_as_string(key)
             if not value or value[0] == '\n':
                 # Avoid trailing whitespace after "Field:" if it's on its own
-                # line or the value is empty
-                # XXX Uh, really print value if value == '\n'?
+                # line or the value is empty.  We don't have to worry about the
+                # case where value == '\n', since we ensure that is not the
+                # case in __setitem__.
                 entry = '%s:%s\n' % (key, value)
             else:
                 entry = '%s: %s\n' % (key, value)
@@ -589,6 +590,31 @@ class Deb822(Deb822Dict):
             self.gpg_info = GpgInfo.from_sequence(self.raw_text)
 
         return self.gpg_info
+
+    def validate_input(self, key, value):
+        """Raise ValueError if value is not a valid value for key
+
+        Subclasses that do interesting things for different keys may wish to
+        override this method.
+        """
+
+        # The value cannot end in a newline (if it did, dumping the object
+        # would result in multiple stanzas)
+        if value.endswith('\n'):
+            raise ValueError("value must not end in '\\n'")
+
+        # Make sure there are no blank lines (actually, the first one is
+        # allowed to be blank, but no others), and each subsequent line starts
+        # with whitespace
+        for line in value.splitlines()[1:]:
+            if not line:
+                raise ValueError("value must not have blank lines")
+            if not line[0].isspace():
+                raise ValueError("each line must start with whitespace")
+
+    def __setitem__(self, key, value):
+        self.validate_input(key, value)
+        Deb822Dict.__setitem__(self, key, value)
 
 ###
 
@@ -894,6 +920,16 @@ class _multivalued(Deb822):
             for line in filter(None, contents.splitlines()):
                 updater_method(Deb822Dict(zip(fields, line.split())))
 
+    def validate_input(self, key, value):
+        if key.lower() in self._multivalued_fields:
+            # It's difficult to write a validator for multivalued fields, and
+            # basically futile, since we allow mutable lists.  In any case,
+            # with sanity checking in get_as_string, we shouldn't ever output
+            # unparseable data.
+            pass
+        else:
+            Deb822.validate_input(self, key, value)
+
     def get_as_string(self, key):
         keyl = key.lower()
         if keyl in self._multivalued_fields:
@@ -911,13 +947,16 @@ class _multivalued(Deb822):
                 field_lengths = {}
             for item in array:
                 for x in order:
-                    raw_value = str(item[x])
+                    raw_value = unicode(item[x])
                     try:
                         length = field_lengths[keyl][x]
                     except KeyError:
                         value = raw_value
                     else:
                         value = (length - len(raw_value)) * " " + raw_value
+                    if "\n" in value:
+                        raise ValueError("'\\n' not allowed in component of "
+                                         "multivalued field %s" % key)
                     fd.write(" %s" % value)
                 fd.write("\n")
             return fd.getvalue().rstrip("\n")

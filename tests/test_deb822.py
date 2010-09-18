@@ -734,6 +734,33 @@ Description: python modules to work with Debian-related data formats
         parsed = {'Foo': ': bar'}
         self.assertWellParsed(deb822.Deb822(data), parsed)
 
+    @staticmethod
+    def _dictset(d, key, value):
+        d[key] = value
+
+    def test_field_value_ends_in_newline(self):
+        """Field values are not allowed to end with newlines"""
+
+        d = deb822.Deb822()
+        self.assertRaises(ValueError, self._dictset, d, 'foo', 'bar\n')
+        self.assertRaises(ValueError, self._dictset, d, 'foo', 'bar\nbaz\n')
+
+    def test_field_value_contains_blank_line(self):
+        """Field values are not allowed to contain blank lines"""
+
+        d = deb822.Deb822()
+        self.assertRaises(ValueError, self._dictset, d, 'foo', 'bar\n\nbaz')
+        self.assertRaises(ValueError, self._dictset, d, 'foo', '\n\nbaz')
+
+    def test_multivalued_field_contains_newline(self):
+        """Multivalued field components are not allowed to contain newlines"""
+
+        d = deb822.Dsc()
+        # We don't check at set time, since one could easily modify the list
+        # without deb822 knowing.  We instead check at get time.
+        d['Files'] = [{'md5sum': 'deadbeef', 'size': '9605', 'name': 'bad\n'}]
+        self.assertRaises(ValueError, d.get_as_string, 'files')
+
 
 class TestPkgRelations(unittest.TestCase):
 
