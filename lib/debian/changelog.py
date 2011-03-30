@@ -56,6 +56,8 @@ class VersionError(StandardError):
     def __str__(self):
         return "Could not parse version: "+self._version
 
+# TODO(jsw): Remove this in favor of using debian_support.Version directly.  I
+# don't think we gain anything by using this empty subclass.
 class Version(debian_support.Version):
     """Represents a version of a Debian package."""
     # debian_support.Version now has all the functionality we need

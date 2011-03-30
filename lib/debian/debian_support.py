@@ -94,6 +94,10 @@ class BaseVersion(object):
         m = self.re_valid_version.match(version)
         if not m:
             raise ValueError("Invalid version string %r" % version)
+        # If there no epoch ("1:..."), then the upstream version can not
+        # contain a :.
+        if (m.group("epoch") is None and ":" in m.group("upstream_version")):
+            raise ValueError("Invalid version string %r" % version)
 
         self.__full_version = version
         self.__epoch = m.group("epoch")
