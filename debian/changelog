@@ -1,10 +1,10 @@
-python-debian (0.1.19) UNRELEASED; urgency=low
+python-debian (0.1.19) unstable; urgency=low
 
   * debian_support.BaseVersion: Disallow ':' in upstream version if
     there is no epoch.  Original patch by Steve Kowalik.
     (Closes: #619997)
 
- -- John Wright <jsw@debian.org>  Wed, 30 Mar 2011 00:47:04 -0700
+ -- John Wright <jsw@debian.org>  Fri, 15 Apr 2011 02:05:45 -0700
 
 python-debian (0.1.18+nmu1) unstable; urgency=low
 
