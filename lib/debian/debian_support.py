@@ -172,7 +172,7 @@ class AptPkgVersion(BaseVersion):
         super(AptPkgVersion, self).__init__(version)
 
     def __cmp__(self, other):
-        return apt_pkg.VersionCompare(str(self), str(other))
+        return apt_pkg.version_compare(str(self), str(other))
 
 # NativeVersion based on the DpkgVersion class by Raphael Hertzog in
 # svn://svn.debian.org/qa/trunk/pts/www/bin/common.py r2361
