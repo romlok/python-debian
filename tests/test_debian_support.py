@@ -72,8 +72,9 @@ class VersionTests(unittest.TestCase):
         self._test_version('2:1.0.4+svn26-1ubuntu1', '2', '1.0.4+svn26',
                            '1ubuntu1')
         self._test_version('2:1.0.4~rc2-1', '2', '1.0.4~rc2', '1')
-        self.assertRaises(
-            ValueError, changelog.Version, 'a1:1.8.8-070403-1~priv1')
+        for cls in AptPkgVersion, NativeVersion:
+            self.assertRaises(
+                ValueError, cls, 'a1:1.8.8-070403-1~priv1')
 
     def test_version_updating(self):
         if debian_support._have_apt_pkg:
