@@ -1,0 +1,11 @@
+haskell-src-exts (1.8.2-3) unstable; urgency=low
+
+  * control: Use versioned Replaces: and Conflicts:
+
+ -- Marco Túlio Gontijo e Silva <marcot@debian.org>  Wed, 05 May 2010 18:01:53 -0300
+
+haskell-src-exts (1.8.2-2) unstable; urgency=low
+
+  * debian/control: Rename -doc package.
+
+ -- Marco Túlio Gontijo e Silva <marcot@debian.org>  Tue, 16 Mar 2010 10:59:48 -0300

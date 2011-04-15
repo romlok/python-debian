@@ -1,5 +1,6 @@
 #!/usr/bin/python
-
+# vim: fileencoding=utf-8
+#
 # changelog.py -- Python module for Debian changelogs
 # Copyright (C) 2006-7 James Westby <jw+debian@jameswestby.net>
 # Copyright (C) 2008 Canonical Ltd.
@@ -158,6 +159,41 @@ class ChangelogTests(unittest.TestCase):
         c3 = changelog.Changelog(cl_data.splitlines())
         for c in (c1, c2, c3):
             self.assertEqual(str(c), cl_data)
+
+    def test_utf8_encoded_file_input(self):
+        c = changelog.Changelog(open('test_changelog_unicode'))
+        u = unicode(c)
+        expected_u = u"""haskell-src-exts (1.8.2-3) unstable; urgency=low
+
+  * control: Use versioned Replaces: and Conflicts:
+
+ -- Marco Túlio Gontijo e Silva <marcot@debian.org>  Wed, 05 May 2010 18:01:53 -0300
+
+haskell-src-exts (1.8.2-2) unstable; urgency=low
+
+  * debian/control: Rename -doc package.
+
+ -- Marco Túlio Gontijo e Silva <marcot@debian.org>  Tue, 16 Mar 2010 10:59:48 -0300
+"""
+        self.assertEqual(u, expected_u)
+        self.assertEquals(str(c), u.encode('utf-8'))
+
+    def test_unicode_object_input(self):
+        c_str = open('test_changelog_unicode').read()
+        c_unicode = c_str.decode('utf-8')
+        c = changelog.Changelog(c_unicode)
+        self.assertEqual(unicode(c), c_unicode)
+        self.assertEqual(str(c), c_str)
+
+    def test_non_utf8_encoding(self):
+        c_str = open('test_changelog_unicode').read()
+        c_unicode = c_str.decode('utf-8')
+        c_latin1_str = c_unicode.encode('latin1')
+        c = changelog.Changelog(c_latin1_str, encoding='latin1')
+        self.assertEqual(unicode(c), c_unicode)
+        self.assertEqual(str(c), c_latin1_str)
+        for block in c:
+            self.assertEqual(str(block), unicode(block).encode('latin1'))
 
     def test_block_iterator(self):
         c = changelog.Changelog(open('test_changelog'))

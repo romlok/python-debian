@@ -2,6 +2,8 @@ python-debian (0.1.20) UNRELEASED; urgency=low
 
   * Fix FTBFS, caused by referring to apt_pkg in a test with no
     python-apt Build-Depends. (Closes: #623011)
+  * changelog: Implement __unicode__ in ChangeBlock and Changelog.
+    (Closes: #561805)
 
  -- John Wright <jsw@debian.org>  Sun, 17 Apr 2011 17:26:02 -0700
 

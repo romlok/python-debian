@@ -67,7 +67,7 @@ class ChangeBlock(object):
 
     def __init__(self, package=None, version=None, distributions=None,
                 urgency=None, urgency_comment=None, changes=None,
-                author=None, date=None, other_pairs=None):
+                author=None, date=None, other_pairs=None, encoding='utf-8'):
         self._raw_version = None
         self._set_version(version)
         self.package = package
@@ -79,6 +79,7 @@ class ChangeBlock(object):
         self.date = date
         self._trailing = []
         self.other_pairs = other_pairs or {}
+        self._encoding = encoding
         self._no_trailer = False
         self._trailer_separator = "  "
 
@@ -127,7 +128,8 @@ class ChangeBlock(object):
                 changes.append(change)
             self._changes = changes
 
-    def __str__(self):
+    def __unicode__(self):
+        # TODO(jsw): Switch to StringIO or a list to join at the end.
         block = ""
         if self.package is None:
             raise ChangelogCreateError("Package not specified")
@@ -158,6 +160,9 @@ class ChangeBlock(object):
         for line in self._trailing:
             block += line + "\n"
         return block
+
+    def __str__(self):
+        return unicode(self).encode(self._encoding)
 
 topline = re.compile(r'^(\w%(name_chars)s*) \(([^\(\) \t]+)\)'
                      '((\s+%(name_chars)s+)+)\;'
@@ -196,16 +201,26 @@ old_format_re8 = re.compile('^(?:\d+:)?\w[\w.+~-]*:?\s*$')
 
 
 class Changelog(object):
-    """Represents a debian/changelog file. You can ask it several things
-       about the file.
-    """
+    """Represents a debian/changelog file."""
 
-
+    # TODO(jsw): Avoid masking the 'file' built-in.
     def __init__(self, file=None, max_blocks=None,
-            allow_empty_author=False, strict=True):
-        """Set up the Changelog for use. file is the contects of the
-           changelog.
+                 allow_empty_author=False, strict=True, encoding='utf-8'):
+        """Initializer.
+
+        Args:
+          file: The contents of the changelog, either as a str, unicode object,
+              or an iterator of lines (each of which is either a str or unicode)
+          max_blocks: The maximum number of blocks to parse from the input.
+              (Default: no limit)
+          allow_empty_author: Whether to allow an empty author in the trailer
+              line of a change block.  (Default: False)
+          strict: Whether to raise an exception if there are errors.  (Default:
+              use a warning)
+          encoding: If the input is a str or iterator of str, the encoding to
+              use when interpreting the input.
         """
+        self._encoding = encoding
         self._blocks = []
         self.initial_blank_lines = []
         if file is not None:
@@ -223,29 +238,37 @@ class Changelog(object):
             warnings.warn(message)
 
     def parse_changelog(self, file, max_blocks=None,
-            allow_empty_author=False, strict=True):
+            allow_empty_author=False, strict=True, encoding=None):
         first_heading = "first heading"
         next_heading_or_eof = "next heading of EOF"
         start_of_change_data = "start of change data"
         more_changes_or_trailer = "more change data or trailer"
         slurp_to_end = "slurp to end"
 
+        encoding = encoding or self._encoding
+
+        if file is None:
+            self._parse_error('Empty changelog file.', strict)
+            return
+
         self._blocks = []
         self.initial_blank_lines = []
 
-        current_block = ChangeBlock()
+        current_block = ChangeBlock(encoding=encoding)
         changes = []
         
         state = first_heading
         old_state = None
         if isinstance(file, basestring):
             # Make sure the changelog file is not empty.
-            if file is None or len(file.strip()) == 0:
+            if len(file.strip()) == 0:
                 self._parse_error('Empty changelog file.', strict)
                 return
 
             file = file.splitlines()
         for line in file:
+            if not isinstance(line, unicode):
+                line = line.decode(encoding)
             # Support both lists of lines without the trailing newline and
             # those with trailing newlines (e.g. when given a file object
             # directly)
@@ -354,7 +377,7 @@ class Changelog(object):
                     current_block._changes = changes
                     self._blocks.append(current_block)
                     changes = []
-                    current_block = ChangeBlock()
+                    current_block = ChangeBlock(encoding=encoding)
                     state = next_heading_or_eof
                 elif end_no_details_match is not None:
                     if not allow_empty_author:
@@ -364,7 +387,7 @@ class Changelog(object):
                     current_block._changes = changes
                     self._blocks.append(current_block)
                     changes = []
-                    current_block = ChangeBlock()
+                    current_block = ChangeBlock(encoding=encoding)
                     state = next_heading_or_eof
                 elif blank_match is not None:
                     changes.append(line)
@@ -436,11 +459,15 @@ class Changelog(object):
     def _raw_versions(self):
         return [block._raw_version for block in self._blocks]
 
-    def __str__(self):
-        cl = "\n".join(self.initial_blank_lines)
+    def __unicode__(self):
+        pieces = []
+        pieces.append(u'\n'.join(self.initial_blank_lines))
         for block in self._blocks:
-            cl += str(block)
-        return cl
+            pieces.append(unicode(block))
+        return u''.join(pieces)
+
+    def __str__(self):
+        return unicode(self).encode(self._encoding)
 
     def __iter__(self):
         return iter(self._blocks)
@@ -469,6 +496,7 @@ class Changelog(object):
     date = property(lambda self: self._blocks[0].date, set_date)
 
     def new_block(self, **kwargs):
+        kwargs.setdefault('encoding', self._encoding)
         block = ChangeBlock(**kwargs)
         block.add_trailing_line('')
         self._blocks.insert(0, block)
