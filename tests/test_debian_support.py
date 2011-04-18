@@ -30,13 +30,14 @@ from debian_support import *
 class VersionTests(unittest.TestCase):
     """Tests for AptPkgVersion and NativeVersion classes in debian_support"""
 
-    def _test_version(self, full_version, epoch, upstream, debian):
+    def setUp(self):
         if debian_support._have_apt_pkg:
-            test_classes = [AptPkgVersion, NativeVersion]
+            self.test_classes = [AptPkgVersion, NativeVersion]
         else:
-            test_classes = [NativeVersion]
+            self.test_classes = [NativeVersion]
 
-        for cls in test_classes:
+    def _test_version(self, full_version, epoch, upstream, debian):
+        for cls in self.test_classes:
             v = cls(full_version)
             self.assertEqual(v.full_version, full_version,
                              "%s: full_version broken" % cls)
@@ -72,17 +73,12 @@ class VersionTests(unittest.TestCase):
         self._test_version('2:1.0.4+svn26-1ubuntu1', '2', '1.0.4+svn26',
                            '1ubuntu1')
         self._test_version('2:1.0.4~rc2-1', '2', '1.0.4~rc2', '1')
-        for cls in AptPkgVersion, NativeVersion:
+        for cls in self.test_classes:
             self.assertRaises(
                 ValueError, cls, 'a1:1.8.8-070403-1~priv1')
 
     def test_version_updating(self):
-        if debian_support._have_apt_pkg:
-            test_classes = [AptPkgVersion, NativeVersion]
-        else:
-            test_classes = [NativeVersion]
-
-        for cls in test_classes:
+        for cls in self.test_classes:
             v = cls('1:1.4.1-1')
 
             v.debian_version = '2'
