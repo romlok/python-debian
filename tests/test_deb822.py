@@ -237,6 +237,47 @@ iD8DBQFIGWQO0UIZh3p4ZWERAug/AJ93DWD9o+1VMgPDjWn/dsmPSgTWGQCeOfZi
 -----END PGP SIGNATURE-----
 '''
 
+UNPARSED_PARAGRAPHS_WITH_COMMENTS = '''\
+# Leading comments should be ignored.
+
+Source: foo
+Section: bar
+# An inline comment in the middle of a paragraph should be ignored.
+Priority: optional
+Homepage: http://www.debian.org/
+
+# Comments in the middle shouldn't result in extra blank paragraphs either.
+
+# Ditto.
+
+# A comment at the top of a paragraph should be ignored.
+Package: foo
+Architecture: any
+Description: An awesome package
+  # This should still appear in the result.
+  Blah, blah, blah. # So should this.
+# A comment at the end of a paragraph should be ignored.
+
+# Trailing comments shouldn't cause extra blank paragraphs.
+'''
+
+PARSED_PARAGRAPHS_WITH_COMMENTS = [
+    deb822.Deb822Dict([
+        ('Source', 'foo'),
+        ('Section', 'bar'),
+        ('Priority', 'optional'),
+        ('Homepage', 'http://www.debian.org/'),
+    ]),
+    deb822.Deb822Dict([
+        ('Package', 'foo'),
+        ('Architecture', 'any'),
+        ('Description', 'An awesome package\n'
+            '  # This should still appear in the result.\n'
+            '  Blah, blah, blah. # So should this.'),
+    ]),
+]
+
+
 class TestDeb822Dict(unittest.TestCase):
     def make_dict(self):
         d = deb822.Deb822Dict()
@@ -397,10 +438,10 @@ class TestDeb822(unittest.TestCase):
                 self.assertWellParsed(d, PARSED_PACKAGE)
             self.assertEqual(count, 2)
 
-    def _test_iter_paragraphs(self, file, cls, **kwargs):
+    def _test_iter_paragraphs(self, filename, cls, **kwargs):
         """Ensure iter_paragraphs consistency"""
         
-        f = open(file)
+        f = open(filename)
         packages_content = f.read()
         f.close()
         # XXX: The way multivalued fields parsing works, we can't guarantee
@@ -410,10 +451,12 @@ class TestDeb822(unittest.TestCase):
 
         s = StringIO()
         l = []
-        for p in cls.iter_paragraphs(open(file), **kwargs):
+        f = open(filename)
+        for p in cls.iter_paragraphs(f, **kwargs):
             p.dump(s)
             s.write("\n")
             l.append(p)
+        f.close()
         self.assertEqual(s.getvalue(), packages_content)
         if kwargs["shared_storage"] is False:
             # If shared_storage is False, data should be consistent across
@@ -761,6 +804,22 @@ Description: python modules to work with Debian-related data formats
         # without deb822 knowing.  We instead check at get time.
         d['Files'] = [{'md5sum': 'deadbeef', 'size': '9605', 'name': 'bad\n'}]
         self.assertRaises(ValueError, d.get_as_string, 'files')
+
+    def _test_iter_paragraphs_comments(self, paragraphs):
+        self.assertEqual(len(paragraphs), len(PARSED_PARAGRAPHS_WITH_COMMENTS))
+        for i in range(len(paragraphs)):
+            self.assertWellParsed(paragraphs[i],
+                                  PARSED_PARAGRAPHS_WITH_COMMENTS[i])
+
+    def test_iter_paragraphs_comments_use_apt_pkg(self):
+        paragraphs = list(deb822.Deb822.iter_paragraphs(
+            UNPARSED_PARAGRAPHS_WITH_COMMENTS.splitlines(), use_apt_pkg=True))
+        self._test_iter_paragraphs_comments(paragraphs)
+
+    def test_iter_paragraphs_comments_native(self):
+        paragraphs = list(deb822.Deb822.iter_paragraphs(
+            UNPARSED_PARAGRAPHS_WITH_COMMENTS.splitlines(), use_apt_pkg=False))
+        self._test_iter_paragraphs_comments(paragraphs)
 
 
 class TestPkgRelations(unittest.TestCase):

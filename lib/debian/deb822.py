@@ -59,7 +59,8 @@ class TagSectionWrapper(object, UserDict.DictMixin):
         self.__section = section
 
     def keys(self):
-        return self.__section.keys()
+        return [key for key in self.__section.keys()
+                if not key.startswith('#')]
 
     def __getitem__(self, key):
         s = self.__section.find_raw(key)
@@ -310,8 +311,11 @@ class Deb822(Deb822Dict):
         if _have_apt_pkg and use_apt_pkg and isinstance(sequence, file):
             parser = apt_pkg.TagFile(sequence)
             for section in parser:
-                yield cls(fields=fields, _parsed=TagSectionWrapper(section),
-                          encoding=encoding)
+                paragraph = cls(fields=fields,
+                                _parsed=TagSectionWrapper(section),
+                                encoding=encoding)
+                if paragraph:
+                    yield paragraph
 
         else:
             iterable = iter(sequence)
@@ -323,6 +327,22 @@ class Deb822(Deb822Dict):
     iter_paragraphs = classmethod(iter_paragraphs)
 
     ###
+
+    @staticmethod
+    def _skip_useless_lines(sequence):
+        """Yields only lines that do not begin with '#'.
+
+        Also skips any blank lines at the beginning of the input.
+        """
+        at_beginning = True
+        for line in sequence:
+            if line.startswith('#'):
+                continue
+            if at_beginning:
+                if not line.rstrip('\r\n'):
+                    continue
+                at_beginning = False
+            yield line
 
     def _internal_parser(self, sequence, fields=None):
         # The key is non-whitespace, non-colon characters before any colon.
@@ -338,7 +358,9 @@ class Deb822(Deb822Dict):
 
         curkey = None
         content = ""
-        for line in self.gpg_stripped_paragraph(sequence):
+
+        for line in self.gpg_stripped_paragraph(
+                self._skip_useless_lines(sequence)):
             m = single.match(line)
             if m:
                 if curkey:
