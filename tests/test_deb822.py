@@ -726,6 +726,15 @@ Description: python modules to work with Debian-related data formats
             self.assertEqual(p2['uploaders'],
                              u'Frank Küster <frank@debian.org>')
 
+    def test_bug597249_colon_as_first_value_character(self):
+        """Colon should be allowed as the first value character. See #597249.
+        """
+
+        data = 'Foo: : bar'
+        parsed = {'Foo': ': bar'}
+        self.assertWellParsed(deb822.Deb822(data), parsed)
+
+
 class TestPkgRelations(unittest.TestCase):
 
     def test_packages(self):

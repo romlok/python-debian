@@ -3,6 +3,9 @@ python-debian (0.1.21) UNRELEASED; urgency=low
   [ Tshepang Lekhonkhobe ]
   * test_changelog.py: Close open files. (Closes: #625672)
 
+  [ John Wright ]
+  * Allow ':' as the first character of a value. (Closes: #597249)
+
  -- John Wright <jsw@debian.org>  Sat, 02 Jul 2011 23:20:27 -0700
 
 python-debian (0.1.20) unstable; urgency=low

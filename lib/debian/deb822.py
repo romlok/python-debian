@@ -317,9 +317,11 @@ class Deb822(Deb822Dict):
     ###
 
     def _internal_parser(self, sequence, fields=None):
-        single = re.compile("^(?P<key>\S+)\s*:\s*(?P<data>\S.*?)\s*$")
-        multi = re.compile("^(?P<key>\S+)\s*:\s*$")
-        multidata = re.compile("^\s(?P<data>.+?)\s*$")
+        # The key is non-whitespace, non-colon characters before any colon.
+        key_part = r"^(?P<key>[^: \t\n\r\f\v]+)\s*:\s*"
+        single = re.compile(key_part + r"(?P<data>\S.*?)\s*$")
+        multi = re.compile(key_part + r"$")
+        multidata = re.compile(r"^\s(?P<data>.+?)\s*$")
 
         wanted_field = lambda f: fields is None or f in fields
 
