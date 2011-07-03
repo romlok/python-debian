@@ -6,6 +6,19 @@ python-debian (0.1.21) UNRELEASED; urgency=low
   [ John Wright ]
   * Allow ':' as the first character of a value. (Closes: #597249)
   * Avoid dumping unparseable data. (Closes: #597120)
+  * Clean up deb822.GpgInfo implementation:
+    - Change several @staticmethod decorated methods to @classmethod,
+      since they call the class constructor.
+    - from_sequence now can accept both sequences of newline-terminated
+      strings and the output of str.splitlines().
+    - from_file now actually calls the from_sequence method.
+      (Closes: #627058)
+    - from_sequence now makes a copy of the initial args list before
+      extending it. (Closes: #627060)
+    - Keyrings are no longer checked for accessibility, since gpgv can
+      accept keyring arguments that are under the GnuPG home directory,
+      regardless of the current directory. (Closes: #627063)
+  * deb822.Deb822.gpg_info takes an optional keyrings argument.
 
  -- John Wright <jsw@debian.org>  Sat, 02 Jul 2011 23:20:27 -0700
 

@@ -20,6 +20,7 @@
 import os
 import re
 import sys
+import tempfile
 import unittest
 import warnings
 from StringIO import StringIO
@@ -879,6 +880,79 @@ class TestPkgRelations(unittest.TestCase):
                     [{'name': 'binutils-doc', 'version': None, 'arch': None}],
                     [{'name': 'binutils-source', 'version': None, 'arch': None}]]}
         self.assertEqual(rel2, pkg2.relations)
+
+
+class TestGpgInfo(unittest.TestCase):
+
+    def setUp(self):
+        # These tests can only run with gpgv and a keyring available.  When we
+        # can use Python >= 2.7, we can use the skip decorator; for now just
+        # check in each test method whether we should actually run.
+        self.should_run = (
+            os.path.exists('/usr/bin/gpgv') and
+            os.path.exists('/usr/share/keyrings/debian-keyring.gpg'))
+
+        self.data = SIGNED_CHECKSUM_CHANGES_FILE % CHECKSUM_CHANGES_FILE
+        self.valid = {
+            'GOODSIG':
+                ['D14219877A786561', 'John Wright <john.wright@hp.com>'],
+            'VALIDSIG':
+                ['8FEFE900783CF175827C2F65D14219877A786561', '2008-05-01',
+                 '1209623566', '0', '3', '0', '17', '2', '01',
+                 '8FEFE900783CF175827C2F65D14219877A786561'],
+            'SIG_ID':
+                ['j3UjSpdky92fcQISbm8W5PlwC/g', '2008-05-01', '1209623566'],
+        }
+
+    def _validate_gpg_info(self, gpg_info):
+        # The second part of the GOODSIG field could change if the primary
+        # uid changes, so avoid checking that.  Also, the first part of the
+        # SIG_ID field has undergone at least one algorithm changein gpg,
+        # so don't bother testing that either.
+        self.assertEqual(set(gpg_info.keys()), set(self.valid.keys()))
+        self.assertEqual(gpg_info['GOODSIG'][0], self.valid['GOODSIG'][0])
+        self.assertEqual(gpg_info['VALIDSIG'], self.valid['VALIDSIG'])
+        self.assertEqual(gpg_info['SIG_ID'][1:], self.valid['SIG_ID'][1:])
+
+    def test_from_sequence_string(self):
+        if not self.should_run:
+            return
+
+        gpg_info = deb822.GpgInfo.from_sequence(self.data)
+        self._validate_gpg_info(gpg_info)
+
+    def test_from_sequence_newline_terminated(self):
+        if not self.should_run:
+            return
+
+        sequence = StringIO(self.data)
+        gpg_info = deb822.GpgInfo.from_sequence(sequence)
+        self._validate_gpg_info(gpg_info)
+
+    def test_from_sequence_no_newlines(self):
+        if not self.should_run:
+            return
+
+        sequence = self.data.splitlines()
+        gpg_info = deb822.GpgInfo.from_sequence(sequence)
+        self._validate_gpg_info(gpg_info)
+
+    def test_from_file(self):
+        if not self.should_run:
+            return
+
+        fd, filename = tempfile.mkstemp()
+        fp = os.fdopen(fd, 'w')
+        fp.write(self.data)
+        fp.close()
+
+        try:
+            gpg_info = deb822.GpgInfo.from_file(filename)
+        finally:
+            os.remove(filename)
+
+        self._validate_gpg_info(gpg_info)
+
 
 if __name__ == '__main__':
     unittest.main()

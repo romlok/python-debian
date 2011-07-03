@@ -33,14 +33,20 @@ except (ImportError, AttributeError):
     _have_apt_pkg = False
 
 import chardet
-import new
+import os
 import re
 import string
+import subprocess
 import sys
 import warnings
 
 import StringIO
 import UserDict
+
+
+GPGV_DEFAULT_KEYRINGS = frozenset(['/usr/share/keyrings/debian-keyring.gpg'])
+GPGV_EXECUTABLE = '/usr/bin/gpgv'
+
 
 class TagSectionWrapper(object, UserDict.DictMixin):
     """Wrap a TagSection object, using its find_raw method to get field values
@@ -68,6 +74,7 @@ class TagSectionWrapper(object, UserDict.DictMixin):
         # Get rid of spaces and tabs after the ':', but not newlines, and strip
         # off any newline at the end of the data.
         return data.lstrip(' \t').rstrip('\n')
+
 
 class OrderedSet(object):
     """A set-like object that preserves order when iterating over it
@@ -111,6 +118,7 @@ class OrderedSet(object):
         for item in iterable:
             self.add(item)
     ###
+
 
 class Deb822Dict(object, UserDict.DictMixin):
     # Subclassing UserDict.DictMixin because we're overriding so much dict
@@ -574,11 +582,14 @@ class Deb822(Deb822Dict):
 
     gpg_stripped_paragraph = classmethod(gpg_stripped_paragraph)
 
-    def get_gpg_info(self):
+    def get_gpg_info(self, keyrings=None):
         """Return a GpgInfo object with GPG signature information
 
         This method will raise ValueError if the signature is not available
-        (e.g. the original text cannot be found)"""
+        (e.g. the original text cannot be found).
+
+        :param keyrings: list of keyrings to use (see GpgInfo.from_sequence)
+        """
 
         # raw_text is saved (as a string) only for Changes and Dsc (see
         # _gpg_multivalued.__init__) which is small compared to Packages or
@@ -587,7 +598,8 @@ class Deb822(Deb822Dict):
             raise ValueError, "original text cannot be found"
 
         if self.gpg_info is None:
-            self.gpg_info = GpgInfo.from_sequence(self.raw_text)
+            self.gpg_info = GpgInfo.from_sequence(self.raw_text,
+                                                  keyrings=keyrings)
 
         return self.gpg_info
 
@@ -616,7 +628,6 @@ class Deb822(Deb822Dict):
         self.validate_input(key, value)
         Deb822Dict.__setitem__(self, key, value)
 
-###
 
 # XXX check what happens if input contains more that one signature
 class GpgInfo(dict):
@@ -640,14 +651,14 @@ class GpgInfo(dict):
         """Return the primary ID of the signee key, None is not available"""
         pass
 
-    @staticmethod
-    def from_output(out, err=None):
+    @classmethod
+    def from_output(cls, out, err=None):
         """Create a new GpgInfo object from gpg(v) --status-fd output (out) and
         optionally collect stderr as well (err).
         
         Both out and err can be lines in newline-terminated sequence or regular strings."""
 
-        n = GpgInfo()
+        n = cls()
 
         if isinstance(out, basestring):
             out = out.split('\n')
@@ -668,7 +679,7 @@ class GpgInfo(dict):
             # str.partition() would be better, 2.5 only though
             s = l.find(' ')
             key = l[:s]
-            if key in GpgInfo.uidkeys:
+            if key in cls.uidkeys:
                 # value is "keyid UID", don't split UID
                 value = l[s+1:].split(' ', 1)
             else:
@@ -677,42 +688,69 @@ class GpgInfo(dict):
             n[key] = value
         return n 
 
-# XXX how to handle sequences of lines? file() returns \n-terminated
-    @staticmethod
-    def from_sequence(sequence, keyrings=['/usr/share/keyrings/debian-keyring.gpg'],
-            executable=["/usr/bin/gpgv"]):
+    @classmethod
+    def from_sequence(cls, sequence, keyrings=None, executable=None):
         """Create a new GpgInfo object from the given sequence.
 
-        Sequence is a sequence of lines or a string
-        executable is a list of args for subprocess.Popen, the first element being the gpg executable"""
+        :param sequence: sequence of lines or a string
+
+        :param keyrings: list of keyrings to use (default:
+            ['/usr/share/keyrings/debian-keyring.gpg'])
+
+        :param executable: list of args for subprocess.Popen, the first element
+            being the gpgv executable (default: ['/usr/bin/gpgv'])
+        """
+
+        keyrings = keyrings or GPGV_DEFAULT_KEYRINGS
+        executable = executable or [GPGV_EXECUTABLE]
 
         # XXX check for gpg as well and use --verify accordingly?
-        args = executable
+        args = list(executable)
         #args.extend(["--status-fd", "1", "--no-default-keyring"])
         args.extend(["--status-fd", "1"])
-        import os
-        [args.extend(["--keyring", k]) for k in keyrings if os.path.isfile(k) and os.access(k, os.R_OK)]
+        for k in keyrings:
+            args.extend(["--keyring", k])
         
         if "--keyring" not in args:
             raise IOError, "cannot access any of the given keyrings"
 
-        import subprocess
-        p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(args, stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # XXX what to do with exit code?
 
         if isinstance(sequence, basestring):
             (out, err) = p.communicate(sequence)
         else:
-            (out, err) = p.communicate("\n".join(sequence))
+            (out, err) = p.communicate(cls._get_full_string(sequence))
 
-        return GpgInfo.from_output(out, err)
+        return cls.from_output(out, err)
 
     @staticmethod
-    def from_file(target, *args):
-        """Create a new GpgInfo object from the given file, calls from_sequence(file(target), *args)"""
-        return from_sequence(file(target), *args)
-    
-###
+    def _get_full_string(sequence):
+        """Return a string from a sequence of lines.
+
+        This method detects if the sequence's lines are newline-terminated, and
+        constructs the string appropriately.
+        """
+        # Peek at the first line to see if it's newline-terminated.
+        sequence_iter = iter(sequence)
+        try:
+            first_line = sequence_iter.next()
+        except StopIteration:
+            return ""
+        join_str = '\n'
+        if first_line.endswith('\n'):
+            join_str = ''
+        return first_line + join_str + join_str.join(sequence_iter)
+
+    @classmethod
+    def from_file(cls, target, *args, **kwargs):
+        """Create a new GpgInfo object from the given file.
+
+        See GpgInfo.from_sequence.
+        """
+        return cls.from_sequence(file(target), *args, **kwargs)
+
 
 class PkgRelation(object):
     """Inter-package relationships
@@ -892,6 +930,7 @@ class _PkgRelationMixin(object):
             self.__parsed_relations = True
         return self.__relations
 
+
 class _multivalued(Deb822):
     """A class with (R/W) support for multivalued fields.
 
@@ -962,8 +1001,6 @@ class _multivalued(Deb822):
             return fd.getvalue().rstrip("\n")
         else:
             return Deb822.get_as_string(self, key)
-
-###
 
 
 class _gpg_multivalued(_multivalued):
@@ -1142,7 +1179,6 @@ class Packages(Deb822, _PkgRelationMixin):
         Deb822.__init__(self, *args, **kwargs)
         _PkgRelationMixin.__init__(self, *args, **kwargs)
 
-###
 
 class _CaseInsensitiveString(str):
     """Case insensitive string.
@@ -1162,5 +1198,6 @@ class _CaseInsensitiveString(str):
 
     def lower(self):
         return self.str_lower
+
 
 _strI = _CaseInsensitiveString
