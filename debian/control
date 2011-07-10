@@ -8,11 +8,11 @@ Uploaders: Adeodato Simó <dato@net.com.org.es>,
  Reinhard Tartler <siretart@tauware.de>,
  Stefano Zacchiroli <zack@debian.org>,
  John Wright <jsw@debian.org>
-Build-Depends: debhelper (>= 5.0.37.2), python, python-setuptools, python-chardet
-Build-Depends-Indep: python-support (>= 0.3)
+Build-Depends: debhelper (>= 5.0.37.2), python (>= 2.6.6-3~), python-setuptools, python-chardet
 Standards-Version: 3.8.4
 Vcs-Browser: http://git.debian.org/?p=pkg-python-debian/python-debian.git
 Vcs-Git: git://git.debian.org/git/pkg-python-debian/python-debian.git
+X-Python-Version: >= 2.5
 
 Package: python-debian
 Architecture: all

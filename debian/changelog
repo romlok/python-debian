@@ -1,4 +1,4 @@
-python-debian (0.1.21) UNRELEASED; urgency=low
+python-debian (0.1.22) UNRELEASED; urgency=low
 
   [ Tshepang Lekhonkhobe ]
   * test_changelog.py: Close open files. (Closes: #625672)
@@ -22,7 +22,10 @@ python-debian (0.1.21) UNRELEASED; urgency=low
   * deb822.Deb822.gpg_info takes an optional keyrings argument.
   * deb822: Don't interpret lines starting with '#'. (Closes: #632306)
 
- -- John Wright <jsw@debian.org>  Sat, 02 Jul 2011 23:20:27 -0700
+  [ Colin Watson ]
+  * Use dh_python2 instead of python-support. (Closes: #631392)
+
+ -- John Wright <jsw@debian.org>  Sat, 09 Jul 2011 23:20:11 -0700
 
 python-debian (0.1.20) unstable; urgency=low
 

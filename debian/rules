@@ -49,7 +49,7 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/tmp
-	python setup.py install --root="$(CURDIR)/debian/python-debian" --no-compile
+	python setup.py install --root="$(CURDIR)/debian/python-debian" --no-compile --install-layout=deb
 
 
 # Build architecture-independent files here.
@@ -66,7 +66,7 @@ binary-indep: build install
 #	dh_install
 	dh_compress -Xexamples
 	dh_fixperms
-	dh_pysupport -d
+	dh_python2
 	dh_installdeb
 	dh_shlibdeps
 	dh_gencontrol
