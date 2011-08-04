@@ -1,4 +1,4 @@
-python-debian (0.1.22) UNRELEASED; urgency=low
+python-debian (0.1.21) unstable; urgency=low
 
   [ Tshepang Lekhonkhobe ]
   * test_changelog.py: Close open files. (Closes: #625672)
@@ -25,7 +25,7 @@ python-debian (0.1.22) UNRELEASED; urgency=low
   [ Colin Watson ]
   * Use dh_python2 instead of python-support. (Closes: #631392)
 
- -- John Wright <jsw@debian.org>  Sat, 09 Jul 2011 23:20:11 -0700
+ -- John Wright <jsw@debian.org>  Wed, 03 Aug 2011 23:07:17 -0700
 
 python-debian (0.1.20) unstable; urgency=low
 
