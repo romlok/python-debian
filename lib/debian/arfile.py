@@ -159,6 +159,7 @@ class ArMember(object):
         self.__fp = None        # file pointer 
         self.__offset = None    # start-of-data offset
         self.__end = None       # end-of-data offset
+        self.__cur = None       # current seek-location (for shared fp)
 
     def from_file(fp, fname):
         """fp is an open File object positioned on a valid file header inside
@@ -198,51 +199,68 @@ class ArMember(object):
         f.__fname = fname
         f.__offset = fp.tell() # start-of-data
         f.__end = f.__offset + f.__size
-
+        
+        if fname is None:
+            f.__fp = fp
+        f.__cur = f.__offset
+        
         return f
 
     from_file = staticmethod(from_file)
     
+    def _init_fp(self):
+        """Readies the file pointer. """
+        if self.__fp is None:
+            # We have just a filename, so open it (one time)
+            self.__fp = open(self.__fname, "r")
+            self.__fp.seek(self.__offset)
+            
+        elif self.__fname is None:
+            # Nameless (possibly shared) file-like object
+            self.__fp.seek(self.__cur)
+    
+    def _update_cur(self):
+        """Update our current position. """
+        self.__cur = self.__fp.tell()
+        
     # file interface
 
     # XXX this is not a sequence like file objects
     def read(self, size=0):
-        if self.__fp is None:
-            self.__fp = open(self.__fname, "r")
-            self.__fp.seek(self.__offset)
+        self._init_fp()
 
-        cur = self.__fp.tell()
+        if size > 0 and size <= self.__end - self.__cur: # there's room
+            ret = self.__fp.read(size)
 
-        if size > 0 and size <= self.__end - cur: # there's room
-            return self.__fp.read(size)
-
-        if cur >= self.__end or cur < self.__offset:
-            return ''
-
-        return self.__fp.read(self.__end - cur)
+        elif self.__cur >= self.__end or self.__cur < self.__offset:
+            ret = ''
+            
+        else:
+            ret = self.__fp.read(self.__end - self.__cur)
+            
+        self._update_cur()
+        return ret
 
     def readline(self, size=None):
-        if self.__fp is None:
-            self.__fp = open(self.__fname, "r")
-            self.__fp.seek(self.__offset)
-
+        self._init_fp()
+        
         if size is not None: 
             buf = self.__fp.readline(size)
-            if self.__fp.tell() > self.__end:
+            self._update_cur()
+            if self.__cur > self.__end:
                 return ''
 
             return buf
 
         buf = self.__fp.readline()
-        if self.__fp.tell() > self.__end:
+        self._update_cur()
+        if self.__cur > self.__end:
             return ''
         else:
             return buf
 
     def readlines(self, sizehint=0):
-        if self.__fp is None:
-            self.__fp = open(self.__fname, "r")
-            self.__fp.seek(self.__offset)
+        self._init_fp()
         
         buf = None
         lines = []
@@ -255,11 +273,9 @@ class ArMember(object):
         return lines
 
     def seek(self, offset, whence=0):
-        if self.__fp is None:
-            self.__fp = open(self.__fname, "r")
-            self.__fp.seek(self.__offset)
+        self._init_fp()
 
-        if self.__fp.tell() < self.__offset:
+        if self.__cur < self.__offset:
             self.__fp.seek(self.__offset)
 
         if whence < 2 and offset + self.__fp.tell() < self.__offset:
@@ -271,20 +287,21 @@ class ArMember(object):
             self.__fp.seek(self.__offset + offset, 0)
         elif whence == 2:
             self.__fp.seek(self.__end + offset, 0)
+        
+        self._update_cur()
 
     def tell(self):
-        if self.__fp is None:
-            self.__fp = open(self.__fname, "r")
-            self.__fp.seek(self.__offset)
+        self._init_fp()
 
-        cur = self.__fp.tell()
-        
-        if cur < self.__offset:
+        if self.__cur < self.__offset:
             return 0L
         else:
-            return cur - self.__offset
+            return self.__cur - self.__offset
 
     def close(self):
+        if self.__fname is None:
+            # NB. self.__fp might be shared. Leaky to never explicitly close?
+            return
         if self.__fp is not None:
             self.__fp.close()
    

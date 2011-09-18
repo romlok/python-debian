@@ -98,6 +98,11 @@ class TestArFile(unittest.TestCase):
             m.close()
             f.close()
 
+class TestArFileObj(TestArFile):
+    def setUp(self):
+        TestArFile.setUp(self)
+        self.a = arfile.ArFile(fileobj=open("test.ar", "r"))
+        
 class TestDebFile(unittest.TestCase):
 
     def setUp(self):
